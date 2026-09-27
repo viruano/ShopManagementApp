@@ -2,41 +2,61 @@ package com.autorepair.shop;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Controller
 public class CustomerController {
 
     private final CustomerRepository customerRepository;
+    private final VehicleRepository vehicleRepository;
+    private final VinDecoderService vinDecoderService;
 
-    // Dependency Injection: Spring automatically feeds your repository into this controller
-    public CustomerController(CustomerRepository customerRepository) {
+    // Spring Boot automatically injects our fresh lookup service right here
+    public CustomerController(CustomerRepository customerRepository,
+                              VehicleRepository vehicleRepository,
+                              VinDecoderService vinDecoderService) {
         this.customerRepository = customerRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.vinDecoderService = vinDecoderService;
     }
 
-    // 1. Display Dashboard view with a list of all active customers
     @GetMapping("/")
     public String viewDashboard(Model model) {
         model.addAttribute("customers", customerRepository.findAll());
-        model.addAttribute("newCustomer", new Customer()); // Preps a blank object for the form
+        model.addAttribute("vehicles", vehicleRepository.findAll());
+        model.addAttribute("newCustomer", new Customer());
+        model.addAttribute("newVehicle", new Vehicle());
         return "index";
     }
 
-    // 2. Handle the Customer Registration Form Submission
     @PostMapping("/customers/register")
     public String registerCustomer(@ModelAttribute("newCustomer") Customer customer) {
-        // Automatically generate a clean, unique account tracking number for the business
-        // Example output: CUST-7B93
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         customer.setCustomerNumber("CUST-" + uniqueSuffix);
-
-        // Save the customer record cleanly to your database (H2 locally or PostgreSQL in Railway)
         customerRepository.save(customer);
+        return "redirect:/?tab=customers";
+    }
 
-        // Redirect back to the dashboard homepage to refresh and show the updated list immediately
-        return "redirect:/";
+    @PostMapping("/vehicles/register")
+    public String registerVehicle(@ModelAttribute("newVehicle") Vehicle vehicle, @RequestParam("customerId") Long customerId) {
+        // If a 17-character VIN is passed, enrich our model attributes automatically via government databases
+        if (vehicle.getVin() != null && vehicle.getVin().trim().length() == 17) {
+            Vehicle apiData = vinDecoderService.decodeVin(vehicle.getVin().trim());
+
+            if (apiData.getMake() != null) {
+                vehicle.setYear(apiData.getYear());
+                vehicle.setMake(apiData.getMake());
+                vehicle.setModel(apiData.getModel());
+                vehicle.setSubModel(apiData.getSubModel());
+                vehicle.setDrivetrain(apiData.getDrivetrain());
+                vehicle.setEngineSize(apiData.getEngineSize());
+                vehicle.setEngineCode(apiData.getEngineCode());
+            }
+        }
+
+        customerRepository.findById(customerId).ifPresent(vehicle::setCustomer);
+        vehicleRepository.save(vehicle);
+        return "redirect:/?tab=vehicles";
     }
 }
