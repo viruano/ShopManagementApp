@@ -1,131 +1,104 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Shop Management Workstation</title>
-    <!-- Tailwind CSS for clean layout design -->
+    <title>Auto Shop Workstation</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
+<nav class="bg-indigo-600 text-white shadow-md"><div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between"><span class="text-xl font-bold tracking-wider">⚙️ AutoManage Engine</span><form th:action="@{/logout}" method="POST"><button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1 rounded">Sign Out</button></form></div></nav>
+<main class="max-w-7xl mx-auto px-4 py-10">
+    <div class="mb-6"><h1 class="text-3xl font-extrabold text-gray-900">Shop Management Console</h1></div>
 
-<!-- Top Navigation Bar -->
-<nav class="bg-indigo-600 text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <div class="flex items-center">
-                <span class="text-xl font-bold tracking-wider">⚙️ AutoManage Engine</span>
-            </div>
-            <div class="text-sm bg-indigo-700 px-3 py-1 rounded-md">
-                Sprint 1: Workstation Active
-            </div>
-        </div>
-    </div>
-</nav>
-
-<!-- Main Content Container -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
-    <!-- Overview Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-900">Shop Management Console</h1>
-        <p class="mt-2 text-sm text-gray-600">Agile Framework Workspace — Manage your customers, vehicle specs, and shop floor analytics.</p>
-    </div>
-
-    <!-- Application Navigation Menu Tabs -->
+    <!-- THREE-WAY NAVIGATION TAB MENU -->
     <div class="flex border-b border-gray-200 mb-8 space-x-4">
-        <button onclick="switchTab('customers')" id="tab-btn-customers"
-                class="py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-indigo-600 text-indigo-600">
-            👥 Manage Customers
-        </button>
-        <button onclick="switchTab('vehicles')" id="tab-btn-vehicles"
-                class="py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700">
-            🚗 Manage Vehicles
-        </button>
+        <button onclick="switchTab('customers')" id="tab-btn-customers" class="py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600">👥 Customers</button>
+        <button onclick="switchTab('vehicles')" id="tab-btn-vehicles" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700">🚗 Vehicles</button>
+        <button onclick="switchTab('orders')" id="tab-btn-orders" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700">📋 Work Orders</button>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- TAB SECTION 1: CUSTOMERS CONSOLE -->
-    <!-- ========================================================= -->
+    <!-- TAB 1: CUSTOMERS -->
     <div id="section-customers" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Customer Input Form Panel -->
         <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Register New Customer</h2>
+            <h2 class="text-lg font-bold mb-4">Register Customer</h2>
             <form th:action="@{/customers/register}" th:object="${newCustomer}" method="POST" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">First Name *</label>
-                        <input type="text" th:field="*{firstName}" required placeholder="John"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Last Name *</label>
-                        <input type="text" th:field="*{lastName}" required placeholder="Doe"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                    <div><label class="block text-xs font-semibold text-gray-500 mb-1">First Name *</label><input type="text" th:field="*{firstName}" required class="w-full px-3 py-2 border rounded-md text-sm"></div>
+                    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Last Name *</label><input type="text" th:field="*{lastName}" required class="w-full px-3 py-2 border rounded-md text-sm"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Phone</label>
-                        <input type="text" th:field="*{phone}" placeholder="555-0199"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Email</label>
-                        <input type="email" th:field="*{email}" placeholder="john@example.com"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Phone</label><input type="text" th:field="*{phone}" placeholder="555-0199" class="w-full px-3 py-2 border rounded-md text-sm"></div>
+                    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Email</label><input type="email" th:field="*{email}" placeholder="john@example.com" class="w-full px-3 py-2 border rounded-md text-sm"></div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Street Address</label>
-                    <input type="text" th:field="*{street}" placeholder="123 Main St"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
+                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Street Address</label><input type="text" th:field="*{street}" placeholder="123 Main St" class="w-full px-3 py-2 border rounded-md text-sm"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <input type="text" th:field="*{city}" placeholder="City" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <input type="text" th:field="*{state}" placeholder="ST" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <input type="text" th:field="*{zip}" placeholder="Zip" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                    <div><input type="text" th:field="*{city}" placeholder="City" class="w-full px-3 py-2 border rounded-md text-sm"></div>
+                    <div><input type="text" th:field="*{state}" placeholder="ST" class="w-full px-3 py-2 border rounded-md text-sm"></div>
+                    <div><input type="text" th:field="*{zip}" placeholder="Zip" class="w-full px-3 py-2 border rounded-md text-sm"></div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
-                    Save Customer Profile
-                </button>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md shadow text-sm">Save Customer Profile</button>
             </form>
         </div>
-
-        <!-- Customer List Index Display -->
         <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Active Shop Client Index</h2>
-            <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">
-                <p class="text-3xl mb-2">👥</p>
-                <p class="text-sm font-medium">No customers registered in the database engine yet.</p>
-            </div>
+            <h2 class="text-lg font-bold mb-4">Active Shop Client Index</h2>
+            <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">No customers registered yet.</div>
             <div th:if="${!#lists.isEmpty(customers)}" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-500 uppercase tracking-wider text-xs font-semibold">
-                    <tr>
-                        <th class="px-4 py-3">Account Number</th>
-                        <th class="px-4 py-3">Client Name</th>
-                        <th class="px-4 py-3">Contact</th>
-                        <th class="px-4 py-3">Location</th>
-                    </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
+                    <thead class="bg-gray-50 text-gray-500 text-xs font-semibold"><tr><th class="px-4 py-3">Account Number</th><th class="px-4 py-3">Client Name</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Location</th></tr></thead>
+                    <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
                     <tr th:each="customer : ${customers}" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}">CUST-XXXX</td>
-                        <td class="px-4 py-3 font-semibold text-gray-900" th:text="${customer.firstName + ' ' + customer.lastName}">Name</td>
-                        <td class="px-4 py-3">
-                            <div th:text="${customer.phone}">555-0100</div>
-                            <div class="text-xs text-gray-400 font-normal" th:text="${customer.email}">email@test.com</div>
+                        <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
+                        <td class="px-4 py-3 font-semibold text-gray-900" th:text="${customer.firstName + ' ' + customer.lastName}"></td>
+                        <td class="px-4 py-3"><div th:text="${customer.phone}"></div><div class="text-xs text-gray-400" th:text="${customer.email}"></div></td>
+                        <td class="px-4 py-3 text-xs text-gray-500"><span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: VEHICLES -->
+    <div id="section-vehicles" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
+            <h2 class="text-lg font-bold mb-4">Add Vehicle</h2>
+            <form th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
+                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Assign Owner *</label><select name="customerId" required class="w-full px-3 py-2 border rounded-md text-sm bg-white"><option value="" disabled selected>-- Select Owner --</option><option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option></select></div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div><label class="block text-xs text-gray-500 mb-1">Year</label><input type="text" th:field="*{year}" placeholder="2018" class="w-full px-2 py-1 border rounded text-sm"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">Make</label><input type="text" th:field="*{make}" placeholder="Ford" class="w-full px-2 py-1 border rounded text-sm"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">Model</label><input type="text" th:field="*{model}" placeholder="F-150" class="w-full px-2 py-1 border rounded text-sm"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-gray-500 mb-1">Sub-Model</label><input type="text" th:field="*{subModel}" placeholder="XLT" class="w-full px-3 py-1.5 border rounded text-sm"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">Engine Size</label><input type="text" th:field="*{engineSize}" placeholder="V6 3.5L" class="w-full px-3 py-1.5 border rounded text-sm"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-gray-500 mb-1">Engine Code</label><input type="text" th:field="*{engineCode}" placeholder="EcoBoost" class="w-full px-3 py-1.5 border rounded text-sm"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">Drivetrain</label><input type="text" th:field="*{drivetrain}" placeholder="4WD" class="w-full px-3 py-1.5 border rounded text-sm"></div>
+                </div>
+                <div><label class="block text-xs text-gray-500 mb-1">License Plate</label><input type="text" th:field="*{licensePlate}" placeholder="7ABC12" class="w-full px-3 py-2 border rounded-md text-sm"></div>
+                <div><label class="block text-xs text-gray-500 mb-1">VIN Number (Auto Decodes)</label><input type="text" th:field="*{vin}" placeholder="1FA6P8CFXJ5XXXXXX" class="w-full px-3 py-2 border rounded-md text-sm uppercase"></div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-md shadow text-sm">Link Vehicle File</button>
+            </form>
+        </div>
+        <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h2 class="text-lg font-bold mb-4">Active Workshop Vehicle Fleet</h2>
+            <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No vehicles tracked yet.</div>
+            <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase"><tr><th class="px-4 py-3">Vehicle</th><th class="px-4 py-3">Powertrain</th><th class="px-4 py-3">License & VIN</th><th class="px-4 py-3">Owner</th></tr></thead>
+                    <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
+                    <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-semibold text-gray-900">
+                            <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
+                            <div class="text-xs text-indigo-600 font-medium" th:if="${vh.subModel}" th:text="${vh.subModel}">Trim</div>
                         </td>
-                        <td class="px-4 py-3 text-gray-500 text-xs">
-                            <span th:text="${customer.city}">City</span>, <span th:text="${customer.state}">ST</span>
-                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-600"><div th:text="${vh.engineSize}"></div><div class="text-gray-400 font-mono" th:text="${vh.drivetrain}"></div></td>
+                        <td class="px-4 py-3 text-xs"><div class="font-bold text-gray-800" th:text="${vh.licensePlate}"></div><div class="text-gray-400 uppercase font-mono tracking-tighter" th:text="${vh.vin}"></div></td>
+                        <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
                     </tr>
                     </tbody>
                 </table>
@@ -134,68 +107,82 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- TAB SECTION 2: VEHICLES CONSOLE -->
+    <!-- TAB SECTION 3: WORK ORDERS CONSOLE -->
     <!-- ========================================================= -->
-    <div id="section-vehicles" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
-        <!-- Vehicle Input Form Panel -->
+    <div id="section-orders" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+        <!-- Parts and Labor Input Form Panel -->
         <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Add Vehicle to Customer Account</h2>
-            <form th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
-
-                <!-- Relational Account Link Dropdown Menu Selector -->
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Add Parts or Labor Row</h2>
+            <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Assign to Customer Owner *</label>
-                    <select name="customerId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="" disabled selected>-- Select an Active Owner --</option>
-                        <option th:each="cust : ${customers}" th:value="${cust.id}"
-                                th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">License Plate Number</label>
-                            <input type="text" th:field="*{licensePlate}" placeholder="7ABC12" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">VIN (17-Character Input)</label>
-                            <input type="text" th:field="*{vin}" placeholder="1FA6P8CFXJ5XXXXXX" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
-                            Link Vehicle File
-                        </button>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Target Vehicle Work Order *</label>
+                    <select name="vehicleId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="" disabled selected>-- Select Vehicle --</option>
+                        <option th:each="v : ${vehicles}" th:value="${v.id}" th:text="${v.year + ' ' + v.make + ' ' + v.model + ' [' + v.licensePlate + ']'}"></option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Billing Type</label>
+                        <select th:field="*{itemType}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
+                            <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Qty / Hours</label>
+                        <input type="number" step="0.1" th:field="*{quantity}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Description / Job Action</label>
+                    <input type="text" th:field="*{description}" required placeholder="e.g. Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Cost Price (Wholesale)</label>
+                        <input type="number" step="0.01" th:field="*{costPrice}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Retail Price (Billed)</label>
+                        <input type="number" step="0.01" th:field="*{retailPrice}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
+                    Add Item to Invoice
+                </button>
             </form>
         </div>
 
-        <!-- Active Fleet Grid Display -->
+        <!-- Live Workshop Billing Matrix Table -->
         <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Active Workshop Vehicle Fleet</h2>
-            <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">
-                <p class="text-3xl mb-2">🚗</p>
-                <p class="text-sm font-medium">No vehicles tracked on the shop floor yet.</p>
+            <h2 class="text-lg font-bold mb-4">Live Workshop Billing Matrix</h2>
+            <div th:if="${#lists.isEmpty(lineItems)}" class="text-center py-12 text-gray-400">
+                No parts or labor entries billed to the floor yet.
             </div>
-            <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
+            <div th:if="${!#lists.isEmpty(lineItems)}" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                    <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
                     <tr>
-                        <th class="px-4 py-3">Vehicle Details</th>
-                        <th class="px-4 py-3">Specs & Powertrain</th>
-                        <th class="px-4 py-3">License & VIN</th>
-                        <th class="px-4 py-3">Registered Owner</th>
+                        <th class="px-4 py-3">Type</th>
+                        <th class="px-4 py-3">Description</th>
+                        <th class="px-4 py-3">Qty/Hrs × Price</th>
+                        <th class="px-4 py-3">Total Due</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
-                    <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 font-semibold text-gray-900">
-                            <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
-                            <div class="text-xs text-indigo-600 font-medium" th:if="${vh.subModel}" th:text="${vh.subModel}">Trim</div>
-                        </td>
-                        <td class="px-4 py-3 text-xs text-gray-600">
-                            <div th:text="${vh.engineSize}">Engine</div>
-                            <div class="text-gray-400 font-mono" th:text="${vh.drivetrain}">Drivetrain</div>
-                        </td>
+                    <tr th:each="item : ${lineItems}" class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-xs">
-                            <div class="font-bold text-gray-800" th:text="${vh.licensePlate}">PLATE</div>
-                            <div class="text-gray-400 uppercase font-mono tracking-tighter" th:text="${vh.vin}">VIN</div>
+                                    <span th:text="${item.itemType}"
+                                          th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold' : 'bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold'}">
+                                    </span>
                         </td>
-                        <td class="px-4 py-3 text-indigo-600 font-semibold"
-                            th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900">
+                            <span th:text="${item.description}">Item</span>
+                            <div class="text-xs text-gray-400" th:text="${item.vehicle.year + ' ' + item.vehicle.make + ' [' + item.vehicle.licensePlate + ']'}">Vehicle</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs" th:text="${item.quantity + ' × $' + item.retailPrice}">1 × $0.00</td>
+                        <td class="px-4 py-3 text-emerald-600 font-bold font-mono" th:text="${'$' + item.getLineTotal()}">$0.00</td>
                     </tr>
                     </tbody>
                 </table>
@@ -204,30 +191,23 @@
     </div>
 </main>
 
+<!-- Interactive Navigation Engine script -->
 <script>
     function switchTab(tabId) {
-        const customerSection = document.getElementById('section-customers');
-        const vehicleSection = document.getElementById('section-vehicles');
-        const customerBtn = document.getElementById('tab-btn-customers');
-        const vehicleBtn = document.getElementById('tab-btn-vehicles');
+        const sections = ['customers', 'vehicles', 'orders'];
+        sections.forEach(s => document.getElementById('section-' + s).classList.add('hidden'));
+        document.getElementById('section-' + tabId).classList.remove('hidden');
 
-        if (tabId === 'customers') {
-            customerSection.classList.remove('hidden');
-            vehicleSection.classList.add('hidden');
-            customerBtn.className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-indigo-600 text-indigo-600";
-            vehicleBtn.className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700";
-        } else {
-            customerSection.classList.add('hidden');
-            vehicleSection.classList.remove('hidden');
-            vehicleBtn.className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-emerald-600 text-emerald-600";
-            customerBtn.className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700";
-        }
+        const btns = ['customers', 'vehicles', 'orders'];
+        btns.forEach(b => document.getElementById('tab-btn-' + b).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700");
+
+        const activeColor = tabId === 'vehicles' ? 'border-emerald-600 text-emerald-600' : (tabId === 'orders' ? 'border-indigo-600 text-indigo-600' : 'border-indigo-600 text-indigo-600');
+        document.getElementById('tab-btn-' + tabId).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 " + activeColor;
     }
-
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const activeTab = urlParams.get('tab');
-        if (activeTab === 'vehicles') { switchTab('vehicles'); }
+        if (activeTab) { switchTab(activeTab); }
     });
 </script>
 </body>

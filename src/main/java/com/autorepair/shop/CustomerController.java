@@ -10,14 +10,17 @@ public class CustomerController {
 
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
+    private final LineItemRepository lineItemRepository;
     private final VinDecoderService vinDecoderService;
 
-    // Spring Boot automatically injects our fresh lookup service right here
+    // Injecting the new LineItemRepository right into our core business controller router
     public CustomerController(CustomerRepository customerRepository,
                               VehicleRepository vehicleRepository,
+                              LineItemRepository lineItemRepository,
                               VinDecoderService vinDecoderService) {
         this.customerRepository = customerRepository;
         this.vehicleRepository = vehicleRepository;
+        this.lineItemRepository = lineItemRepository;
         this.vinDecoderService = vinDecoderService;
     }
 
@@ -25,8 +28,10 @@ public class CustomerController {
     public String viewDashboard(Model model) {
         model.addAttribute("customers", customerRepository.findAll());
         model.addAttribute("vehicles", vehicleRepository.findAll());
+        model.addAttribute("lineItems", lineItemRepository.findAll()); // Track all active workshop charges
         model.addAttribute("newCustomer", new Customer());
         model.addAttribute("newVehicle", new Vehicle());
+        model.addAttribute("newLineItem", new LineItem()); // Preps a blank billing row for the front-end view
         return "index";
     }
 
@@ -40,10 +45,8 @@ public class CustomerController {
 
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") Vehicle vehicle, @RequestParam("customerId") Long customerId) {
-        // If a 17-character VIN is passed, enrich our model attributes automatically via government databases
         if (vehicle.getVin() != null && vehicle.getVin().trim().length() == 17) {
             Vehicle apiData = vinDecoderService.decodeVin(vehicle.getVin().trim());
-
             if (apiData.getMake() != null) {
                 vehicle.setYear(apiData.getYear());
                 vehicle.setMake(apiData.getMake());
@@ -54,9 +57,21 @@ public class CustomerController {
                 vehicle.setEngineCode(apiData.getEngineCode());
             }
         }
-
         customerRepository.findById(customerId).ifPresent(vehicle::setCustomer);
         vehicleRepository.save(vehicle);
         return "redirect:/?tab=vehicles";
+    }
+
+    // --- NEW ENDPOINT: Processes incoming Parts and Labor Billing Actions ---
+    @PostMapping("/line-items/add")
+    public String addLineItem(@ModelAttribute("newLineItem") LineItem lineItem, @RequestParam("vehicleId") Long vehicleId) {
+        // Fetch the corresponding vehicle profile and bind the line item relationally
+        vehicleRepository.findById(vehicleId).ifPresent(lineItem::setVehicle);
+
+        // Save the part line item or labor hour charge row into your database storage
+        lineItemRepository.save(lineItem);
+
+        // Redirect right back to our new Work Orders tab panel screen state
+        return "redirect:/?tab=orders";
     }
 }
