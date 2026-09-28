@@ -43,6 +43,26 @@
         </div>
         <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <h2 class="text-lg font-bold mb-4">Active Shop Client Index</h2>
+            <!-- DYNAMIC CLIENT LOOKUP SEARCH ENGINE BAR -->
+            <div class="mb-4">
+                <form th:action="@{/}" method="GET" class="flex gap-2">
+                    <!-- Keep the active tab active during search execution queries -->
+                    <input type="hidden" name="tab" value="customers">
+
+                    <div class="relative flex-1">
+                        <input type="text" name="search" th:value="${currentSearch}"
+                               placeholder="Search by Account Number (e.g. CUST-XXXX) or Phone Number..."
+                               class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- Quick Clear Reset Button: Appears only when an active search query is happening -->
+                        <a th:if="${currentSearch != null}" th:href="@{/(tab='customers')}"
+                           class="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150">
+                        Search
+                    </button>
+                </form>
+            </div>
+
             <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">No customers registered yet.</div>
             <div th:if="${!#lists.isEmpty(customers)}" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
