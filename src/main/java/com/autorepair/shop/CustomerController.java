@@ -5,6 +5,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+
 
 @Controller
 public class CustomerController {
@@ -66,8 +69,35 @@ public class CustomerController {
     }
 
     @PostMapping("/customers/register")
-    public String registerCustomer(@ModelAttribute("newCustomer") Customer customer) {
-        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    public String registerCustomer(@Valid @ModelAttribute("newCustomer") Customer customer, BindingResult result, Model model) {
+        // Intercept validation failures (like missing names or malformed emails)
+        if (result.hasErrors()) {
+            // Re-populate dashboard tracking lists so the page renders normally
+            model.addAttribute("customers", customerRepository.findAll());
+            model.addAttribute("vehicles", vehicleRepository.findAll());
+            model.addAttribute("lineItems", lineItemRepository.findAll());
+
+            // Re-populate math calculators
+            java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal totalCost = java.math.BigDecimal.ZERO;
+            for (LineItem item : lineItemRepository.findAll()) {
+                java.math.BigDecimal qty = java.math.BigDecimal.valueOf(item.getQuantity());
+                totalRevenue = totalRevenue.add(item.getRetailPrice().multiply(qty));
+                if (item.getCostPrice() != null) totalCost = totalCost.add(item.getCostPrice().multiply(qty));
+            }
+            model.addAttribute("totalRevenue", totalRevenue);
+            model.addAttribute("totalCost", totalCost);
+            model.addAttribute("totalProfit", totalRevenue.subtract(totalCost));
+
+            model.addAttribute("newVehicle", new Vehicle());
+            model.addAttribute("newLineItem", new LineItem());
+
+            // Return back to the console without saving, bringing the validation errors along
+            return "index";
+        }
+
+        // Standard save pipeline paths execute only if constraints pass perfectly
+        String uniqueSuffix = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         customer.setCustomerNumber("CUST-" + uniqueSuffix);
         customerRepository.save(customer);
         return "redirect:/?tab=customers";
