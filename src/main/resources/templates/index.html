@@ -109,50 +109,84 @@
     <!-- ========================================================= -->
     <!-- TAB SECTION 3: WORK ORDERS CONSOLE -->
     <!-- ========================================================= -->
-    <div id="section-orders" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
-        <!-- Parts and Labor Input Form Panel -->
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Add Parts or Labor Row</h2>
-            <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-4">
+    <!-- ========================================================= -->
+    <!-- TAB SECTION 3: WORK ORDERS CONSOLE -->
+    <!-- ========================================================= -->
+    <div id="section-orders" class="space-y-8 hidden">
+
+        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Gross Sales Revenue -->
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Target Vehicle Work Order *</label>
-                    <select name="vehicleId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="" disabled selected>-- Select Vehicle --</option>
-                        <option th:each="v : ${vehicles}" th:value="${v.id}" th:text="${v.year + ' ' + v.make + ' ' + v.model + ' [' + v.licensePlate + ']'}"></option>
-                    </select>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Gross Invoice Revenue</p>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+            </div>
+            <!-- Card 2: Wholesale Cost Outlays -->
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-amber-100 rounded-full text-amber-600 text-xl">📦</div>
+                <div>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Wholesale Parts Cost</p>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalCost, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                </div>
+            </div>
+            <!-- Card 3: Net Workshop Net Margin Profit -->
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-emerald-100 rounded-full text-emerald-600 text-xl">📈</div>
+                <div>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Net Shop Profit</p>
+                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(totalProfit, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- TWO COLUMN ACCOUNTING SPLIT WORKSPACE GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Parts and Labor Input Form Panel -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Add Parts or Labor Row</h2>
+                <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Billing Type</label>
-                        <select th:field="*{itemType}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
-                            <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Target Vehicle Work Order *</label>
+                        <select name="vehicleId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="" disabled selected>-- Select Vehicle --</option>
+                            <option th:each="v : ${vehicles}" th:value="${v.id}" th:text="${v.year + ' ' + v.make + ' ' + v.model + ' [' + v.licensePlate + ']'}"></option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Qty / Hours</label>
-                        <input type="number" step="0.1" th:field="*{quantity}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Billing Type</label>
+                            <select th:field="*{itemType}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
+                                <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Qty / Hours</label>
+                            <input type="number" step="0.1" th:field="*{quantity}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Description / Job Action</label>
-                    <input type="text" th:field="*{description}" required placeholder="e.g. Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Cost Price (Wholesale)</label>
-                        <input type="number" step="0.01" th:field="*{costPrice}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Description / Job Action</label>
+                        <input type="text" th:field="*{description}" required placeholder="e.g. Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Retail Price (Billed)</label>
-                        <input type="number" step="0.01" th:field="*{retailPrice}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Cost Price (Wholesale)</label>
+                            <input type="number" step="0.01" th:field="*{costPrice}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Retail Price (Billed)</label>
+                            <input type="number" step="0.01" th:field="*{retailPrice}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
-                    Add Item to Invoice
-                </button>
-            </form>
-        </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
+                        Add Item to Invoice
+                    </button>
+                </form>
+            </div>
 
         <!-- Live Workshop Billing Matrix Table -->
         <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">

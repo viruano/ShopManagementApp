@@ -26,14 +26,46 @@ public class CustomerController {
 
     @GetMapping("/")
     public String viewDashboard(Model model) {
-        model.addAttribute("customers", customerRepository.findAll());
-        model.addAttribute("vehicles", vehicleRepository.findAll());
-        model.addAttribute("lineItems", lineItemRepository.findAll()); // Track all active workshop charges
+        java.util.List<Customer> customers = customerRepository.findAll();
+        java.util.List<Vehicle> vehicles = vehicleRepository.findAll();
+        java.util.List<LineItem> lineItems = lineItemRepository.findAll();
+
+        // Initialize our exact decimal billing trackers
+        java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalCost = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalProfit = java.math.BigDecimal.ZERO;
+
+        // Loop through active work order line items to compute real-time shop performance
+        for (LineItem item : lineItems) {
+            java.math.BigDecimal qty = java.math.BigDecimal.valueOf(item.getQuantity());
+
+            // Add up retail revenue charged to the consumer
+            totalRevenue = totalRevenue.add(item.getRetailPrice().multiply(qty));
+
+            // Add up wholesale parts cost if it was recorded
+            if (item.getCostPrice() != null) {
+                totalCost = totalCost.add(item.getCostPrice().multiply(qty));
+            }
+        }
+
+        // Calculate net shop profit
+        totalProfit = totalRevenue.subtract(totalCost);
+
+        // Pass all data attributes down to our index.html view layout
+        model.addAttribute("customers", customers);
+        model.addAttribute("vehicles", vehicles);
+        model.addAttribute("lineItems", lineItems);
+        model.addAttribute("totalRevenue", totalRevenue);
+        model.addAttribute("totalCost", totalCost);
+        model.addAttribute("totalProfit", totalProfit);
+
         model.addAttribute("newCustomer", new Customer());
         model.addAttribute("newVehicle", new Vehicle());
-        model.addAttribute("newLineItem", new LineItem()); // Preps a blank billing row for the front-end view
+        model.addAttribute("newLineItem", new LineItem());
+
         return "index";
     }
+
 
     @PostMapping("/customers/register")
     public String registerCustomer(@ModelAttribute("newCustomer") Customer customer) {
