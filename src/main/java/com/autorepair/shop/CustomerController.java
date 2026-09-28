@@ -28,22 +28,32 @@ public class CustomerController {
     }
 
     @GetMapping("/")
-    public String viewDashboard(@RequestParam(value = "search", required = false) String search, Model model) {
-        List<Customer> customers;
+    public String viewDashboard(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "vehicleSearch", required = false) String vehicleSearch,
+            Model model) {
 
-        // INTERCEPT ROUTE: If an active search term is typed, query our new matching repository rules
+        // --- 1. Handle Customer Index Search Filters ---
+        List<Customer> customers;
         if (search != null && !search.trim().isEmpty()) {
             customers = customerRepository.findByCustomerNumberContainingIgnoreCaseOrPhoneContaining(search.trim(), search.trim());
-            model.addAttribute("currentSearch", search.trim()); // Sends back the string to keep it inside the text box layout
+            model.addAttribute("currentSearch", search.trim());
         } else {
-            // Default Fallback: If no search string is present, pull up the whole client index list normally
             customers = customerRepository.findAll();
         }
 
-        List<Vehicle> vehicles = vehicleRepository.findAll();
+        // --- 2. NEW: Handle Vehicle Index Fleet Search Filters ---
+        List<Vehicle> vehicles;
+        if (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) {
+            vehicles = vehicleRepository.findByLicensePlateContainingIgnoreCaseOrVinContainingIgnoreCase(vehicleSearch.trim(), vehicleSearch.trim());
+            model.addAttribute("currentVehicleSearch", vehicleSearch.trim()); // Holds the text value inside the input box layout
+        } else {
+            vehicles = vehicleRepository.findAll();
+        }
+
         List<LineItem> lineItems = lineItemRepository.findAll();
 
-        // Financial Calculation Logic Summary Loop
+        // --- 3. Financial Calculation Performance Loop ---
         java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
         java.math.BigDecimal totalCost = java.math.BigDecimal.ZERO;
         for (LineItem item : lineItems) {

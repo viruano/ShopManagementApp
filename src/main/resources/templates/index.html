@@ -124,6 +124,25 @@
         </div>
         <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <h2 class="text-lg font-bold mb-4">Active Workshop Vehicle Fleet</h2>
+            <!-- DYNAMIC VEHICLE FLEET LOOKUP SEARCH ENGINE BAR -->
+            <div class="mb-4">
+                <form th:action="@{/}" method="GET" class="flex gap-2">
+                    <!-- Keep the active tab active during search execution queries -->
+                    <input type="hidden" name="tab" value="vehicles">
+
+                    <div class="relative flex-1">
+                        <input type="text" name="vehicleSearch" th:value="${currentVehicleSearch}"
+                               placeholder="Search by License Plate or VIN Number..."
+                               class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <!-- Quick Clear Reset Button: Appears only when an active search query is happening -->
+                        <a th:if="${currentVehicleSearch != null}" th:href="@{/(tab='vehicles')}"
+                           class="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+                    </div>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150">
+                        Search
+                    </button>
+                </form>
+            </div>
             <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No vehicles tracked yet.</div>
             <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm text-left">

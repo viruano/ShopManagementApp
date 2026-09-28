@@ -6,6 +6,7 @@ import java.util.List;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    // Allows us to instantly fetch all vehicles belonging to a specific customer account later
-    List<Vehicle> findByCustomerId(Long customerId);
+
+    // Dynamic Lookup Engine: Scans license plates or VIN chassis codes ignoring case matching parameters
+    List<Vehicle> findByLicensePlateContainingIgnoreCaseOrVinContainingIgnoreCase(String licensePlate, String vin);
 }
