@@ -5,9 +5,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 import java.util.List;
-import jakarta.validation.Valid;
-import org.springframework.validation.BindingResult;
-
 
 @Controller
 public class CustomerController {
@@ -15,15 +12,19 @@ public class CustomerController {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final LineItemRepository lineItemRepository;
+    private final LaborGuideRepository laborGuideRepository; // Added for labor lookups
     private final VinDecoderService vinDecoderService;
 
+    // Injecting the new LaborGuideRepository into our central controller
     public CustomerController(CustomerRepository customerRepository,
                               VehicleRepository vehicleRepository,
                               LineItemRepository lineItemRepository,
+                              LaborGuideRepository laborGuideRepository,
                               VinDecoderService vinDecoderService) {
         this.customerRepository = customerRepository;
         this.vehicleRepository = vehicleRepository;
         this.lineItemRepository = lineItemRepository;
+        this.laborGuideRepository = laborGuideRepository;
         this.vinDecoderService = vinDecoderService;
     }
 
@@ -33,7 +34,6 @@ public class CustomerController {
             @RequestParam(value = "vehicleSearch", required = false) String vehicleSearch,
             Model model) {
 
-        // --- 1. Handle Customer Index Search Filters ---
         List<Customer> customers;
         if (search != null && !search.trim().isEmpty()) {
             customers = customerRepository.findByCustomerNumberContainingIgnoreCaseOrPhoneContaining(search.trim(), search.trim());
@@ -42,18 +42,18 @@ public class CustomerController {
             customers = customerRepository.findAll();
         }
 
-        // --- 2. NEW: Handle Vehicle Index Fleet Search Filters ---
         List<Vehicle> vehicles;
         if (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) {
             vehicles = vehicleRepository.findByLicensePlateContainingIgnoreCaseOrVinContainingIgnoreCase(vehicleSearch.trim(), vehicleSearch.trim());
-            model.addAttribute("currentVehicleSearch", vehicleSearch.trim()); // Holds the text value inside the input box layout
+            model.addAttribute("currentVehicleSearch", vehicleSearch.trim());
         } else {
             vehicles = vehicleRepository.findAll();
         }
 
         List<LineItem> lineItems = lineItemRepository.findAll();
+        List<LaborGuide> laborCatalog = laborGuideRepository.findAll(); // Retrieve standard book times
 
-        // --- 3. Financial Calculation Performance Loop ---
+        // Financial Calculation Performance Loop
         java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
         java.math.BigDecimal totalCost = java.math.BigDecimal.ZERO;
         for (LineItem item : lineItems) {
@@ -67,6 +67,7 @@ public class CustomerController {
         model.addAttribute("customers", customers);
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("lineItems", lineItems);
+        model.addAttribute("laborCatalog", laborCatalog); // Send guide array to thymeleaf
         model.addAttribute("totalRevenue", totalRevenue);
         model.addAttribute("totalCost", totalCost);
         model.addAttribute("totalProfit", totalRevenue.subtract(totalCost));
@@ -79,35 +80,8 @@ public class CustomerController {
     }
 
     @PostMapping("/customers/register")
-    public String registerCustomer(@Valid @ModelAttribute("newCustomer") Customer customer, BindingResult result, Model model) {
-        // Intercept validation failures (like missing names or malformed emails)
-        if (result.hasErrors()) {
-            // Re-populate dashboard tracking lists so the page renders normally
-            model.addAttribute("customers", customerRepository.findAll());
-            model.addAttribute("vehicles", vehicleRepository.findAll());
-            model.addAttribute("lineItems", lineItemRepository.findAll());
-
-            // Re-populate math calculators
-            java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
-            java.math.BigDecimal totalCost = java.math.BigDecimal.ZERO;
-            for (LineItem item : lineItemRepository.findAll()) {
-                java.math.BigDecimal qty = java.math.BigDecimal.valueOf(item.getQuantity());
-                totalRevenue = totalRevenue.add(item.getRetailPrice().multiply(qty));
-                if (item.getCostPrice() != null) totalCost = totalCost.add(item.getCostPrice().multiply(qty));
-            }
-            model.addAttribute("totalRevenue", totalRevenue);
-            model.addAttribute("totalCost", totalCost);
-            model.addAttribute("totalProfit", totalRevenue.subtract(totalCost));
-
-            model.addAttribute("newVehicle", new Vehicle());
-            model.addAttribute("newLineItem", new LineItem());
-
-            // Return back to the console without saving, bringing the validation errors along
-            return "index";
-        }
-
-        // Standard save pipeline paths execute only if constraints pass perfectly
-        String uniqueSuffix = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    public String registerCustomer(@ModelAttribute("newCustomer") Customer customer) {
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         customer.setCustomerNumber("CUST-" + uniqueSuffix);
         customerRepository.save(customer);
         return "redirect:/?tab=customers";
