@@ -7,6 +7,6 @@ import java.util.List;
 @Repository
 public interface LineItemRepository extends JpaRepository<LineItem, Long> {
 
-    // Custom database search query to find all parts/labor items billed to a specific vehicle chassis
-    List<LineItem> findByVehicleId(Long vehicleId);
+    // 🔍 THE RE-ALIGNED WORK ORDER QUERY HOOK:
+    List<LineItem> findByWorkOrderId(Long workOrderId);
 }

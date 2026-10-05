@@ -7,10 +7,7 @@ import java.util.List;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    List<Customer> findByCustomerNumberContainingIgnoreCase(String customerNumber);
-
-    List<Customer> findByPhoneContaining(String phone);
-
-    // FIX: Make sure every letter matches this exact name perfectly!
-    List<Customer> findByCustomerNumberContainingIgnoreCaseOrPhoneContaining(String customerNumber, String phone);
+    // ⚡ THE MASTER SHOP SEARCH: Scans across Account IDs, Phone Numbers, First Names, OR Last Names automatically!
+    List<Customer> findByCustomerNumberContainingIgnoreCaseOrPhoneContainingOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+            String customerNumber, String phone, String firstName, String lastName);
 }

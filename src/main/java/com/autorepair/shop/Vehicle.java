@@ -31,10 +31,13 @@ public class Vehicle {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    // Relational Link: One vehicle maps to a cascade-managed collection of line items
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LineItem> lineItems = new ArrayList<>();
+    // 📊 ODOMETER ENGINE TRACKING METRICS
+    private Integer odometerIn;
+    private Integer odometerOut;
 
+    //  THE CORRECTED OPERATIONAL REPAIR ORDERS HISTORY LINK:
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkOrder> workOrders = new ArrayList<>();
     // Default Constructor
     public Vehicle() {}
 
@@ -74,6 +77,13 @@ public class Vehicle {
     public Customer getCustomer() { return customer; }
     public void setCustomer(Customer customer) { this.customer = customer; }
 
-    public List<LineItem> getLineItems() { return lineItems; }
-    public void setLineItems(List<LineItem> lineItems) { this.lineItems = lineItems; }
+    public Integer getOdometerIn() { return odometerIn; }
+    public void setOdometerIn(Integer odometerIn) { this.odometerIn = odometerIn; }
+
+    public Integer getOdometerOut() { return odometerOut; }
+    public void setOdometerOut(Integer odometerOut) { this.odometerOut = odometerOut; }
+
+    // Add the standard Getters and Setters for this new collection
+    public List<WorkOrder> getWorkOrders() { return workOrders; }
+    public void setWorkOrders(List<WorkOrder> workOrders) { this.workOrders = workOrders; }
 }

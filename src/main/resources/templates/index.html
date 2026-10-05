@@ -3,173 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Shop Workstation</title>
+    <title>Automotive Services Management System</title>
+    <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
-<nav class="bg-indigo-600 text-white shadow-md"><div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between"><span class="text-xl font-bold tracking-wider">⚙️ AutoManage Engine</span><form th:action="@{/logout}" method="POST"><button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1 rounded">Sign Out</button></form></div></nav>
+<!-- MASTER NAVIGATION BAR -->
+<nav class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <!-- SYSTEM BRAND CONTAINER -->
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-700 text-white p-2 rounded-lg font-black tracking-tighter text-lg shadow">⚙️</div>
+            <div>
+                <h1 class="text-base font-black tracking-tight leading-none">Automotive Services Management System</h1>
+                <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mt-0.5">Workshop Control Console</p>
+            </div>
+        </div>
+        <form th:action="@{/logout}" method="POST">
+            <button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded font-bold transition duration-150">Sign Out</button>
+        </form>
+    </div>
+</nav>
+
+<!-- MAIN OPERATIONAL WORKSPACE -->
 <main class="max-w-7xl mx-auto px-4 py-10">
-    <div class="mb-6"><h1 class="text-3xl font-extrabold text-gray-900">Shop Management Console</h1></div>
+    <div class="mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900">Shop Management Console</h1>
+    </div>
 
     <!-- THREE-WAY NAVIGATION TAB MENU -->
     <div class="flex border-b border-gray-200 mb-8 space-x-4">
-        <button onclick="switchTab('customers')" id="tab-btn-customers" class="py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600">👥 Customers</button>
-        <button onclick="switchTab('vehicles')" id="tab-btn-vehicles" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700">🚗 Vehicles</button>
-        <button onclick="switchTab('orders')" id="tab-btn-orders" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700">📋 Work Orders</button>
+        <button onclick="switchTab('customers')" id="tab-btn-customers" class="py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600 transition-all duration-150">👥 Customers</button>
+        <button onclick="switchTab('vehicles')" id="tab-btn-vehicles" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150">🚗 Vehicles</button>
+        <button onclick="switchTab('orders')" id="tab-btn-orders" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150">📋 Work Orders</button>
     </div>
 
-    <!-- TAB 1: CUSTOMERS -->
-    <div id="section-customers" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Customer Input Form Panel with Real-Time Validation Feedback Alerts -->
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-            <h2 class="text-lg font-bold mb-4">Register Customer</h2>
-            <form th:action="@{/customers/register}" th:object="${newCustomer}" method="POST" class="space-y-4">
-                <form th:action="@{/customers/register}" th:object="${newCustomer}" method="POST" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">First Name *</label>
-                        <input type="text" th:field="*{firstName}" class="w-full px-3 py-2 border rounded-md text-sm">
-                        <p th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="text-red-500 text-xs mt-1 font-semibold"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Last Name *</label>
-                        <input type="text" th:field="*{lastName}" class="w-full px-3 py-2 border rounded-md text-sm">
-                        <p th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="text-red-500 text-xs mt-1 font-semibold"></p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Phone *</label>
-                        <input type="text" th:field="*{phone}" placeholder="(444) 333-2211" class="w-full px-3 py-2 border rounded-md text-sm">
-                        <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-red-500 text-xs mt-1 font-semibold"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                        <input type="text" th:field="*{email}" placeholder="john@example.com" class="w-full px-3 py-2 border rounded-md text-sm">
-                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-500 text-xs mt-1 font-semibold"></p>
-                    </div>
-                </div>
-                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Street Address</label><input type="text" th:field="*{street}" placeholder="123 Main St" class="w-full px-3 py-2 border rounded-md text-sm"></div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div><input type="text" th:field="*{city}" placeholder="City" class="w-full px-3 py-2 border rounded-md text-sm"></div>
-                    <div><input type="text" th:field="*{state}" placeholder="ST" class="w-full px-3 py-2 border rounded-md text-sm"></div>
-                    <div><input type="text" th:field="*{zip}" placeholder="Zip" class="w-full px-3 py-2 border rounded-md text-sm"></div>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md shadow text-sm">Save Customer Profile</button>
-            </form>
-        </div>
-        <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <h2 class="text-lg font-bold mb-4">Active Shop Client Index</h2>
-            <!-- DYNAMIC CLIENT LOOKUP SEARCH ENGINE BAR -->
-            <div class="mb-4">
-                <form th:action="@{/}" method="GET" class="flex gap-2">
-                    <!-- Keep the active tab active during search execution queries -->
-                    <input type="hidden" name="tab" value="customers">
+    <!-- ========================================================= -->
+    <!-- TAB 1: CUSTOMERS PANEL (ASMS OPERATIONAL CORE)            -->
+    <!-- ========================================================= -->
+    <div id="section-customers" class="space-y-6">
 
-                    <div class="relative flex-1">
-                        <input type="text" name="search" th:value="${currentSearch}"
-                               placeholder="Search by Account Number (e.g. CUST-XXXX) or Phone Number..."
-                               class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <!-- Quick Clear Reset Button: Appears only when an active search query is happening -->
-                        <a th:if="${currentSearch != null}" th:href="@{/(tab='customers')}"
-                           class="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+        <!-- TOP CONTROL BAR: SEARCH AND REGISTRATION TOGGLE PANEL -->
+        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+
+            <!-- DYNAMIC UNIFIED COUNTER SEARCH ENGINE BAR -->
+            <form th:action="@{/}" method="GET" class="flex gap-2 w-full sm:w-auto flex-1 max-w-xl">
+                <input type="hidden" name="tab" value="customers">
+                <div class="relative flex-1">
+                    <input type="text" name="search" th:value="${currentSearch}"
+                           placeholder="Search by Account, Phone, First or Last Name..."
+                           class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800">
+                    <a th:if="${currentSearch != null}" th:href="@{/(tab='customers')}"
+                       class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+                </div>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150 whitespace-nowrap">
+                    🔍 Search Index
+                </button>
+            </form>
+
+            <!-- ➕ THE ACTION BUTTON TRIGGER LINK LINE -->
+            <button onclick="toggleRegistrationForm()" class="w-full sm:w-auto inline-flex items-center justify-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-black border border-indigo-200 rounded-md px-4 py-2 text-sm transition duration-150 shadow-sm">
+                ➕ New Customer
+            </button>
+        </div>
+
+        <!-- TWO COLUMN FLEX GRID: EXPANDS DYNAMICALLY ON TOGGLE -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+            <!-- Customer Registration Intake Form Panel - HIDDEN BY DEFAULT VIA CLASS -->
+            <div id="registrationFormPane" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit hidden transition-all duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-black text-slate-900">Register Customer</h2>
+                    <button onclick="toggleRegistrationForm()" class="text-slate-400 hover:text-slate-600 font-black text-sm">✕ Close</button>
+                </div>
+                <form id="customerRegistrationForm" th:action="@{/customers/register}" th:object="${newCustomer}" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">First Name</label>
+                            <input type="text" th:field="*{firstName}" placeholder="FirstName" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Last Name</label>
+                            <input type="text" th:field="*{lastName}" placeholder="LastName" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150">
-                        Search
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Phone Number</label>
+                        <input type="text" th:field="*{phone}" id="regPhone" class="phone-mask w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="(444) 333-2211">
+
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Email Address</label>
+                        <input type="text" th:field="*{email}" placeholder="client@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Street Address</label>
+                        <input type="text" th:field="*{street}" placeholder="123 Main St" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div><input type="text" th:field="*{city}" placeholder="City" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><input type="text" th:field="*{state}" placeholder="ST" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><input type="text" th:field="*{zip}" placeholder="Zip" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    </div>
+                    <button type="submit" form="customerRegistrationForm" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md shadow text-sm transition duration-150">
+                        💾 Save Customer Profile
                     </button>
                 </form>
             </div>
 
-            <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">No customers registered yet.</div>
-            <div th:if="${!#lists.isEmpty(customers)}" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-500 text-xs font-semibold"><tr><th class="px-4 py-3">Account Number</th><th class="px-4 py-3">Client Name</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Location</th></tr></thead>
-                    <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
-                    <tr th:each="customer : ${customers}" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
-                        <td class="px-4 py-3 font-semibold text-gray-900" th:text="${customer.firstName + ' ' + customer.lastName}"></td>
-                        <td class="px-4 py-3"><div th:text="${customer.phone}"></div><div class="text-xs text-gray-400" th:text="${customer.email}"></div></td>
-                        <td class="px-4 py-3 text-xs text-gray-500"><span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Active Shop Client Index Grid Layer -->
+            <div id="clientIndexGridTable" class="lg:col-span-3 bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
+                <h2 class="text-lg font-bold mb-4">Active Shop Client Index</h2>
+
+                <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">No matching workspace records found.</div>
+                <div th:if="${!#lists.isEmpty(customers)}" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+                        <tr>
+                            <th class="px-4 py-3">Account Number</th>
+                            <th class="px-4 py-3">Client Name</th>
+                            <th class="px-4 py-3">Contact Details</th>
+                            <th class="px-4 py-3">Location</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
+                        <tr th:each="customer : ${customers}" class="hover:bg-gray-50 align-middle">
+
+                            <!-- ========================================================= -->
+                            <!-- 📝 CONDITION A: THIS CLIENT PROFILE IS IN EDIT MODE       -->
+                            <!-- ========================================================= -->
+                            <th:block th:if="${editCustomerId != null && editCustomerId == customer.id}">
+                                <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
+                                <td class="px-4 py-3 text-sm" colspan="4">
+                                    <form th:id="'customerUpdateForm-' + ${customer.id}" th:action="@{/customers/update/{id}(id=${customer.id})}" method="POST" class="space-y-3 w-full bg-slate-50/50 p-2 rounded border border-indigo-100">
+
+
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="text-xs font-bold text-indigo-600 w-16 uppercase">Identity:</span>
+                                            <input type="text" name="firstName" th:value="${customer.firstName}" required placeholder="First Name" class="w-28 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
+                                            <input type="text" name="lastName" th:value="${customer.lastName}" placeholder="Last Name" class="w-28 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
+                                            <span class="text-gray-300">|</span>
+                                            <input type="text" name="phone" th:value="${customer.phone}" required placeholder="Phone" class="phone-mask w-32 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none">
+                                            <input type="text" name="email" th:value="${customer.email}" placeholder="Email Address" class="w-48 px-2 py-1 border border-indigo-300 rounded text-xs bg-white focus:outline-none">
+                                        </div>
+
+                                        <!-- Row 2: Location and Accounting Execution Controls -->
+                                        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-bold text-indigo-600 w-16 uppercase">Address:</span>
+                                                <input type="text" name="street" th:value="${customer.street}" placeholder="123 Main St" class="w-44 px-2 py-1 border border-indigo-200 rounded text-xs bg-white focus:outline-none">
+                                                <input type="text" name="city" th:value="${customer.city}" placeholder="City" class="w-24 px-2 py-1 border border-indigo-200 rounded text-xs bg-white focus:outline-none">
+                                                <input type="text" name="state" th:value="${customer.state}" placeholder="ST" class="w-12 px-2 py-1 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none">
+                                                <input type="text" name="zip" th:value="${customer.zip}" placeholder="Zip" class="w-16 px-2 py-1 border border-indigo-200 rounded text-xs bg-white font-mono focus:outline-none">
+                                            </div>
+
+                                            <!-- Action Triggers -->
+                                            <div class="flex items-center space-x-1.5 pl-4">
+                                                <button type="submit" th:form="'customerUpdateForm-' + ${customer.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save</button>
+                                                <a th:href="@{/(tab='customers')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                            </th:block>
+
+                            <!-- 📄 CONDITION B: STANDARD STATIC CLIENT CARD PROFILE VIEW -->
+                            <th:block th:if="${editCustomerId == null || editCustomerId != customer.id}">
+                                <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
+                                <td class="px-4 py-3 font-semibold text-gray-900" th:text="${customer.firstName + ' ' + customer.lastName}"></td>
+                                <td class="px-4 py-3">
+                                    <div th:text="${customer.phone}"></div>
+                                    <div class="text-xs text-gray-400 font-normal" th:text="${customer.email}"></div>
+                                </td>
+                                <td class="px-4 py-3 text-xs text-gray-500">
+                                    <span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <a th:href="@{/(tab='customers', editCustomerId=${customer.id})}"
+                                       class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
+                                        ✏️ Edit
+                                    </a>
+                                </td>
+                            </th:block>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </div> <!-- This closes your section-customers block perfectly -->
 
-    <!-- TAB 2: VEHICLES -->
-    <div id="section-vehicles" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-            <h2 class="text-lg font-bold mb-4">Add Vehicle</h2>
-            <form th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
-                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Assign Owner *</label><select name="customerId" required class="w-full px-3 py-2 border rounded-md text-sm bg-white"><option value="" disabled selected>-- Select Owner --</option><option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option></select></div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div><label class="block text-xs text-gray-500 mb-1">Year</label><input type="text" th:field="*{year}" placeholder="2018" class="w-full px-2 py-1 border rounded text-sm"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Make</label><input type="text" th:field="*{make}" placeholder="Ford" class="w-full px-2 py-1 border rounded text-sm"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Model</label><input type="text" th:field="*{model}" placeholder="F-150" class="w-full px-2 py-1 border rounded text-sm"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs text-gray-500 mb-1">Sub-Model</label><input type="text" th:field="*{subModel}" placeholder="XLT" class="w-full px-3 py-1.5 border rounded text-sm"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Engine Size</label><input type="text" th:field="*{engineSize}" placeholder="V6 3.5L" class="w-full px-3 py-1.5 border rounded text-sm"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs text-gray-500 mb-1">Engine Code</label><input type="text" th:field="*{engineCode}" placeholder="EcoBoost" class="w-full px-3 py-1.5 border rounded text-sm"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Drivetrain</label><input type="text" th:field="*{drivetrain}" placeholder="4WD" class="w-full px-3 py-1.5 border rounded text-sm"></div>
-                </div>
-                <div><label class="block text-xs text-gray-500 mb-1">License Plate</label><input type="text" th:field="*{licensePlate}" placeholder="7ABC12" class="w-full px-3 py-2 border rounded-md text-sm"></div>
-                <div><label class="block text-xs text-gray-500 mb-1">VIN Number (Auto Decodes)</label><input type="text" th:field="*{vin}" placeholder="1FA6P8CFXJ5XXXXXX" class="w-full px-3 py-2 border rounded-md text-sm uppercase"></div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-md shadow text-sm">Link Vehicle File</button>
-            </form>
-        </div>
-        <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <h2 class="text-lg font-bold mb-4">Active Workshop Vehicle Fleet</h2>
+    <!-- ========================================================= -->
+    <!-- TAB 2: VEHICLES PANEL (FLEET METRICS CONTROL)            -->
+    <!-- ========================================================= -->
+    <div id="section-vehicles" class="space-y-6 hidden">
+
+        <!-- TOP CONTROL BAR: FLEET LOOKUP AND INTAKE TOGGLE PANEL -->
+        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+
             <!-- DYNAMIC VEHICLE FLEET LOOKUP SEARCH ENGINE BAR -->
-            <div class="mb-4">
-                <form th:action="@{/}" method="GET" class="flex gap-2">
-                    <!-- Keep the active tab active during search execution queries -->
-                    <input type="hidden" name="tab" value="vehicles">
+            <form th:action="@{/}" method="GET" class="flex gap-2 w-full sm:w-auto flex-1 max-w-xl">
+                <input type="hidden" name="tab" value="vehicles">
+                <div class="relative flex-1">
+                    <input type="text" name="vehicleSearch" th:value="${currentVehicleSearch}"
+                           placeholder="Search workshop fleet by License Plate or VIN Number..."
+                           class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800">
+                    <a th:if="${currentVehicleSearch != null}" th:href="@{/(tab='vehicles')}"
+                       class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+                </div>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150 whitespace-nowrap">
+                    🔍 Search Fleet
+                </button>
+            </form>
 
-                    <div class="relative flex-1">
-                        <input type="text" name="vehicleSearch" th:value="${currentVehicleSearch}"
-                               placeholder="Search by License Plate or VIN Number..."
-                               class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <!-- Quick Clear Reset Button: Appears only when an active search query is happening -->
-                        <a th:if="${currentVehicleSearch != null}" th:href="@{/(tab='vehicles')}"
-                           class="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
+            <!-- ➕ NEW VEHICLE ACTION TRIGGER BUTTON -->
+            <button onclick="toggleVehicleRegistrationForm()" class="w-full sm:w-auto inline-flex items-center justify-center bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-black border border-emerald-200 rounded-md px-4 py-2 text-sm transition duration-150 shadow-sm">
+                🚗 New Vehicle
+            </button>
+        </div>
+
+        <!-- TWO COLUMN FLEX GRID: EXPANDS DYNAMICALLY ON INTAKE TOGGLE -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+            <!-- High-Speed Minimalist Intake Form Panel - HIDDEN BY DEFAULT -->
+            <div id="vehicleRegistrationFormPane" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit hidden transition-all duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-black text-slate-900">Intake New Vehicle</h2>
+                    <button onclick="toggleVehicleRegistrationForm()" class="text-slate-400 hover:text-slate-600 font-black text-sm">✕ Close</button>
+                </div>
+                <form id="vehicleIntakeForm" th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Assign Profile Owner *</label>
+                        <select name="customerId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 font-semibold">
+                            <option value="" disabled selected>-- Select Customer --</option>
+                            <option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option>
+                        </select>
                     </div>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150">
-                        Search
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">VIN Number (Auto-Decodes) *</label>
+                        <input type="text" th:field="*{vin}" required placeholder="e.g. 1FA6P8CFXJ5XXXXXX" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm uppercase font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <input type="hidden" name="year" value="">
+                    <input type="hidden" name="make" value="">
+                    <input type="hidden" name="model" value="">
+                    <input type="hidden" name="subModel" value="">
+                    <input type="hidden" name="engineSize" value="">
+                    <input type="hidden" name="drivetrain" value="">
+                    <input type="hidden" name="licensePlate" value="TEMP">
+
+                    <button type="submit" form="vehicleIntakeForm" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 rounded-md shadow text-sm tracking-tight transition duration-150">
+                        ⚡ Fetch Spec & Link Vehicle
                     </button>
                 </form>
             </div>
-            <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No vehicles tracked yet.</div>
 
-            <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+            <!-- Active Workshop Vehicle Fleet Index Grid Panel -->
+            <div id="vehicleFleetGridTable" class="lg:col-span-3 bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
+                <h2 class="text-lg font-bold mb-4">Active Workshop Vehicle Fleet</h2>
+
+                <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No matching fleet vehicles active.</div>
+                <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+                        <tr>
+                            <th class="px-4 py-3">Vehicle File</th>
+                            <th class="px-4 py-3">Powertrain</th>
+                            <th class="px-4 py-3">License & VIN</th>
+                            <th class="px-4 py-3">Owner</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
+                        <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50 align-middle">
+
+                            <!-- 📝 CONDITION A: THIS VEHICLE ROW IS IN EDIT MODE -->
+                            <th:block th:if="${editVehicleId != null && editVehicleId == vh.id}">
+                                <td class="px-4 py-3 text-sm font-bold text-slate-400" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}"></td>
+                                <td class="px-4 py-3 text-sm" colspan="4">
+                                    <form th:id="'vehicleUpdateForm-' + ${vh.id}" th:action="@{/vehicles/update/{id}(id=${vh.id})}" method="POST" class="space-y-2 w-full bg-slate-50 p-3 rounded border border-indigo-100 shadow-inner">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Chassis:</span>
+                                            <input type="text" name="year" th:value="${vh.year}" required class="w-16 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none">
+                                            <input type="text" name="make" th:value="${vh.make}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
+                                            <input type="text" name="model" th:value="${vh.model}" required class="w-28 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
+                                            <input type="text" name="subModel" th:value="${vh.subModel}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none">
+                                        </div>
+                                        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Powertrain:</span>
+                                                <input type="text" name="engineSize" th:value="${vh.engineSize}" placeholder="Engine" class="w-24 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white focus:outline-none">
+                                                <input type="text" name="drivetrain" th:value="${vh.drivetrain}" placeholder="Drivetrain" class="w-16 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none">
+                                                <span class="text-gray-300">|</span>
+                                                <input type="text" name="licensePlate" th:value="${vh.licensePlate}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono font-bold text-center uppercase focus:outline-none">
+                                                <input type="text" name="vin" th:value="${vh.vin}" required class="w-44 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono uppercase tracking-tighter focus:outline-none">
+                                            </div>
+                                            <div class="flex items-center space-x-1.5 pl-4">
+                                                <button type="submit" th:form="'vehicleUpdateForm-' + ${vh.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save</button>
+                                                <a th:href="@{/(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                            </th:block>
+
+                            <!-- ========================================================= -->
+                            <!-- 📄 CONDITION B: STANDARD STATIC FLEET VEHICLE VIEW LAYER -->
+                            <!-- ========================================================= -->
+                            <th:block th:if="${editVehicleId == null || editVehicleId != vh.id}">
+                                <td class="px-4 py-3 font-semibold text-gray-900">
+                                    <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
+                                    <div class="text-xs text-indigo-600 font-medium" th:if="${vh.subModel}" th:text="${vh.subModel}">Trim</div>
+                                </td>
+                                <td class="px-4 py-3 text-xs text-gray-600">
+                                    <div th:text="${vh.engineSize}">V6</div>
+                                    <div class="text-gray-400 font-mono" th:text="${vh.drivetrain}">4WD</div>
+                                </td>
+                                <td class="px-4 py-3 text-xs">
+                                    <div class="font-bold text-gray-800" th:text="${vh.licensePlate}">7ABC12</div>
+                                    <div class="text-gray-400 uppercase font-mono tracking-tighter" th:text="${vh.vin}">VIN</div>
+                                    <!-- Quick Glance Active Odometer Snap Trackers -->
+                                    <div class="text-[10px] text-slate-400 mt-0.5" th:if="${vh.odometerIn != null || vh.odometerOut != null}">
+                                        Odo: <span class="font-bold text-slate-600" th:text="${vh.odometerIn != null ? vh.odometerIn + ' In' : '0 In'}">0 In</span> /
+                                        <span class="font-bold text-slate-600" th:text="${vh.odometerOut != null ? vh.odometerOut + ' Out' : '0 Out'}">0 Out</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
+                                <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap space-x-1 flex items-center justify-end">
+                                    <!-- 📋 ACTION ENGINE: SPINS UP A NEW WORK ORDER TICKET FOR THIS VEHICLE INSTANTLY -->
+                                    <form th:action="@{/orders/create}" method="POST" class="inline">
+                                        <input type="hidden" name="vehicleId" th:value="${vh.id}">
+                                        <button type="submit" class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
+                                            📋 Create Order
+                                        </button>
+                                    </form>
+
+                                    <a th:href="@{/(tab='vehicles', editVehicleId=${vh.id})}"
+                                       class="inline-flex items-center text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1 border border-slate-200 rounded transition duration-150">
+                                        ✏️ Edit
+                                    </a>
+                                </td>
+                            </th:block>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> <!-- This closes section-vehicles panel perfectly -->
+
+    <!-- ========================================================= -->
+    <!-- TAB SECTION 3: WORK ORDERS CONSOLE                        -->
+    <!-- ========================================================= -->
+    <div id="section-orders" class="space-y-8 hidden">
+
+        <!-- INVOICE CONTROL CONTROL CENTER BAR: VIEW INTERCHANGES AND LOOKUPS -->
+        <div class="bg-indigo-900 p-4 rounded-lg border border-indigo-950 text-white flex flex-col md:flex-row justify-between items-center gap-4 shadow-md">
+            <div>
+                <h3 class="text-sm font-black tracking-wider text-indigo-200 uppercase">📋 Master Shop Invoice Ledger Control</h3>
+                <p class="text-xs text-indigo-100 font-medium">Isolate active jobs on the shop floor or search past history logs comfortably.</p>
+            </div>
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                <div class="inline-flex rounded-md shadow-sm">
+                    <a th:href="@{/orders/toggle-view(showAll=false)}"
+                       th:class="${!showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-700 transition'}">
+                        ⏳ Open Orders Only
+                    </a>
+                    <a th:href="@{/orders/toggle-view(showAll=true)}"
+                       th:class="${showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-700 transition'}">
+                        📁 View Full History
+                    </a>
+                </div>
+
+                <form th:action="@{/}" method="GET" class="flex items-center gap-2">
+                    <input type="hidden" name="tab" value="orders">
+                    <input type="text" name="search" th:value="${currentSearch}" placeholder="Search WO#, Plate, Name..." class="px-3 py-1.5 border border-indigo-700 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                    <button type="submit" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded border border-indigo-600">Search</button>
+                    <a th:if="${currentSearch != null}" th:href="@{/(tab='orders')}" class="text-indigo-200 hover:text-white text-xs font-black">✕</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
+                <div>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Sales Booked</p>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-amber-100 rounded-full text-amber-600 text-xl">📥</div>
+                <div>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Payments Collected</p>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(amountPaid, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                <div class="p-3 bg-emerald-100 rounded-full text-emerald-600 text-xl">📈</div>
+                <div>
+                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Receivables</p>
+                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- MASTER INVOICE INDEX CARD -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h2 class="text-lg font-black text-slate-900 mb-4">Master Repair Order Index</h2>
+            <div th:if="${#lists.isEmpty(workOrders)}" class="text-center py-12 text-gray-400 font-medium text-sm">No work orders currently listed on the ledger.</div>
+
+            <div th:if="${!#lists.isEmpty(workOrders)}" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm text-left mb-2">
+                    <thead class="bg-gray-50 text-gray-500 text-xs font-black uppercase tracking-wider">
                     <tr>
-                        <th class="px-4 py-3">Vehicle File</th>
-                        <th class="px-4 py-3">Powertrain</th>
-                        <th class="px-4 py-3">License & VIN</th>
-                        <th class="px-4 py-3">Owner</th>
+                        <th class="px-4 py-3">Work Order #</th>
+                        <th class="px-4 py-3">Vehicle Details</th>
+                        <th class="px-4 py-3">Odometer Log</th>
+                        <th class="px-4 py-3">Order Status</th>
+                        <th class="px-4 py-3">Payment State</th>
                         <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
-                    <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 font-semibold text-gray-900">
-                            <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
-                            <div class="text-xs text-indigo-600 font-medium" th:if="${vh.subModel}" th:text="${vh.subModel}">Trim</div>
+                    <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
+                    <tr th:each="order : ${workOrders}" th:class="${focusedWorkOrderId != null && focusedWorkOrderId == order.id ? 'bg-indigo-50/50' : 'hover:bg-gray-50'}">
+                        <td class="px-4 py-3 font-black text-indigo-600 text-sm" th:text="${order.invoiceNumber}"></td>
+                        <td class="px-4 py-3">
+                            <div class="font-bold text-slate-900" th:text="${order.vehicle.year + ' ' + order.vehicle.make + ' ' + order.vehicle.model}"></div>
+                            <div class="text-xs text-slate-400 font-mono" th:text="${'Plate: ' + order.vehicle.licensePlate + ' | Owner: ' + order.vehicle.customer.firstName + ' ' + order.vehicle.customer.lastName}"></div>
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-600"><div th:text="${vh.engineSize}">V6</div><div class="text-gray-400 font-mono" th:text="${vh.drivetrain}">4WD</div></td>
-                        <td class="px-4 py-3 text-xs"><div class="font-bold text-gray-800" th:text="${vh.licensePlate}">7ABC12</div><div class="text-gray-400 uppercase font-mono tracking-tighter" th:text="${vh.vin}">VIN</div></td>
-                        <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
-                        <!-- PRINT ENGINE ACTION LINK: Streams generated open-pdf file byte binaries -->
+                        <td class="px-4 py-3 text-xs font-mono text-slate-600">
+                            <div>In: <span class="font-bold text-slate-800" th:text="${order.odometerIn != null ? order.odometerIn + ' mi' : '0 mi'}"></span></div>
+                            <div>Out: <span class="font-bold text-slate-800" th:text="${order.odometerOut != null ? order.odometerOut + ' mi' : '0 mi'}"></span></div>
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            <span th:text="${order.status}" th:class="${order.status == T(com.autorepair.shop.WorkOrderStatus).OPENED ? 'bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold' : (order.status == T(com.autorepair.shop.WorkOrderStatus).COMPLETED ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold' : 'bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-bold')}"></span>
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            <span th:text="${order.paymentStatus}" th:class="${order.paymentStatus == T(com.autorepair.shop.PaymentStatus).FULLY_PAID ? 'bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold' : (order.paymentStatus == T(com.autorepair.shop.PaymentStatus).PARTIALLY_PAID ? 'bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold' : 'bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold')}"></span>
+                        </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <a th:href="@{/vehicles/{id}/invoice(id=${vh.id})}"
-                               class="inline-flex items-center text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1.5 border border-emerald-200 rounded transition duration-150">
-                                📄 Print Invoice
+                            <a th:href="@{/(tab='orders', focusedWorkOrderId=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150">
+                                🔍 View Invoice Worksheet
                             </a>
                         </td>
                     </tr>
@@ -177,140 +456,173 @@
                 </table>
             </div>
         </div>
-    </div> <!-- This closes your section-vehicles block perfectly -->
 
-    <!-- ========================================================= -->
-    <!-- ========================================================= -->
-    <!-- TAB SECTION 3: WORK ORDERS CONSOLE -->
-    <!-- ========================================================= -->
-    <div id="section-orders" class="space-y-8 hidden">
+        <!-- ========================================================= -->
+        <!-- DYNAMIC ACCOUNTING ACTIONS: UPDATING LIVES WORK TICKETS   -->
+        <!-- ========================================================= -->
+        <div th:if="${focusedWorkOrder != null}" class="space-y-6">
 
-        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Card 1: Gross Sales Revenue -->
-            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
-                <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
-                <div>
-                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Gross Invoice Revenue</p>
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+            <!-- SECTION BAR: ODOMETER INPUTS AND ORDER COMPLETION PANEL -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Odometer Logging Form Card -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">⏱️ Snapshot Odometer Miles</h4>
+                    <form th:action="@{/vehicles/update-odometer}" method="POST" class="flex items-center gap-3">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">In Odo:</label>
+                            <input type="number" name="odometerIn" th:value="${focusedWorkOrder.odometerIn}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-sm text-center font-bold text-slate-800">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">Out Odo:</label>
+                            <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-sm text-center font-bold text-slate-800">
+                        </div>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-3 py-2 rounded shadow h-fit self-end transition">Update</button>
+                    </form>
+                </div>
+
+                <!-- Payment Accounting and Status Form Card -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">💰 Complete Job Ledger & Payments</h4>
+                    <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrderId})}" method="POST" class="flex items-center gap-3 flex-wrap">
+                        <div class="flex-1 min-w-[110px]">
+                            <select name="status" class="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-slate-800 font-bold">
+                                <option th:each="s : ${T(com.autorepair.shop.WorkOrderStatus).values()}" th:value="${s}" th:text="${s}" th:selected="${s == focusedWorkOrder.status}"></option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[110px]">
+                            <select name="paymentStatus" class="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-slate-800 font-bold">
+                                <option th:each="p : ${T(com.autorepair.shop.PaymentStatus).values()}" th:value="${p}" th:text="${p}" th:selected="${p == focusedWorkOrder.paymentStatus}"></option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[100px]">
+                            <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-xs font-bold text-right">
+                        </div>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded shadow transition">Update Ledger</button>
+                    </form>
                 </div>
             </div>
-            <!-- Card 2: Wholesale Cost Outlays -->
-            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
-                <div class="p-3 bg-amber-100 rounded-full text-amber-600 text-xl">📦</div>
-                <div>
-                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Wholesale Parts Cost</p>
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalCost, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+                <!-- Left Column: Add Item Form -->
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm h-fit">
+                    <h3 class="text-sm font-black text-slate-900 mb-3">Add Row to Invoice: <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h3>
+
+                    <div class="mb-3 bg-slate-50 p-2 border rounded border-slate-200">
+                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Labor Guide Booktimes</label>
+                        <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-2 py-1 border rounded text-xs bg-white">
+                            <option value="" disabled selected>-- Lookup Flat Rate Times --</option>
+                            <option th:each="guide : ${laborCatalog}" th:value="${guide.standardHours}" th:text="${'[' + guide.category + '] ' + guide.jobAction + ' — ' + guide.standardHours + ' Hrs'}"></option>
+                        </select>
+                    </div>
+
+                    <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-3">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Billing Type</label>
+                                <select th:field="*{itemType}" id="formItemType" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold">
+                                    <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
+                                    <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Qty / Hours</label>
+                                <input type="number" step="0.1" th:field="*{quantity}" id="formQuantity" required class="w-full px-2 py-1 border rounded text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Description / Action</label>
+                            <input type="text" th:field="*{description}" id="formDescription" required placeholder="Ceramic Brake Pads" class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="hidden" th:field="*{costPrice}" value="0.00">
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Billed Retail Price</label>
+                                <input type="number" step="0.01" th:field="*{retailPrice}" id="formRetailPrice" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-xs shadow transition">⚡ Bill Row to Invoice</button>
+                    </form>
                 </div>
-            </div>
-            <!-- Card 3: Net Workshop Net Margin Profit -->
-            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
-                <div class="p-3 bg-emerald-100 rounded-full text-emerald-600 text-xl">📈</div>
-                <div>
-                    <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Net Shop Profit</p>
-                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(totalProfit, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+
+                <!-- Right Column: Live Table View Matrix Layout -->
+                <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                    <h2 class="text-base font-black text-slate-900 mb-3">Live Line Items for <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h2>
+                    <div th:if="${#lists.isEmpty(lineItems)}" class="text-center py-8 text-gray-400 text-xs font-medium">No items billed to this specific order yet.</div>
+
+                    <div th:if="${!#lists.isEmpty(lineItems)}" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
+                            <thead class="bg-gray-50 text-gray-500 font-black uppercase tracking-wider">
+                            <tr>
+                                <th class="px-3 py-2">Type</th>
+                                <th class="px-3 py-2">Description</th>
+                                <th class="px-3 py-2">Qty/Hrs × Price</th>
+                                <th class="px-3 py-2">Total</th>
+                                <th class="px-3 py-2 text-right">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
+                            <tr th:each="item : ${lineItems}" class="hover:bg-gray-50 align-middle">
+
+                                <!-- CONDITION A: ROW INDEPENDENT EDIT STATE -->
+                                <th:block th:if="${editItemId != null && editItemId == item.id}">
+                                    <td colspan="5" class="p-0">
+                                        <form th:action="@{/line-items/update/{id}(id=${item.id})}" method="POST" class="flex items-center justify-between gap-2 p-1.5 bg-indigo-50/40 w-full">
+                                            <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
+                                            <div class="flex items-center space-x-2 flex-1">
+                                                <span th:text="${item.itemType}" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded font-bold text-[10px]"></span>
+                                                <input type="text" name="description" th:value="${item.description}" required class="flex-1 px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:outline-none font-bold">
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" step="0.1" name="quantity" th:value="${item.quantity}" required class="w-12 px-1 py-1 border border-indigo-400 rounded text-xs text-center font-mono font-bold bg-white">
+                                                <span class="text-gray-400">×</span>
+                                                <input type="number" step="0.01" name="retailPrice" th:value="${item.retailPrice}" required class="w-16 px-1 py-1 border border-indigo-400 rounded text-xs text-right font-mono font-bold bg-white">
+                                            </div>
+                                            <div class="flex items-center space-x-1 pl-2">
+                                                <button type="submit" class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-1 rounded shadow transition">💾 Save</button>
+                                                <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrderId})}" class="bg-gray-100 text-gray-600 font-bold text-[10px] px-2 py-1 border rounded transition">✕</a>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </th:block>
+
+                                <!-- CONDITION B: STANDARD READ-ONLY STATE -->
+                                <th:block th:if="${editItemId == null || editItemId != item.id}">
+                                    <td class="px-3 py-2">
+                                        <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold text-[10px]' : 'bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold text-[10px]'}"></span>
+                                    </td>
+                                    <td class="px-3 py-2 font-bold text-gray-900" th:text="${item.description}"></td>
+                                    <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}"></td>
+                                    <td class="px-3 py-2 text-emerald-600 font-bold font-mono" th:text="${'$' + item.getLineTotal()}"></td>
+                                    <td class="px-3 py-2 text-right whitespace-nowrap space-x-1">
+                                        <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrderId}, editItemId=${item.id})}" class="text-indigo-600 hover:text-indigo-800 font-bold">✏️ Edit</a>
+                                        <a th:href="@{/line-items/delete/{id}(workOrderId=${focusedWorkOrderId}, id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?')" class="text-rose-600 hover:text-rose-800 font-bold pl-1.5">🗑️ Delete</a>
+                                    </td>
+                                </th:block>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- RUNNING CALCULATION ACCOUNTING BALANCES SUMMARY FOOTER -->
+                    <div class="mt-4 border-t border-gray-200 pt-3 flex flex-col items-end space-y-1 text-xs text-gray-600 font-semibold">
+                        <div>Parts Billed: <span class="font-mono text-gray-900 font-black" th:text="'' + #numbers.formatDecimal(totalParts, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                        <div>Labor Billed: <span class="font-mono text-gray-900 font-black" th:text="'' + #numbers.formatDecimal(totalLabor, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                        <div class="text-slate-900 border-t border-dashed border-gray-300 pt-1.5 mt-1 flex space-x-6 text-sm">
+                            <div>Invoice Total: <span class="text-indigo-600 font-mono font-black" th:text="'' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                            <div class="border-l border-slate-300 pl-4">Remaining Balance: <span class="text-rose-600 font-mono font-black" th:text="'' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-
-        <!-- TWO COLUMN ACCOUNTING SPLIT WORKSPACE GRID (Side-By-Side Engine) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
-            <!-- COLUMN 1 (Left 1/3): Parts and Labor Input Form Card Panel -->
-            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Add Parts or Labor Row</h2>
-
-                <!-- REVENUE MULTIPLIER: Flat-Rate Book Time Dropdown Matrix Lookup Box -->
-                <div class="mb-4 bg-slate-50 p-3 rounded-md border border-slate-200">
-                    <label class="block text-xs font-bold uppercase text-indigo-600 mb-1">⏱️ Flat-Rate Labor Guide Matrix</label>
-                    <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white text-slate-700">
-                        <option value="" disabled selected>-- Lookup Menu Book Times (Optional) --</option>
-                        <option th:each="guide : ${laborCatalog}"
-                                th:value="${guide.standardHours}"
-                                th:text="${'[' + guide.category + '] ' + guide.jobAction + ' — ' + guide.standardHours + ' Hrs'}"></option>
-                    </select>
-                </div>
-
-                <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Target Vehicle Work Order *</label>
-                        <select name="vehicleId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="" disabled selected>-- Select Vehicle --</option>
-                            <option th:each="v : ${vehicles}" th:value="${v.id}" th:text="${v.year + ' ' + v.make + ' ' + v.model + ' [' + v.licensePlate + ']'}"></option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Billing Type</label>
-                            <select th:field="*{itemType}" id="formItemType" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
-                                <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
-                                <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Qty / Hours</label>
-                            <input type="number" step="0.1" th:field="*{quantity}" id="formQuantity" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Description / Job Action</label>
-                        <input type="text" th:field="*{description}" id="formDescription" required placeholder="e.g. Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Cost Price (Wholesale)</label>
-                            <input type="number" step="0.01" th:field="*{costPrice}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Retail Price (Billed)</label>
-                            <input type="number" step="0.01" th:field="*{retailPrice}" id="formRetailPrice" required placeholder="e.g. Shop Hourly Rate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition duration-150">
-                        Add Item to Invoice
-                    </button>
-                </form>
-            </div> <!-- Closes the form column cleanly -->
-
-            <!-- COLUMN 2 (Right 2/3): Live Workshop Billing Matrix Table Container -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                <h2 class="text-lg font-bold mb-4">Live Workshop Billing Matrix</h2>
-                <div th:if="${#lists.isEmpty(lineItems)}" class="text-center py-12 text-gray-400">
-                    No parts or labor entries billed to the floor yet.
-                </div>
-                <div th:if="${!#lists.isEmpty(lineItems)}" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
-                        <tr>
-                            <th class="px-4 py-3">Type</th>
-                            <th class="px-4 py-3">Description</th>
-                            <th class="px-4 py-3">Qty/Hrs × Price</th>
-                            <th class="px-4 py-3">Total Due</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
-                        <tr th:each="item : ${lineItems}" class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-xs">
-                                <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold' : 'bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold'}"></span>
-                            </td>
-                            <td class="px-4 py-3 font-semibold text-gray-900">
-                                <span th:text="${item.description}"></span>
-                                <div class="text-xs text-gray-400" th:text="${item.vehicle.year + ' ' + item.vehicle.make + ' [' + item.vehicle.licensePlate + ']'}"></div>
-                            </td>
-                            <td class="px-4 py-3 font-mono text-xs" th:text="${item.quantity + ' × $' + item.retailPrice}"></td>
-                            <td class="px-4 py-3 text-emerald-600 font-bold font-mono" th:text="${'$' + item.getLineTotal()}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div> <!-- Closes the table column container -->
-
-        </div> <!-- Closes the split grid row layout -->
-    </div> <!-- Closes the main section-orders tab panel view wrapper -->
-    </div>
+    </div> <!-- This closes your section-orders panel view wrapper perfectly -->
 </main>
 
-<!-- Interactive Navigation Engine script -->
 <script>
     function switchTab(tabId) {
         const sections = ['customers', 'vehicles', 'orders'];
@@ -320,31 +632,80 @@
         const btns = ['customers', 'vehicles', 'orders'];
         btns.forEach(b => document.getElementById('tab-btn-' + b).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700");
 
-        const activeColor = tabId === 'vehicles' ? 'border-emerald-600 text-emerald-600' : (tabId === 'orders' ? 'border-indigo-600 text-indigo-600' : 'border-indigo-600 text-indigo-600');
+        const activeColor = tabId === 'vehicles' ? 'border-emerald-600 text-emerald-600' : 'border-indigo-600 text-indigo-600';
         document.getElementById('tab-btn-' + tabId).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 " + activeColor;
     }
+
+    function toggleRegistrationForm() {
+        const pane = document.getElementById('registrationFormPane');
+        const grid = document.getElementById('clientIndexGridTable');
+        if (pane.classList.contains('hidden')) {
+            pane.classList.remove('hidden');
+            grid.classList.remove('lg:col-span-3');
+            grid.classList.add('lg:col-span-2');
+        } else {
+            pane.classList.add('hidden');
+            grid.classList.remove('lg:col-span-2');
+            grid.classList.add('lg:col-span-3');
+        }
+    }
+
+    function toggleVehicleRegistrationForm() {
+        const pane = document.getElementById('vehicleRegistrationFormPane');
+        const grid = document.getElementById('vehicleFleetGridTable');
+        if (pane.classList.contains('hidden')) {
+            pane.classList.remove('hidden');
+            grid.classList.remove('lg:col-span-3');
+            grid.classList.add('lg:col-span-2');
+        } else {
+            pane.classList.add('hidden');
+            grid.classList.remove('lg:col-span-2');
+            grid.classList.add('lg:col-span-3');
+        }
+    }
+
     function applyLaborGuideSelection() {
         const selector = document.getElementById('laborGuideSelector');
         const selectedOption = selector.options[selector.selectedIndex];
 
         if (selectedOption.value) {
-            // Extract description and standard hour values from the option element text metrics
             const rawText = selectedOption.text;
-            const descriptionPart = rawText.split(']')[1].split('—')[0].trim();
+            const descriptionPart = rawText.split(']').pop().split('—').shift().trim();
             const bookHours = selectedOption.value;
 
-            // Auto-populate the input fields inside the invoicing dashboard form workspace
             document.getElementById('formItemType').value = 'LABOR';
             document.getElementById('formQuantity').value = bookHours;
             document.getElementById('formDescription').value = descriptionPart;
 
-            // Smart Helper: If retail price field is empty, auto-populate it with a standard flat $120/hr shop labor rate
             const priceField = document.getElementById('formRetailPrice');
             if (!priceField.value || priceField.value === "0.00") {
                 priceField.value = "120.00";
             }
         }
     }
+
+    function formatPhoneNumber(value) {
+        if (!value) return value;
+        const phoneNumber = value.replace(/\D/g, '');
+        const phoneNumberLength = phoneNumber.length;
+        if (phoneNumberLength < 4) return phoneNumber;
+        if (phoneNumberLength < 7) {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+        }
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.classList.contains('phone-mask')) {
+            const input = e.target;
+            const selectionStart = input.selectionStart;
+            const originalLength = input.value.length;
+            input.value = formatPhoneNumber(input.value);
+            const newLength = input.value.length;
+            input.setSelectionRange(selectionStart + (newLength - originalLength), selectionStart + (newLength - originalLength));
+        }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const activeTab = urlParams.get('tab');

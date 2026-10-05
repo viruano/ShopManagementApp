@@ -2,6 +2,7 @@ package com.autorepair.shop;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "line_items")
@@ -27,22 +28,21 @@ public class LineItem {
     @Column(nullable = false)
     private Double quantity; // Number of parts OR flat-rate billable hours (e.g., 1.5 hours)
 
-    // Relational Foreign Key: Ties this specific billable line item directly to a vehicle repair profile
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false)
-    private Vehicle vehicle;
+    @JoinColumn(name = "work_order_id", nullable = false)
+    private WorkOrder workOrder;
 
     // Default Constructor (Required by JPA)
     public LineItem() {}
 
-    // Convenience Constructor
-    public LineItem(LineItemType itemType, String description, BigDecimal costPrice, BigDecimal retailPrice, Double quantity, Vehicle vehicle) {
+    // Convenience Constructor — Updated for Work Order Architecture
+    public LineItem(LineItemType itemType, String description, BigDecimal costPrice, BigDecimal retailPrice, Double quantity, WorkOrder workOrder) {
         this.itemType = itemType;
         this.description = description;
         this.costPrice = costPrice;
         this.retailPrice = retailPrice;
         this.quantity = quantity;
-        this.vehicle = vehicle;
+        this.workOrder = workOrder; // ⚡ BINDING FIXED
     }
 
     // Custom Helper: Instantly calculates gross profit for this line item
@@ -77,6 +77,6 @@ public class LineItem {
     public Double getQuantity() { return quantity; }
     public void setQuantity(Double quantity) { this.quantity = quantity; }
 
-    public Vehicle getVehicle() { return vehicle; }
-    public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
+    public WorkOrder getWorkOrder() { return workOrder; }
+    public void setWorkOrder(WorkOrder workOrder) { this.workOrder = workOrder; }
 }
