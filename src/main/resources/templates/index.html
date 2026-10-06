@@ -7,8 +7,21 @@
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Master Bootstrap & Tailwind Style Framework Headers Only -->
-    <link rel="stylesheet" href="https://jsdelivr.net">
+    <!-- 🏎️ SECURE ENTERPRISE BARCODE ENGINE FOR AUTOMOTIVE LINEAR STRIPES -->
+    <script type="text/javascript">
+        (function injectQuaggaCore() {
+            const tag = document.createElement('script');
+            // Concatenating the text strings ensures that compilers cannot clip or trim the CDN path parameters
+            const protocol = "https://";
+            const domain = "cdn.jsdelivr.net/";
+            const route = "npm/@ericblade/quagga2@1.8.4/dist/";
+            const filename = "quagga.min.js";
+
+            tag.src = protocol + domain + route + filename;
+            tag.type = "text/javascript";
+            document.head.appendChild(tag);
+        })();
+    </script>
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -257,8 +270,14 @@
                                 <input type="file" accept="image/*" capture="environment" class="hidden" onchange="extractVinFromNativeDeviceSnapshot(this)">
                             </label>
                         </div>
-                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Camera Shutter</b> to walk out to the car and snap a photo of the doorjamb sticker or registration card for quick review logs.</p>
+
+                        <!-- ⚡ RUNTIME SCANNER STATUS FEED BAR -->
+                        <div id="vinScannerProcessingStatusIndicatorBar" class="hidden text-[10px] font-black font-mono text-indigo-600 animate-pulse bg-indigo-50 border border-indigo-100 rounded p-1.5 text-center">
+                            ⚙️ Analyzing image matrix data... Please hold steady.
+                        </div>
+                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Camera Shutter</b> to snap a photo of the white driver-side doorjamb barcode sticker for rapid auto-population.</p>
                     </div>
+
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -783,13 +802,65 @@
         if (!inputElement.files || inputElement.files.length === 0) return;
 
         const fileRecord = inputElement.files[0];
-        console.log("Captured image document successfully: " + fileRecord.name + " (" + fileRecord.size + " bytes)");
+        console.log("Captured image document successfully: " + fileRecord.name);
 
-        const targetInputField = document.getElementById('vehicleVinInputField');
-        if (targetInputField && (!targetInputField.value || targetInputField.value.trim() === "")) {
-            targetInputField.classList.add('ring-2', 'ring-amber-500', 'bg-amber-50/30');
-            targetInputField.placeholder = "Verify and confirm VIN details here...";
+        // Turn on the status feed bar alert layout to inform the advisor
+        const statusIndicatorBar = document.getElementById('vinScannerProcessingStatusIndicatorBar');
+        if (statusIndicatorBar) {
+            statusIndicatorBar.classList.remove('hidden');
+            statusIndicatorBar.innerText = "⚙️ Decoding Automotive Linear Barcode... Please hold steady.";
         }
+
+        // Initialize FileReader to convert image into a data URL for processing
+        const imageFileReader = new FileReader();
+        reader.onload = function(event) {
+            const dataUrlStringPayload = event.target.result;
+
+            // Execute Quagga2's static photo barcode parser utility
+            Quagga.decodeSingle({
+                src: dataUrlStringPayload,
+                numOfWorkers: 0,
+                inputStream: {
+                    size: 800 // Downscales high-res mobile phone files internally for fast script parsing
+                },
+                decoder: {
+                    // Targets explicit linear barcodes found on automotive safety labels
+                    readers: ["code_128_reader", "code_39_reader"]
+                },
+                locate: true // Auto-isolates the location of the barcode lines inside a messy photo frame
+            }, function(decodingResultObj) {
+                if (statusIndicatorBar) statusIndicatorBar.classList.add('hidden');
+
+                if (decodingResultObj && decodingResultObj.codeResult && decodingResultObj.codeResult.code) {
+                    let rawExtractedTextToken = decodingResultObj.codeResult.code;
+                    console.log("Raw barcode text extracted: " + rawExtractedTextToken);
+
+                    // Clean out manufacturer whitespace offsets or special character dividers
+                    let parsedVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+                    // If prefix padding characters are present, extract the standard 17-character sequence
+                    if (parsedVinString.length > 17) {
+                        if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
+                            parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
+                        } else {
+                            parsedVinString = parsedVinString.substring(0, 17);
+                        }
+                    }
+
+                    // Drop the finalized 17-digit string block straight into your form's input text box!
+                    const targetInputField = document.getElementById('vehicleVinInputField');
+                    if (targetInputField) {
+                        targetInputField.value = parsedVinString;
+                        targetInputField.classList.remove('ring-amber-500', 'bg-amber-50/30');
+                        targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
+                    }
+                } else {
+                    // Fallback alerts if photo is blurry or dark
+                    alert("Could not extract a clean barcode line from that picture. Please make sure the white driver-side doorjamb sticker is flat, well-lit, and completely in focus!");
+                }
+            });
+        };
+        imageFileReader.readAsDataURL(fileRecord);
     }
 </script>
 
