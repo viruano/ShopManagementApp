@@ -808,9 +808,13 @@
             try { activeHtml5VinScannerInstance.clear(); } catch(e){}
         }
 
-        // Initialize directly now that the head script tag guarantees the library exists
         activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
-            useBarCodeDetectorIfSupported: true,
+            // 🏎️ ENFORCE FORWARD COMPATIBILITY SCANNING FORMATS FOR LINEAR VIN STRIPES
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.QR_CODE
+            ],
             verbose: false
         });
 
@@ -822,7 +826,6 @@
             aspectRatio: 1.333333
         };
 
-        // Fire live camera focus tracking
         activeHtml5VinScannerInstance.start(
             { facingMode: "environment" },
             runtimeConfigurationConfig,
@@ -833,31 +836,75 @@
         });
     }
 
-    // ⚡ FILE BARCODE DECODER MODULE: Extracts values out of the captured snapshot photo file directly
+    // ⚡ OPTIMIZED HIGH-SPEED FILE BARCODE DECODER MODULE
     function processVinFromLocalFileSnapshot(inputElement) {
         if (!inputElement.files || inputElement.files.length === 0) return;
-        const file = inputElement.files[0];
+        const file = inputElement.files[0]; // Isolate the target image file node asset
 
-        // Temporarily change view content to display a clear scanning process note
         const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
         if (liveViewArea) {
             liveViewArea.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 animate-pulse bg-slate-900">
-                    <span class="text-xl">⚙️</span>
-                    <p class="text-xs font-bold font-mono">Parsing barcode image matrix data...</p>
+                <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 bg-slate-900">
+                    <span class="text-xl inline-block animate-spin">⚙️</span>
+                    <p class="text-xs font-bold font-mono text-emerald-400">Decoding Automotive Barcode...</p>
                 </div>
             `;
         }
 
-        const fileScanner = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
-        fileScanner.scanFile(file, true)
+        // Initialize optimized image processing engine to parse the high-res file safely
+        const imageDecoder = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_128
+            ]
+        });
+
+        // Execute file matrix extraction pass directly
+        imageDecoder.scanFile(file, false)
             .then(decodedText => {
                 onVinBarcodeReadSuccess(decodedText, null);
             })
             .catch(err => {
-                console.error("Barcode matching matrix failure on image block: ", err);
-                alert("Could not read a barcode from that picture. Please make sure the VIN code stripe on the doorjamb or card is well-lit and perfectly in focus!");
-                if (liveViewArea) liveViewArea.innerHTML = "";
+                console.error("Primary pass parsing failure: ", err);
+
+                // 🛡️ RE-OPTIMIZATION LAYER: If image is too massive, scale it down and retry once
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Downscale high-res mobile photo to crisp scanner proportions
+                        const maxDimension = 1024;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height) {
+                            if (width > maxDimension) { height *= maxDimension / width; width = maxDimension; }
+                        } else {
+                            if (height > maxDimension) { width *= maxDimension / height; height = maxDimension; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(function(blob) {
+                            const optimizedFile = new File([blob], "optimized.jpg", { type: "image/jpeg" });
+                            imageDecoder.scanFile(optimizedFile, false)
+                                .then(retryText => {
+                                    onVinBarcodeReadSuccess(retryText, null);
+                                })
+                                .catch(retryErr => {
+                                    console.error("Retry pass failure: ", retryErr);
+                                    alert("Could not extract a barcode text token. Please make sure the 17-digit barcode is well-lit, not blurry, and fills the photo frame completely!");
+                                    if (liveViewArea) liveViewArea.innerHTML = "";
+                                });
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
             });
     }
 
