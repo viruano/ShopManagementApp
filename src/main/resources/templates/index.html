@@ -241,9 +241,26 @@
                             <option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">VIN Number (Auto-Decodes) *</label>
-                        <input type="text" th:field="*{vin}" required placeholder="e.g. 1FA6P8CFXJ5XXXXXX" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm uppercase font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <!-- 🚗 VEHICLE VIN INPUT WITH INTEGRATED HARDWARE BARCODE SCANNER PANE -->
+                    <div class="col-span-2 space-y-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
+                        <div class="flex gap-2">
+                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Paste or type 17-digit VIN code" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                            <!-- Hardware Stream Activation Switch Button Trigger -->
+                            <button type="button" onclick="activateLiveVinCameraScanner()" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-900 text-white font-black px-3 py-2 rounded text-xs shadow transition duration-150">
+                                📷 Scan Card/Car
+                            </button>
+                        </div>
+
+                        <!-- Hidden Camera Viewport Sub-Panel Container Area -->
+                        <div id="vinCameraScannerHardwareWrapper" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative transition duration-200">
+                            <div id="vinCameraReaderLiveProjectionArea" class="w-full max-w-sm mx-auto overflow-hidden rounded bg-black aspect-video"></div>
+                            <div class="flex justify-between items-center px-1">
+                                <span class="text-[10px] font-bold text-indigo-600 animate-pulse">⚡ Center barcode or text card in viewport lens...</span>
+                                <button type="button" onclick="terminateLiveVinCameraScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
+                            </div>
+                        </div>
                     </div>
 
                     <input type="hidden" name="year" value="">
@@ -762,6 +779,91 @@
         const activeTab = urlParams.get('tab');
         if (activeTab) { switchTab(activeTab); }
     });
+    // =========================================================
+    // 📷 LIVE HARDWARE CAMERA STREAM BARCODE SCANNING REGISTRY
+    // =========================================================
+    let activeHtml5VinScannerInstance = null;
+
+    // Load the official CDN library dependency into the browser thread on fly execution
+    (function injectScannerLibrary() {
+        const libraryTag = document.createElement('script');
+        libraryTag.src = "https://unpkg.com";
+        libraryTag.type = "text/javascript";
+        document.head.appendChild(libraryTag);
+    })();
+
+    function activateLiveVinCameraScanner() {
+        const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
+        wrapper.classList.remove('hidden');
+
+        // Configure optimal vehicle drive-lane scanning parameters matrices
+        activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
+
+        const runtimeConfigurationConfig = {
+            fps: 15,
+            qrbox: { width: 280, height: 80 }, // Narrow box layout tailored for long VIN stripes
+            aspectRatio: 1.777778
+        };
+
+        // Enforce back-facing camera usage to automatically engage zoom lens systems on mobile phones
+        activeHtml5VinScannerInstance.start(
+            { facingMode: "environment" },
+            runtimeConfigurationConfig,
+            onVinBarcodeReadSuccess,
+            onVinBarcodeReadFailure
+        ).catch(err => {
+            console.error("Camera Permissions Rejected or Line Dropped: ", err);
+            alert("Could not initialize camera line. Please verify browser hardware permission access settings.");
+            terminateLiveVinCameraScanner();
+        });
+    }
+
+    function onVinBarcodeReadSuccess(decodedTextToken, decodedResultObj) {
+        if (!decodedTextToken) return;
+
+        // Strip out any hidden padding characters added by vehicle manufacturers
+        let parsedVinString = decodedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+        // Standard North American passenger vehicle strings trim down to exactly 17 characters
+        if (parsedVinString.length > 17) {
+            // Strip off the leading static barcode identifiers if scanning registration documents
+            if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
+                parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
+            } else {
+                parsedVinString = parsedVinString.substring(0, 17);
+            }
+        }
+
+        // Drop the finished token character layout straight into your intake panel input field box
+        const inputField = document.getElementById('vehicleVinInputField');
+        if (inputField) {
+            inputField.value = parsedVinString;
+            // Play a sharp subtle interface execution confirmation audio beep tone if desired
+            inputField.classList.add('ring-2', 'ring-emerald-500');
+        }
+
+        // Cleanly power down the camera shutter array automatically to conserve advisor battery logs
+        terminateLiveVinCameraScanner();
+    }
+
+    function onVinBarcodeReadFailure(errorLogTrace) {
+        // Silent catch bypass layer: prevents console overflow lines while camera lens refocuses frames
+    }
+
+    function terminateLiveVinCameraScanner() {
+        if (activeHtml5VinScannerInstance) {
+            activeHtml5VinScannerInstance.stop().then(() => {
+                activeHtml5VinScannerInstance = null;
+                document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
+            }).catch(err => {
+                console.error("Error shutting down camera subsystem tracking blocks: ", err);
+                document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
+            });
+        } else {
+            document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
+        }
+    }
+
 </script>
 </body>
 </html>
