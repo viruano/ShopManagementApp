@@ -6,8 +6,22 @@
     <title>Automotive Services Management System</title>
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 🖨️ GUARANTEES BARCODE SCANNING LIBRARY IS FULLY LOADED BEFORE INTERFACE CAPTURES -->
-    <script src="https://unpkg.com" type="text/javascript"></script>
+
+    <!-- 🏎️ ENTERPRISE BARCODE ENGINE FOR DRIVE-LANE CAPTURES -->
+    <script type="text/javascript">
+        (function injectQuaggaCore() {
+            const tag = document.createElement('script');
+            // Assembles the path using plain text parts so it can never be clipped
+            const protocol = "https://";
+            const domain = "cdn.jsdelivr.net/";
+            const path = "npm/@ericblade/quagga2@1.8.4/dist/";
+            const file = "quagga.min.js";
+
+            tag.src = protocol + domain + path + file;
+            tag.type = "text/javascript";
+            document.head.appendChild(tag);
+        })();
+    </script>
 
 </head>
 
@@ -796,119 +810,66 @@
     });
 
     // =========================================================
-    // 📷 LIVE HARDWARE CAMERA STREAM BARCODE SCANNING REGISTRY
+    // 📷 RESILIENT AUTOMOTIVE BARCODE & PHOTO VIN DECODER
     // =========================================================
-    let activeHtml5VinScannerInstance = null;
 
     function activateLiveVinCameraScanner() {
         const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
         if (wrapper) wrapper.classList.remove('hidden');
-
-        if (activeHtml5VinScannerInstance) {
-            try { activeHtml5VinScannerInstance.clear(); } catch(e){}
-        }
-
-        activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
-            // 🏎️ ENFORCE FORWARD COMPATIBILITY SCANNING FORMATS FOR LINEAR VIN STRIPES
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.QR_CODE
-            ],
-            verbose: false
-        });
-
-        const runtimeConfigurationConfig = {
-            fps: 20,
-            qrbox: function(viewWidth, viewHeight) {
-                return { width: Math.min(viewWidth * 0.85, 280), height: 95 };
-            },
-            aspectRatio: 1.333333
-        };
-
-        activeHtml5VinScannerInstance.start(
-            { facingMode: "environment" },
-            runtimeConfigurationConfig,
-            onVinBarcodeReadSuccess,
-            onVinBarcodeReadFailure
-        ).catch(err => {
-            console.warn("Direct stream restricted or blocked by device privacy rules: ", err);
-        });
     }
 
-    // ⚡ OPTIMIZED HIGH-SPEED FILE BARCODE DECODER MODULE
+    // ⚡ ENTERPRISE-GRADE AUTOMOTIVE PHOTO SCANNER MODULE
     function processVinFromLocalFileSnapshot(inputElement) {
         if (!inputElement.files || inputElement.files.length === 0) return;
-        const file = inputElement.files[0]; // Isolate the target image file node asset
+        const file = inputElement.files[0];
 
         const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
         if (liveViewArea) {
             liveViewArea.innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 bg-slate-900">
                     <span class="text-xl inline-block animate-spin">⚙️</span>
-                    <p class="text-xs font-bold font-mono text-emerald-400">Decoding Automotive Barcode...</p>
+                    <p class="text-xs font-bold font-mono text-emerald-400">Processing high-res photo matrix...</p>
                 </div>
             `;
         }
 
-        // Initialize optimized image processing engine to parse the high-res file safely
-        const imageDecoder = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_128
-            ]
-        });
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const dataUrl = e.target.result;
 
-        // Execute file matrix extraction pass directly
-        imageDecoder.scanFile(file, false)
-            .then(decodedText => {
-                onVinBarcodeReadSuccess(decodedText, null);
-            })
-            .catch(err => {
-                console.error("Primary pass parsing failure: ", err);
+            if (liveViewArea) {
+                liveViewArea.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 bg-slate-900">
+                        <span class="text-xl inline-block animate-spin">🔍</span>
+                        <p class="text-xs font-bold font-mono text-indigo-400">Decoding Automotive Linear Barcode...</p>
+                    </div>
+                `;
+            }
 
-                // 🛡️ RE-OPTIMIZATION LAYER: If image is too massive, scale it down and retry once
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-
-                        // Downscale high-res mobile photo to crisp scanner proportions
-                        const maxDimension = 1024;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > height) {
-                            if (width > maxDimension) { height *= maxDimension / width; width = maxDimension; }
-                        } else {
-                            if (height > maxDimension) { width *= maxDimension / height; height = maxDimension; }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob(function(blob) {
-                            const optimizedFile = new File([blob], "optimized.jpg", { type: "image/jpeg" });
-                            imageDecoder.scanFile(optimizedFile, false)
-                                .then(retryText => {
-                                    onVinBarcodeReadSuccess(retryText, null);
-                                })
-                                .catch(retryErr => {
-                                    console.error("Retry pass failure: ", retryErr);
-                                    alert("Could not extract a barcode text token. Please make sure the 17-digit barcode is well-lit, not blurry, and fills the photo frame completely!");
-                                    if (liveViewArea) liveViewArea.innerHTML = "";
-                                });
-                        }, 'image/jpeg', 0.85);
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
+            // Fire Quagga's specialized static file barcode mapping decoder
+            Quagga.decodeSingle({
+                src: dataUrl,
+                numOfWorkers: 0,
+                inputStream: {
+                    size: 800
+                },
+                decoder: {
+                    readers: ["code_128_reader", "code_39_reader"]
+                },
+                locate: true
+            }, function(result) {
+                if (result && result.codeResult && result.codeResult.code) {
+                    onVinBarcodeReadSuccess(result.codeResult.code);
+                } else {
+                    alert("Could not extract a barcode text token. Please ensure the VIN barcode sticker on the doorjamb is flat, well-lit, and completely in focus!");
+                    terminateLiveVinCameraScanner();
+                }
             });
+        };
+        reader.readAsDataURL(file);
     }
 
-    function onVinBarcodeReadSuccess(decodedTextToken, decodedResultObj) {
+    function onVinBarcodeReadSuccess(decodedTextToken) {
         if (!decodedTextToken) return;
 
         let parsedVinString = decodedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
@@ -930,20 +891,10 @@
         terminateLiveVinCameraScanner();
     }
 
-    function onVinBarcodeReadFailure(errorLogTrace) {}
-
     function terminateLiveVinCameraScanner() {
-        if (activeHtml5VinScannerInstance) {
-            activeHtml5VinScannerInstance.stop().then(() => {
-                activeHtml5VinScannerInstance = null;
-                document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
-            }).catch(err => {
-                activeHtml5VinScannerInstance = null;
-                document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
-            });
-        } else {
-            document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
-        }
+        document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
+        const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
+        if (liveViewArea) liveViewArea.innerHTML = "";
     }
 
 </script>
