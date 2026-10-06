@@ -387,8 +387,18 @@
             </div>
         </div>
 
-        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS (TOGGLEABLE) -->
+        <div th:if="${focusedWorkOrder == null}" class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Financial Desk:</span>
+                <span class="text-xs font-medium text-slate-400 ml-1">Click the dashboard link to toggle financial bookkeeping sums.</span>
+            </div>
+            <button type="button" onclick="toggleShopAnalyticsMetrics()" class="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold border border-indigo-200 rounded-md px-3 py-1.5 text-xs transition shadow-sm">
+                📈 View Shop Metrics Dashboard
+            </button>
+        </div>
+
+        <div id="shopAnalyticsMetricsDrawer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 hidden transition-all duration-300">
             <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
                 <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
                 <div>
@@ -412,8 +422,8 @@
             </div>
         </div>
 
-        <!-- MASTER INVOICE INDEX CARD -->
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <!-- MASTER INVOICE INDEX CARD (AUTOMATICALLY CONCEALS WHEN AN ORDER IS OPENED) -->
+        <div th:if="${focusedWorkOrder == null}" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <h2 class="text-lg font-black text-slate-900 mb-4">Master Repair Order Index</h2>
             <div th:if="${#lists.isEmpty(workOrders)}" class="text-center py-12 text-gray-400 font-medium text-sm">No work orders currently listed on the ledger.</div>
 
@@ -430,7 +440,7 @@
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
-                    <tr th:each="order : ${workOrders}" th:class="${focusedWorkOrderId != null && focusedWorkOrderId == order.id ? 'bg-indigo-50/50' : 'hover:bg-gray-50'}">
+                    <tr th:each="order : ${workOrders}" class="hover:bg-gray-50">
                         <td class="px-4 py-3 font-black text-indigo-600 text-sm" th:text="${order.invoiceNumber}"></td>
                         <td class="px-4 py-3">
                             <div class="font-bold text-slate-900" th:text="${order.vehicle.year + ' ' + order.vehicle.make + ' ' + order.vehicle.model}"></div>
@@ -448,7 +458,7 @@
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
                             <a th:href="@{/(tab='orders', focusedWorkOrderId=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150">
-                                🔍 View Invoice Worksheet
+                                🔍 Edit Work Order
                             </a>
                         </td>
                     </tr>
@@ -456,70 +466,100 @@
                 </table>
             </div>
         </div>
-
         <!-- ========================================================= -->
-        <!-- DYNAMIC ACCOUNTING ACTIONS: UPDATING LIVES WORK TICKETS   -->
+        <!-- ⚡ SUB-WORKSPACE: SINGLE SELECTED WORK ORDER WORKSHEET     -->
         <!-- ========================================================= -->
         <div th:if="${focusedWorkOrder != null}" class="space-y-6">
 
-            <!-- SECTION BAR: ODOMETER INPUTS AND ORDER COMPLETION PANEL -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Odometer Logging Form Card -->
-                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">⏱️ Snapshot Odometer Miles</h4>
-                    <form th:action="@{/vehicles/update-odometer}" method="POST" class="flex items-center gap-3">
-                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
-                        <div class="flex-1">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">In Odo:</label>
-                            <input type="number" name="odometerIn" th:value="${focusedWorkOrder.odometerIn}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-sm text-center font-bold text-slate-800">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">Out Odo:</label>
-                            <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-sm text-center font-bold text-slate-800">
-                        </div>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-3 py-2 rounded shadow h-fit self-end transition">Update</button>
-                    </form>
+            <!-- BACK NAVIGATION ACTIONS ENGINE BAR -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-inner gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Active Workspace:</span>
+                    <span class="text-xs font-mono font-black bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" th:text="${focusedWorkOrder.invoiceNumber}">WO-1001</span>
+                    <!-- 🚗 INLINE VEHICLE & CUSTOMER DATA SNAPSHOT -->
+                    <span class="text-xs text-slate-500 font-medium border-l border-slate-300 pl-2"
+                          th:text="${focusedWorkOrder.vehicle.year + ' ' + focusedWorkOrder.vehicle.make + ' ' + focusedWorkOrder.vehicle.model + ' ➔ ' + focusedWorkOrder.vehicle.customer.firstName + ' ' + focusedWorkOrder.vehicle.customer.lastName}">
+                        2022 Ford F-150 ➔ John Doe
+                    </span>
                 </div>
-
-                <!-- Payment Accounting and Status Form Card -->
-                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">💰 Complete Job Ledger & Payments</h4>
-                    <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrderId})}" method="POST" class="flex items-center gap-3 flex-wrap">
-                        <div class="flex-1 min-w-[110px]">
-                            <select name="status" class="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-slate-800 font-bold">
-                                <option th:each="s : ${T(com.autorepair.shop.WorkOrderStatus).values()}" th:value="${s}" th:text="${s}" th:selected="${s == focusedWorkOrder.status}"></option>
-                            </select>
-                        </div>
-                        <div class="flex-1 min-w-[110px]">
-                            <select name="paymentStatus" class="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-slate-800 font-bold">
-                                <option th:each="p : ${T(com.autorepair.shop.PaymentStatus).values()}" th:value="${p}" th:text="${p}" th:selected="${p == focusedWorkOrder.paymentStatus}"></option>
-                            </select>
-                        </div>
-                        <div class="flex-1 min-w-[100px]">
-                            <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-2 py-1 border border-gray-300 rounded font-mono text-xs font-bold text-right">
-                        </div>
-                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded shadow transition">Update Ledger</button>
-                    </form>
-                </div>
+                <a th:href="@{/(tab='orders')}" class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition">
+                    ⬅️ Back to Master Index
+                </a>
             </div>
-            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE -->
+
+            <!-- ORDER MANAGEMENT INTERFACE TERMINAL PANEL -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-100 p-6 rounded-lg border border-slate-200">
+                <!-- Lifecycle Status Update Form -->
+                <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrder.id})}" method="POST" class="space-y-4">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">💼 Invoice Lifecycle Management</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Work Order Status</label>
+                            <select name="status" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none">
+                                <option th:each="st : ${T(com.autorepair.shop.WorkOrderStatus).values()}" th:value="${st}" th:text="${st}" th:selected="${st == focusedWorkOrder.status}"></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Payment Status</label>
+                            <select name="paymentStatus" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none">
+                                <option th:each="pt : ${T(com.autorepair.shop.PaymentStatus).values()}" th:value="${pt}" th:text="${pt}" th:selected="${pt == focusedWorkOrder.paymentStatus}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Amount Paid ($)</label>
+                            <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-xs shadow transition duration-150">
+                                Apply Status
+                            </button>
+                            <a th:href="@{/orders/{id}/print(id=${focusedWorkOrder.id})}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center">
+                                🖨️ Print
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Visit Odometer Snapshot Logs Form -->
+                <form th:action="@{/vehicles/update-odometer}" method="POST" class="space-y-4 border-t md:border-t-0 md:border-l border-slate-300/60 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between">
+                    <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">⏱️ Visit Odometer Logging Snapshot</h3>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">In Mileage Odometer</label>
+                            <input type="number" name="odometerIn" th:value="${focusedWorkOrder.odometerIn}" placeholder="0" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Out Mileage Odometer</label>
+                            <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" placeholder="0" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-1.5 rounded text-xs shadow transition mt-4">
+                        Record Mileage Snapshots
+                    </button>
+                </form>
+            </div>
+
+            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-                <!-- Left Column: Add Item Form -->
+                <!-- Left Column Form Panel: Add Item Intake Card -->
                 <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm h-fit">
                     <h3 class="text-sm font-black text-slate-900 mb-3">Add Row to Invoice: <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h3>
 
                     <div class="mb-3 bg-slate-50 p-2 border rounded border-slate-200">
-                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Labor Guide Booktimes</label>
+                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Flat-Rate Labor Guide Matrix</label>
                         <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-2 py-1 border rounded text-xs bg-white">
-                            <option value="" disabled selected>-- Lookup Flat Rate Times --</option>
+                            <option value="" disabled selected>-- Lookup Menu Book Times --</option>
                             <option th:each="guide : ${laborCatalog}" th:value="${guide.standardHours}" th:text="${'[' + guide.category + '] ' + guide.jobAction + ' — ' + guide.standardHours + ' Hrs'}"></option>
                         </select>
                     </div>
 
                     <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-3">
-                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Billing Type</label>
@@ -548,9 +588,20 @@
                     </form>
                 </div>
 
-                <!-- Right Column: Live Table View Matrix Layout -->
+                <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout -->
                 <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
-                    <h2 class="text-base font-black text-slate-900 mb-3">Live Line Items for <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h2>
+                    <!-- 🏢 FLEXBOX HEADER ROW: FORCES HORIZONTAL SIDE-BY-SIDE ALIGNMENT -->
+                    <div class="flex flex-wrap items-baseline justify-between border-b border-gray-100 pb-3 mb-4 gap-2">
+                        <h2 class="text-base font-black text-slate-900">
+                            Live Line Items for <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}">WO-1001</span>
+                        </h2>
+                        <!-- 👥 FLOATS TO THE RIGHT SIDE ON THE SAME HORIZONTAL LINE -->
+                        <span class="text-xs text-slate-400 font-semibold font-mono tracking-tight"
+                              th:text="${focusedWorkOrder.vehicle.year + ' ' + focusedWorkOrder.vehicle.make + ' ' + focusedWorkOrder.vehicle.model + ' | ' + focusedWorkOrder.vehicle.customer.firstName + ' ' + focusedWorkOrder.vehicle.customer.lastName}">
+                            2022 Ford F-150 | John Doe
+                        </span>
+                    </div>
+
                     <div th:if="${#lists.isEmpty(lineItems)}" class="text-center py-8 text-gray-400 text-xs font-medium">No items billed to this specific order yet.</div>
 
                     <div th:if="${!#lists.isEmpty(lineItems)}" class="overflow-x-auto">
@@ -567,11 +618,11 @@
                             <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
                             <tr th:each="item : ${lineItems}" class="hover:bg-gray-50 align-middle">
 
-                                <!-- CONDITION A: ROW INDEPENDENT EDIT STATE -->
+                                <!-- INLINE INTERACTIVE EDITS BLOCK -->
                                 <th:block th:if="${editItemId != null && editItemId == item.id}">
                                     <td colspan="5" class="p-0">
                                         <form th:action="@{/line-items/update/{id}(id=${item.id})}" method="POST" class="flex items-center justify-between gap-2 p-1.5 bg-indigo-50/40 w-full">
-                                            <input type="hidden" name="workOrderId" th:value="${focusedWorkOrderId}">
+                                            <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
                                             <div class="flex items-center space-x-2 flex-1">
                                                 <span th:text="${item.itemType}" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded font-bold text-[10px]"></span>
                                                 <input type="text" name="description" th:value="${item.description}" required class="flex-1 px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:outline-none font-bold">
@@ -583,13 +634,13 @@
                                             </div>
                                             <div class="flex items-center space-x-1 pl-2">
                                                 <button type="submit" class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-1 rounded shadow transition">💾 Save</button>
-                                                <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrderId})}" class="bg-gray-100 text-gray-600 font-bold text-[10px] px-2 py-1 border rounded transition">✕</a>
+                                                <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="bg-gray-100 text-gray-600 font-bold text-[10px] px-2 py-1 border rounded transition">✕</a>
                                             </div>
                                         </form>
                                     </td>
                                 </th:block>
 
-                                <!-- CONDITION B: STANDARD READ-ONLY STATE -->
+                                <!-- STATIC VIEW ITEMS RECORD ROW BLOCK -->
                                 <th:block th:if="${editItemId == null || editItemId != item.id}">
                                     <td class="px-3 py-2">
                                         <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold text-[10px]' : 'bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold text-[10px]'}"></span>
@@ -598,8 +649,8 @@
                                     <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}"></td>
                                     <td class="px-3 py-2 text-emerald-600 font-bold font-mono" th:text="${'$' + item.getLineTotal()}"></td>
                                     <td class="px-3 py-2 text-right whitespace-nowrap space-x-1">
-                                        <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrderId}, editItemId=${item.id})}" class="text-indigo-600 hover:text-indigo-800 font-bold">✏️ Edit</a>
-                                        <a th:href="@{/line-items/delete/{id}(workOrderId=${focusedWorkOrderId}, id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?')" class="text-rose-600 hover:text-rose-800 font-bold pl-1.5">🗑️ Delete</a>
+                                        <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, editItemId=${item.id})}" class="text-indigo-600 hover:text-indigo-800 font-bold">✏️ Edit</a>
+                                        <a th:href="@{/line-items/delete/{id}(workOrderId=${focusedWorkOrder.id}, id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?')" class="text-rose-600 hover:text-rose-800 font-bold pl-1.5">🗑️ Delete</a>
                                     </td>
                                 </th:block>
                             </tr>
@@ -607,20 +658,20 @@
                         </table>
                     </div>
 
-                    <!-- RUNNING CALCULATION ACCOUNTING BALANCES SUMMARY FOOTER -->
+                    <!-- CALCULATION BALANCE BLOCKS FOOTER SUMMARY CONTAINER -->
                     <div class="mt-4 border-t border-gray-200 pt-3 flex flex-col items-end space-y-1 text-xs text-gray-600 font-semibold">
-                        <div>Parts Billed: <span class="font-mono text-gray-900 font-black" th:text="'' + #numbers.formatDecimal(totalParts, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
-                        <div>Labor Billed: <span class="font-mono text-gray-900 font-black" th:text="'' + #numbers.formatDecimal(totalLabor, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                        <div>Parts Billed: <span class="font-mono text-gray-900 font-black" th:text="${'$' + #numbers.formatDecimal(totalParts, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
+                        <div>Labor Billed: <span class="font-mono text-gray-900 font-black" th:text="${'$' + #numbers.formatDecimal(totalLabor, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
                         <div class="text-slate-900 border-t border-dashed border-gray-300 pt-1.5 mt-1 flex space-x-6 text-sm">
-                            <div>Invoice Total: <span class="text-indigo-600 font-mono font-black" th:text="'' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
-                            <div class="border-l border-slate-300 pl-4">Remaining Balance: <span class="text-rose-600 font-mono font-black" th:text="'' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">\$0.00</span></div>
+                            <div>Invoice Total: <span class="text-indigo-600 font-mono font-black" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
+                            <div class="border-l border-slate-300 pl-4">Remaining Balance: <span class="text-rose-600 font-mono font-black" th:text="${'$' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
                         </div>
                     </div>
-
                 </div>
+
             </div>
         </div>
-    </div> <!-- This closes your section-orders panel view wrapper perfectly -->
+    </div> <!-- This closes your section-orders panel wrapper perfectly -->
 </main>
 
 <script>

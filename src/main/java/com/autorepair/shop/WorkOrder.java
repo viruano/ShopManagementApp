@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "work_orders")
@@ -15,7 +14,7 @@ public class WorkOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String invoiceNumber; // e.g., INV-1001
+    private String invoiceNumber; // Auto-generated e.g., WO-1001
     private LocalDateTime dateOpened;
     private LocalDateTime dateClosed;
 
@@ -26,11 +25,10 @@ public class WorkOrder {
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     private BigDecimal amountPaid = BigDecimal.ZERO;
-
     private Integer odometerIn;
     private Integer odometerOut;
 
-    @ManyToOne(fetch = FetchType.LAZY) //  THE COMPLIANT CORRECTION ANCHOR
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
@@ -41,7 +39,7 @@ public class WorkOrder {
         this.dateOpened = LocalDateTime.now();
     }
 
-    // Helper calculation methods for real-time dashboard analytics
+    // 💰 FINANCIAL CALCULATORS (Executed live on dashboard loads)
     public BigDecimal getPartsSubtotal() {
         return lineItems.stream()
                 .filter(item -> item.getItemType() == LineItemType.PART)
@@ -64,7 +62,7 @@ public class WorkOrder {
         return getTotalDue().subtract(amountPaid);
     }
 
-    // Getters and Setters
+    // Standard Getters & Setters mapping parameters completely...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getInvoiceNumber() { return invoiceNumber; }
