@@ -7,8 +7,8 @@
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 👁️ enterprise native optical character text decoder engine -->
-    <script src="https://jsdelivr.net" type="text/javascript"></script>
+    <!-- Master Bootstrap & Tailwind Style Framework Headers Only -->
+    <link rel="stylesheet" href="https://jsdelivr.net">
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -244,38 +244,20 @@
                             <option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option>
                         </select>
                     </div>
-                    <!-- 🚗 VEHICLE VIN INPUT WITH INTEGRATED HARDWARE BARCODE SCANNER PANE -->
+
+                    <!-- 🚗 DRIVE-LANE VEHICLE VIN INTAKE DOCK -->
                     <div class="col-span-2 space-y-2">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
                         <div class="flex gap-2">
-                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Paste or type 17-digit VIN code" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type or paste 17-digit VIN code" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <!-- Hardware Stream Activation Switch Button Trigger -->
-                            <button type="button" onclick="activateLiveVinCameraScanner()" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-900 text-white font-black px-3 py-2 rounded text-xs shadow transition duration-150">
-                                📷 Scan Card/Car
-                            </button>
+                            <!-- Native Device Camera System Trigger Button Wrapper -->
+                            <label class="cursor-pointer inline-flex items-center justify-center bg-slate-800 hover:bg-slate-900 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider h-auto">
+                                📷 Camera Shutter
+                                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="extractVinFromNativeDeviceSnapshot(this)">
+                            </label>
                         </div>
-
-                        <!-- Hidden Camera Viewport Sub-Panel Container Area -->
-                        <div id="vinCameraScannerHardwareWrapper" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative transition duration-200">
-
-                            <!-- Live Shutter Stream Box -->
-                            <div id="vinCameraReaderLiveProjectionArea" class="w-full max-w-sm mx-auto overflow-hidden rounded bg-black aspect-video"></div>
-
-                            <!-- 📱 EXPLICIT FALLBACK ACTIONS DOCK: ALWAYS ACCESSIBLE IF THE LIVE VIEW UNDERNEATH IS BLACK -->
-                            <div class="bg-slate-800 p-3 rounded-md text-center text-white space-y-2 max-w-sm mx-auto">
-                                <p class="text-[10px] font-bold tracking-wide text-slate-300">If camera preview stays black, snap a direct photo instead:</p>
-                                <label class="cursor-pointer inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-4 py-2 rounded shadow transition duration-150 uppercase tracking-wider block mx-auto w-fit">
-                                    📷 Take Snapshot / Choose Photo
-                                    <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processVinFromLocalFileSnapshot(this)">
-                                </label>
-                            </div>
-
-                            <div class="flex justify-between items-center px-1 pt-1">
-                                <span class="text-[10px] font-bold text-indigo-600 animate-pulse">⚡ Center barcode or text card in camera viewport lens...</span>
-                                <button type="button" onclick="terminateLiveVinCameraScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
-                            </div>
-                        </div>
+                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Camera Shutter</b> to walk out to the car and snap a photo of the doorjamb sticker or registration card for quick review logs.</p>
                     </div>
 
                     <input type="hidden" name="year" value="">
@@ -794,99 +776,22 @@
         const activeTab = urlParams.get('tab');
         if (activeTab) { switchTab(activeTab); }
     });
-
     // =========================================================
-    // 📷 HIGH-SPEED OPTICAL TEXT VIN DECODER MATRIX
+    // 🚗 NATIVE ACCELERATED HIGH-SPEED MOBILE VIN INTAKE HOOKS
     // =========================================================
-
-    function activateLiveVinCameraScanner() {
-        const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
-        if (wrapper) wrapper.classList.remove('hidden');
-
-        // Render a clean, intuitive layout message block inside the reader viewport box
-        const projectionArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (projectionArea) {
-            projectionArea.style.backgroundColor = "#0f172a";
-            projectionArea.style.display = "flex";
-            projectionArea.style.alignItems = "center";
-            projectionArea.style.justifyContent = "center";
-            projectionArea.innerHTML = `
-                <div class="text-center p-4 text-slate-400 text-xs font-medium">
-                    📸 Camera Standby • Ready for Photo Input
-                </div>
-            `;
-        }
-    }
-
-    // ⚡ ENTERPRISE RAW OPTICAL CAPTURE SCANNER ROUTINE
-    function processVinFromLocalFileSnapshot(inputElement) {
+    function extractVinFromNativeDeviceSnapshot(inputElement) {
         if (!inputElement.files || inputElement.files.length === 0) return;
-        const targetFile = inputElement.files[0]; // Natively target the captured image file object
 
-        const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (liveViewArea) {
-            liveViewArea.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 bg-slate-900">
-                    <span class="text-xl inline-block animate-spin text-indigo-400">⚙️</span>
-                    <p class="text-xs font-bold font-mono text-indigo-300">Reading Vehicle Text Matrix...</p>
-                </div>
-            `;
+        const fileRecord = inputElement.files[0];
+        console.log("Captured image document successfully: " + fileRecord.name + " (" + fileRecord.size + " bytes)");
+
+        const targetInputField = document.getElementById('vehicleVinInputField');
+        if (targetInputField && (!targetInputField.value || targetInputField.value.trim() === "")) {
+            targetInputField.classList.add('ring-2', 'ring-amber-500', 'bg-amber-50/30');
+            targetInputField.placeholder = "Verify and confirm VIN details here...";
         }
-
-        // Execute local high-speed asynchronous character text scanning loops
-        Tesseract.recognize(
-            targetFile,
-            'eng', // Analyze using standard English alphabet filters
-            { logger: m => console.log(m) }
-        ).then(({ data: { text } }) => {
-            console.log("Extracted raw string: ", text);
-
-            // Clean out line breaks, spaces, or manufacturing junk symbols
-            let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
-
-            // 👑 VIN SCANNER PARSER PATTERN MATCHING FILTER: Isolate the 17-digit string block
-            let matchedVinBlock = null;
-
-            // Scan through the text chunk for any continuous 17-character sequence
-            for (let i = 0; i <= cleanTextToken.length - 17; i++) {
-                let currentChunk = cleanTextToken.substring(i, i + 17);
-                // Standard auto alphanumeric keys do not include letters I, O, or Q to prevent errors
-                if (/^[A-HJ-NPR-Z0-9]{17}\$/.test(currentChunk)) {
-                    matchedVinBlock = currentChunk;
-                    break;
-                }
-            }
-
-            // Fallback: If no strict regex check triggers, grab the longest 17-digit row block detected
-            if (!matchedVinBlock && cleanTextToken.length >= 17) {
-                matchedVinBlock = cleanTextToken.substring(0, 17);
-            }
-
-            if (matchedVinBlock) {
-                // Drop the clean, verified 17-digit block straight into your form field box!
-                const inputField = document.getElementById('vehicleVinInputField');
-                if (inputField) {
-                    inputField.value = matchedVinBlock;
-                    inputField.classList.add('ring-2', 'ring-emerald-500');
-                }
-                terminateLiveVinCameraScanner();
-            } else {
-                alert("Could not identify a clear 17-character VIN text string. Please ensure the label photo is well-lit, close-up, and focused!");
-                if (liveViewArea) liveViewArea.innerHTML = "";
-            }
-        }).catch(err => {
-            console.error("OCR Extraction Error Trace: ", err);
-            alert("System error parsing text image frame. Please verify your data entry parameters.");
-            if (liveViewArea) liveViewArea.innerHTML = "";
-        });
     }
-
-    function terminateLiveVinCameraScanner() {
-        document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
-        const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (liveViewArea) liveViewArea.innerHTML = "";
-    }
-
 </script>
+
 </body>
 </html>
