@@ -784,7 +784,7 @@
     // =========================================================
     let activeHtml5VinScannerInstance = null;
 
-    // Load the official CDN library dependency into the browser thread on fly execution
+    // ⚡ FIXED PATH: Loads the official, full Html5-Qrcode core code package
     (function injectScannerLibrary() {
         const libraryTag = document.createElement('script');
         libraryTag.src = "https://unpkg.com";
@@ -796,64 +796,85 @@
         const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
         if (wrapper) wrapper.classList.remove('hidden');
 
-        // Clean up any lingering camera tracking frames from previous sessions
         if (activeHtml5VinScannerInstance) {
-            activeHtml5VinScannerInstance.clear();
+            try { activeHtml5VinScannerInstance.clear(); } catch(e){}
         }
 
-        activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
+        // Initialize with robust fallback flags
+        activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
+            useBarCodeDetectorIfSupported: true,
+            verbose: false
+        });
 
         const runtimeConfigurationConfig = {
-            fps: 24, // Higher sample density for smooth mobile focusing
+            fps: 22, // High frame density for seamless autofocusing on shiny labels
             qrbox: function(viewWidth, viewHeight) {
-                // Returns an optimal long, thin window matching vehicle VIN layouts
-                return { width: Math.min(viewWidth * 0.85, 290), height: 90 };
+                return { width: Math.min(viewWidth * 0.85, 280), height: 95 };
             },
             aspectRatio: 1.333333
         };
 
-        // 🛡️ MOBILE HARDWARE OVERRIDE CRITERIA: Request exact back lens with fallback steps
+        // 🛡️ MOBILE HARDWARE CRITERIA: Request exact back camera with file fallbacks
         activeHtml5VinScannerInstance.start(
-            { facingMode: { exact: "environment" } }, // Forces the exact back camera zoom arrays
+            { facingMode: { exact: "environment" } }, // Forces the exact back camera zoom system
             runtimeConfigurationConfig,
             onVinBarcodeReadSuccess,
             onVinBarcodeReadFailure
         ).catch(firstErr => {
-            console.log("Exact environmental back camera missing, testing default environmental hook...");
+            console.log("Testing general environmental camera profile...");
 
-            // Fallback 1: Test general back-facing arrays without forcing exact match parameters
             activeHtml5VinScannerInstance.start(
-                { facingMode: "environment" },
+                { facingMode: "environment" }, // General rear lens hook
                 runtimeConfigurationConfig,
                 onVinBarcodeReadSuccess,
                 onVinBarcodeReadFailure
             ).catch(secondErr => {
-                console.log("General back camera missing, testing native fallback video stream...");
+                console.warn("Direct stream restricted. Falling back to native device camera controller matrix...");
 
-                // Fallback 2: Wake up any available web hardware lens (useful for laptop webcams)
-                activeHtml5VinScannerInstance.start(
-                    { deviceId: "" },
-                    runtimeConfigurationConfig,
-                    onVinBarcodeReadSuccess,
-                    onVinBarcodeReadFailure
-                ).catch(finalErr => {
-                    console.error("Camera hardware explicitly blocked by device policy: ", finalErr);
-                    alert("Camera blocked. Please verify your phone's browser app permissions allow Camera access for this website url.");
-                    terminateLiveVinCameraScanner();
-                });
+                // Clear out the live loop engine to save phone battery
+                if (activeHtml5VinScannerInstance) { activeHtml5VinScannerInstance.clear(); }
+
+                // 📱 ULTIMATE ACCELERATED FALLBACK: Drops a button to let advisors snap a direct photo instead
+                const videoArea = document.getElementById('vinCameraReaderLiveProjectionArea');
+                if (videoArea) {
+                    videoArea.style.backgroundColor = "#1e293b";
+                    videoArea.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2">
+                            <span class="text-xl">📱</span>
+                            <p class="text-xs font-bold">System Camera Stream Restricted</p>
+                            <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-4 py-2 rounded shadow transition duration-150 uppercase tracking-wider">
+                                📷 Take Snapshot / Choose Photo
+                                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processVinFromLocalFileSnapshot(this)">
+                            </label>
+                        </div>
+                    `;
+                }
             });
         });
+    }
+
+    // ⚡ IMAGE PARSER: Scans and decodes barcode symbols directly out of a captured picture snapshot
+    function processVinFromLocalFileSnapshot(inputElement) {
+        if (!inputElement.files || inputElement.files.length === 0) return;
+        const file = inputElement.files[0];
+
+        activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
+        activeHtml5VinScannerInstance.scanFile(file, true)
+            .then(decodedText => {
+                onVinBarcodeReadSuccess(decodedText, null);
+            })
+            .catch(err => {
+                console.error("Barcode index match failure: ", err);
+                alert("Could not clearly read a barcode line from that picture. Please make sure the VIN label string is well-lit and in focus!");
+            });
     }
 
     function onVinBarcodeReadSuccess(decodedTextToken, decodedResultObj) {
         if (!decodedTextToken) return;
 
-        // Strip out any hidden padding characters added by vehicle manufacturers
         let parsedVinString = decodedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
-        // Standard North American passenger vehicle strings trim down to exactly 17 characters
         if (parsedVinString.length > 17) {
-            // Strip off the leading static barcode identifiers if scanning registration documents
             if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
                 parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
             } else {
@@ -861,21 +882,16 @@
             }
         }
 
-        // Drop the finished token character layout straight into your intake panel input field box
         const inputField = document.getElementById('vehicleVinInputField');
         if (inputField) {
             inputField.value = parsedVinString;
-            // Play a sharp subtle interface execution confirmation audio beep tone if desired
             inputField.classList.add('ring-2', 'ring-emerald-500');
         }
 
-        // Cleanly power down the camera shutter array automatically to conserve advisor battery logs
         terminateLiveVinCameraScanner();
     }
 
-    function onVinBarcodeReadFailure(errorLogTrace) {
-        // Silent catch bypass layer: prevents console overflow lines while camera lens refocuses frames
-    }
+    function onVinBarcodeReadFailure(errorLogTrace) {}
 
     function terminateLiveVinCameraScanner() {
         if (activeHtml5VinScannerInstance) {
@@ -883,7 +899,7 @@
                 activeHtml5VinScannerInstance = null;
                 document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
             }).catch(err => {
-                console.error("Error shutting down camera subsystem tracking blocks: ", err);
+                activeHtml5VinScannerInstance = null;
                 document.getElementById('vinCameraScannerHardwareWrapper').classList.add('hidden');
             });
         } else {
