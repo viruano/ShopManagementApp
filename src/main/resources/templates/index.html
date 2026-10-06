@@ -796,25 +796,32 @@
         const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
         wrapper.classList.remove('hidden');
 
-        // Configure optimal vehicle drive-lane scanning parameters matrices
         activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
 
         const runtimeConfigurationConfig = {
-            fps: 15,
-            qrbox: { width: 280, height: 80 }, // Narrow box layout tailored for long VIN stripes
-            aspectRatio: 1.777778
+            fps: 20, // ⚡ Higher frame-rate for rapid focusing
+            qrbox: { width: 260, height: 100 },
+            aspectRatio: 1.333333 // Standard mobile camera aspect ratio
         };
 
-        // Enforce back-facing camera usage to automatically engage zoom lens systems on mobile phones
+        // Explicitly request the environmental (rear) camera with fallback options
         activeHtml5VinScannerInstance.start(
             { facingMode: "environment" },
             runtimeConfigurationConfig,
             onVinBarcodeReadSuccess,
             onVinBarcodeReadFailure
         ).catch(err => {
-            console.error("Camera Permissions Rejected or Line Dropped: ", err);
-            alert("Could not initialize camera line. Please verify browser hardware permission access settings.");
-            terminateLiveVinCameraScanner();
+            // If explicit facing mode fails, fall back to any available system camera
+            activeHtml5VinScannerInstance.start(
+                { deviceId: "" },
+                runtimeConfigurationConfig,
+                onVinBarcodeReadSuccess,
+                onVinBarcodeReadFailure
+            ).catch(innerErr => {
+                console.error("Camera hardware blocked: ", innerErr);
+                alert("Camera access denied. Please verify your browser site settings allow camera permissions.");
+                terminateLiveVinCameraScanner();
+            });
         });
     }
 
