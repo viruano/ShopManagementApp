@@ -794,33 +794,53 @@
 
     function activateLiveVinCameraScanner() {
         const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
-        wrapper.classList.remove('hidden');
+        if (wrapper) wrapper.classList.remove('hidden');
+
+        // Clean up any lingering camera tracking frames from previous sessions
+        if (activeHtml5VinScannerInstance) {
+            activeHtml5VinScannerInstance.clear();
+        }
 
         activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea");
 
         const runtimeConfigurationConfig = {
-            fps: 20, // ⚡ Higher frame-rate for rapid focusing
-            qrbox: { width: 260, height: 100 },
-            aspectRatio: 1.333333 // Standard mobile camera aspect ratio
+            fps: 24, // Higher sample density for smooth mobile focusing
+            qrbox: function(viewWidth, viewHeight) {
+                // Returns an optimal long, thin window matching vehicle VIN layouts
+                return { width: Math.min(viewWidth * 0.85, 290), height: 90 };
+            },
+            aspectRatio: 1.333333
         };
 
-        // Explicitly request the environmental (rear) camera with fallback options
+        // 🛡️ MOBILE HARDWARE OVERRIDE CRITERIA: Request exact back lens with fallback steps
         activeHtml5VinScannerInstance.start(
-            { facingMode: "environment" },
+            { facingMode: { exact: "environment" } }, // Forces the exact back camera zoom arrays
             runtimeConfigurationConfig,
             onVinBarcodeReadSuccess,
             onVinBarcodeReadFailure
-        ).catch(err => {
-            // If explicit facing mode fails, fall back to any available system camera
+        ).catch(firstErr => {
+            console.log("Exact environmental back camera missing, testing default environmental hook...");
+
+            // Fallback 1: Test general back-facing arrays without forcing exact match parameters
             activeHtml5VinScannerInstance.start(
-                { deviceId: "" },
+                { facingMode: "environment" },
                 runtimeConfigurationConfig,
                 onVinBarcodeReadSuccess,
                 onVinBarcodeReadFailure
-            ).catch(innerErr => {
-                console.error("Camera hardware blocked: ", innerErr);
-                alert("Camera access denied. Please verify your browser site settings allow camera permissions.");
-                terminateLiveVinCameraScanner();
+            ).catch(secondErr => {
+                console.log("General back camera missing, testing native fallback video stream...");
+
+                // Fallback 2: Wake up any available web hardware lens (useful for laptop webcams)
+                activeHtml5VinScannerInstance.start(
+                    { deviceId: "" },
+                    runtimeConfigurationConfig,
+                    onVinBarcodeReadSuccess,
+                    onVinBarcodeReadFailure
+                ).catch(finalErr => {
+                    console.error("Camera hardware explicitly blocked by device policy: ", finalErr);
+                    alert("Camera blocked. Please verify your phone's browser app permissions allow Camera access for this website url.");
+                    terminateLiveVinCameraScanner();
+                });
             });
         });
     }
