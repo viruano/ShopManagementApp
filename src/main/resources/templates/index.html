@@ -6,6 +6,9 @@
     <title>Automotive Services Management System</title>
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 🖨️ GUARANTEES BARCODE SCANNING LIBRARY IS FULLY LOADED BEFORE INTERFACE CAPTURES -->
+    <script src="https://unpkg.com" type="text/javascript"></script>
+
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -255,9 +258,21 @@
 
                         <!-- Hidden Camera Viewport Sub-Panel Container Area -->
                         <div id="vinCameraScannerHardwareWrapper" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative transition duration-200">
+
+                            <!-- Live Shutter Stream Box -->
                             <div id="vinCameraReaderLiveProjectionArea" class="w-full max-w-sm mx-auto overflow-hidden rounded bg-black aspect-video"></div>
-                            <div class="flex justify-between items-center px-1">
-                                <span class="text-[10px] font-bold text-indigo-600 animate-pulse">⚡ Center barcode or text card in viewport lens...</span>
+
+                            <!-- 📱 EXPLICIT FALLBACK ACTIONS DOCK: ALWAYS ACCESSIBLE IF THE LIVE VIEW UNDERNEATH IS BLACK -->
+                            <div class="bg-slate-800 p-3 rounded-md text-center text-white space-y-2 max-w-sm mx-auto">
+                                <p class="text-[10px] font-bold tracking-wide text-slate-300">If camera preview stays black, snap a direct photo instead:</p>
+                                <label class="cursor-pointer inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-4 py-2 rounded shadow transition duration-150 uppercase tracking-wider block mx-auto w-fit">
+                                    📷 Take Snapshot / Choose Photo
+                                    <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processVinFromLocalFileSnapshot(this)">
+                                </label>
+                            </div>
+
+                            <div class="flex justify-between items-center px-1 pt-1">
+                                <span class="text-[10px] font-bold text-indigo-600 animate-pulse">⚡ Center barcode or text card in camera viewport lens...</span>
                                 <button type="button" onclick="terminateLiveVinCameraScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
                             </div>
                         </div>
@@ -785,29 +800,15 @@
     // =========================================================
     let activeHtml5VinScannerInstance = null;
 
-    (function injectScannerLibrary() {
-        const libraryTag = document.createElement('script');
-        const protocol = "https://";
-        const domain = "://unpkg.com";
-        const folder = "html5-qrcode@2.3.8/";
-        const filename = "html5-qrcode.min.js";
-        libraryTag.src = protocol + domain + folder + filename;
-        libraryTag.type = "text/javascript";
-        document.head.appendChild(libraryTag);
-    })();
-
     function activateLiveVinCameraScanner() {
         const wrapper = document.getElementById('vinCameraScannerHardwareWrapper');
         if (wrapper) wrapper.classList.remove('hidden');
-
-        // Clear out any previous locks out of memory safely
-        const videoArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (videoArea) videoArea.innerHTML = "";
 
         if (activeHtml5VinScannerInstance) {
             try { activeHtml5VinScannerInstance.clear(); } catch(e){}
         }
 
+        // Initialize directly now that the head script tag guarantees the library exists
         activeHtml5VinScannerInstance = new Html5Qrcode("vinCameraReaderLiveProjectionArea", {
             useBarCodeDetectorIfSupported: true,
             verbose: false
@@ -821,56 +822,29 @@
             aspectRatio: 1.333333
         };
 
-        // Attempt live video stream activation loop
+        // Fire live camera focus tracking
         activeHtml5VinScannerInstance.start(
             { facingMode: "environment" },
             runtimeConfigurationConfig,
             onVinBarcodeReadSuccess,
             onVinBarcodeReadFailure
         ).catch(err => {
-            console.warn("Direct stream restricted. Falling back to native device camera snapshots...", err);
-            renderManualSnapshotFallbackUI();
+            console.warn("Direct stream restricted or blocked by device privacy rules: ", err);
         });
     }
 
-    // 📱 FALLBACK INJECTOR: Renders a secure, non-video snapshot frame inside your container box
-    function renderManualSnapshotFallbackUI() {
-        if (activeHtml5VinScannerInstance) {
-            try { activeHtml5VinScannerInstance.clear(); } catch(e){}
-        }
-
-        const videoArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (videoArea) {
-            videoArea.style.backgroundColor = "#1e293b";
-            videoArea.style.display = "flex";
-            videoArea.style.flexDirection = "column";
-            videoArea.style.alignItems = "center";
-            videoArea.style.justifyContent = "center";
-            videoArea.innerHTML = `
-                <div class="flex flex-col items-center justify-center p-4 text-center text-white space-y-3">
-                    <span class="text-2xl">📱</span>
-                    <p class="text-xs font-black tracking-tight">Camera Feed Restricted / Standby</p>
-                    <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-4 py-2 rounded shadow transition duration-150 uppercase tracking-wider block mx-auto">
-                        📷 Take Snapshot / Choose Photo
-                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processVinFromLocalFileSnapshot(this)">
-                    </label>
-                </div>
-            `;
-        }
-    }
-
-    // ⚡ FILE BARCODE DECODER MODULE: Extracts values out of the snapshot photo matrix
+    // ⚡ FILE BARCODE DECODER MODULE: Extracts values out of the captured snapshot photo file directly
     function processVinFromLocalFileSnapshot(inputElement) {
         if (!inputElement.files || inputElement.files.length === 0) return;
         const file = inputElement.files[0];
 
-        // Show scanning state inside the frame box
-        const videoArea = document.getElementById('vinCameraReaderLiveProjectionArea');
-        if (videoArea) {
-            videoArea.innerHTML = `
-                <div class="flex flex-col items-center justify-center p-4 text-center text-white space-y-2 animate-pulse">
+        // Temporarily change view content to display a clear scanning process note
+        const liveViewArea = document.getElementById('vinCameraReaderLiveProjectionArea');
+        if (liveViewArea) {
+            liveViewArea.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full p-4 text-center text-white space-y-2 animate-pulse bg-slate-900">
                     <span class="text-xl">⚙️</span>
-                    <p class="text-xs font-bold font-mono">Parsing barcode data tree matrix...</p>
+                    <p class="text-xs font-bold font-mono">Parsing barcode image matrix data...</p>
                 </div>
             `;
         }
@@ -882,8 +856,8 @@
             })
             .catch(err => {
                 console.error("Barcode matching matrix failure on image block: ", err);
-                alert("Could not read a barcode from that picture. Please make sure the VIN code line is well-lit, centered, and in focus!");
-                renderManualSnapshotFallbackUI();
+                alert("Could not read a barcode from that picture. Please make sure the VIN code stripe on the doorjamb or card is well-lit and perfectly in focus!");
+                if (liveViewArea) liveViewArea.innerHTML = "";
             });
     }
 
@@ -909,9 +883,7 @@
         terminateLiveVinCameraScanner();
     }
 
-    function onVinBarcodeReadFailure(errorLogTrace) {
-        // Safe skip: prevents log flood trace lines during refocus passes
-    }
+    function onVinBarcodeReadFailure(errorLogTrace) {}
 
     function terminateLiveVinCameraScanner() {
         if (activeHtml5VinScannerInstance) {
