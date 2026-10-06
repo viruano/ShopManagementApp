@@ -784,10 +784,16 @@
     // =========================================================
     let activeHtml5VinScannerInstance = null;
 
-    // ⚡ FIXED PATH: Loads the official, full Html5-Qrcode core code package
     (function injectScannerLibrary() {
         const libraryTag = document.createElement('script');
-        libraryTag.src = "https://unpkg.com";
+
+        // Assembles the path using plain text parts so it can never be clipped
+        const protocol = "https://";
+        const domain = "://unpkg.com";
+        const folder = "html5-qrcode@2.3.8/";
+        const filename = "html5-qrcode.min.js";
+
+        libraryTag.src = protocol + domain + folder + filename;
         libraryTag.type = "text/javascript";
         document.head.appendChild(libraryTag);
     })();
