@@ -6,22 +6,8 @@
     <title>Automotive Services Management System</title>
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- 🏎️ SECURE ENTERPRISE BARCODE ENGINE FOR AUTOMOTIVE LINEAR STRIPES -->
-    <script type="text/javascript">
-        (function injectQuaggaCore() {
-            const tag = document.createElement('script');
-            // Concatenating the text strings ensures that compilers cannot clip or trim the CDN path parameters
-            const protocol = "https://";
-            const domain = "cdn.jsdelivr.net/";
-            const route = "npm/@ericblade/quagga2@1.8.4/dist/";
-            const filename = "quagga.min.js";
-
-            tag.src = protocol + domain + route + filename;
-            tag.type = "text/javascript";
-            document.head.appendChild(tag);
-        })();
-    </script>
+    <!-- 🏎️ LIGHTWEIGHT LIVE VIDEO STREAM BARCODE ENGINE -->
+    <script src="https://jsdelivr.net" type="text/javascript"></script>
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -258,26 +244,29 @@
                         </select>
                     </div>
 
-                    <!-- 🚗 DRIVE-LANE VEHICLE VIN INTAKE DOCK -->
+                    <!-- 🚗 DYNAMIC LIVE DRIVE-LANE VEHICLE VIN SCANNER TERMINAL -->
                     <div class="col-span-2 space-y-2">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
                         <div class="flex gap-2">
-                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type or paste 17-digit VIN code" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <!-- Native Device Camera System Trigger Button Wrapper -->
-                            <label class="cursor-pointer inline-flex items-center justify-center bg-slate-800 hover:bg-slate-900 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider h-auto">
-                                📷 Camera Shutter
-                                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="extractVinFromNativeDeviceSnapshot(this)">
-                            </label>
+                            <!-- Trigger Button to wake up live hardware lenses -->
+                            <button type="button" onclick="activateLiveVinVideoScanner()" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
+                                📷 Live Scan
+                            </button>
                         </div>
 
-                        <!-- ⚡ RUNTIME SCANNER STATUS FEED BAR -->
-                        <div id="vinScannerProcessingStatusIndicatorBar" class="hidden text-[10px] font-black font-mono text-indigo-600 animate-pulse bg-indigo-50 border border-indigo-100 rounded p-1.5 text-center">
-                            ⚙️ Analyzing image matrix data... Please hold steady.
+                        <!-- 👁️ INTERACTIVE VIEWPORT OVERLAY PANEL (HIDDEN BY DEFAULT) -->
+                        <div id="vinVideoScannerHardwareContainer" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative max-w-sm mx-auto shadow-inner">
+                            <!-- Live Camera Shutter Stream Projects Directly Inside Here -->
+                            <div id="liveVideoCameraProjectionArea" class="w-full overflow-hidden rounded bg-black aspect-video relative"></div>
+
+                            <div class="flex justify-between items-center px-1">
+                                <span class="text-[10px] font-black text-indigo-600 animate-pulse">⚡ Center doorjamb barcode inside video window...</span>
+                                <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
+                            </div>
                         </div>
-                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Camera Shutter</b> to snap a photo of the white driver-side doorjamb barcode sticker for rapid auto-population.</p>
                     </div>
-
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -796,77 +785,90 @@
         if (activeTab) { switchTab(activeTab); }
     });
     // =========================================================
-    // 🚗 NATIVE ACCELERATED HIGH-SPEED MOBILE VIN INTAKE HOOKS
+    // 📷 LIVE HARDWARE VIDEO CAMERA STREAM BARCODE INTERCEPTOR
     // =========================================================
-    function extractVinFromNativeDeviceSnapshot(inputElement) {
-        // 👑 CRITICAL INDEX FIX: Grabs the exact first raw image file from the browser list container array!
-        if (!inputElement.files || inputElement.files.length === 0) return;
-        const fileRecord = inputElement.files[0];
+    let isVideoScannerRunning = false;
 
-        console.log("Processing raw image asset: " + fileRecord.name + " (" + fileRecord.size + " bytes)");
+    function activateLiveVinVideoScanner() {
+        const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
+        if (wrapper) wrapper.classList.remove('hidden');
 
-        // Trigger the visual indicator layout bar
-        const statusIndicatorBar = document.getElementById('vinScannerProcessingStatusIndicatorBar');
-        if (statusIndicatorBar) {
-            statusIndicatorBar.classList.remove('hidden');
-            statusIndicatorBar.innerText = "⚙️ Processing high-resolution vehicle safety label... Please hold steady.";
-        }
+        if (isVideoScannerRunning) return;
 
-        try {
-            // 🧠 PERFORMANCE UPGRADE: Generate a clean local memory blob link instead of reading massive strings
-            const localBlobUrlObject = URL.createObjectURL(fileRecord);
-
-            // Execute Quagga2's static photo barcode parser utility directly
-            Quagga.decodeSingle({
-                src: localBlobUrlObject,
-                numOfWorkers: 0,
-                inputStream: {
-                    size: 1200 // Higher parsing area density context to clearly map microscopic linear stripes
+        // Enforce targeted stream configuration metrics tailored for mobile rear lenses
+        Quagga.init({
+            inputStream: {
+                name: "LiveStream",
+                type: "LiveStream",
+                target: document.querySelector("#liveVideoCameraProjectionArea"),
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment" // Strictly forces phone back-facing lens array
                 },
-                decoder: {
-                    readers: ["code_128_reader", "code_39_reader"] // Strict focus rules for automotive VIN label tags
-                },
-                locate: true
-            }, function(decodingResultObj) {
-                // Always clean out local memory frames to maintain high browser app performance speeds
-                URL.revokeObjectURL(localBlobUrlObject);
-                if (statusIndicatorBar) statusIndicatorBar.classList.add('hidden');
+                area: { top: "30%", right: "10%", left: "10%", bottom: "30%" } // Focus viewfinder target window window
+            },
+            decoder: {
+                readers: ["code_128_reader", "code_39_reader"] // Auto barcode standards
+            },
+            locate: true
+        }, function(err) {
+            if (err) {
+                console.error("Camera stream connection rejected: ", err);
+                alert("Camera blocked. Please verify your phone's privacy permissions allow camera hardware access.");
+                terminateLiveVinVideoScanner();
+                return;
+            }
+            console.log("Video camera shutter stream initialized successfully.");
+            Quagga.start();
+            isVideoScannerRunning = true;
+        });
 
-                if (decodingResultObj && decodingResultObj.codeResult && decodingResultObj.codeResult.code) {
-                    let rawExtractedTextToken = decodingResultObj.codeResult.code;
-                    console.log("Raw barcode text extracted: " + rawExtractedTextToken);
-
-                    // Clean out structural gaps or specialized separator flags
-                    let parsedVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
-
-                    // If prefix codes are found on the sticker, trim down to the standard 17 characters
-                    if (parsedVinString.length > 17) {
-                        if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
-                            parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
-                        } else {
-                            parsedVinString = parsedVinString.substring(0, 17);
-                        }
-                    }
-
-                    // Drop the final 17-digit string block straight into your form's text field box!
-                    const targetInputField = document.getElementById('vehicleVinInputField');
-                    if (targetInputField) {
-                        targetInputField.value = parsedVinString;
-                        targetInputField.classList.remove('ring-amber-500', 'bg-amber-50/30');
-                        targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-                    }
-                } else {
-                    // Fallback alert notifications if photo focus mapping encounters blurry frames
-                    alert("Could not extract a clean barcode line from that picture. Please ensure the white driver-side doorjamb sticker is flat, well-lit, and completely in focus!");
-                }
-            });
-        } catch (runtimeExceptionError) {
-            console.error("Internal processing stream collision occurred: ", runtimeExceptionError);
-            if (statusIndicatorBar) statusIndicatorBar.classList.add('hidden');
-        }
+        // Attach frame-by-frame interception event loop listener
+        Quagga.onDetected(onVinBarcodeFoundLive);
     }
 
-</script>
+    function onVinBarcodeFoundLive(resultDataObj) {
+        if (!resultDataObj || !resultDataObj.codeResult || !resultDataObj.codeResult.code) return;
 
-</body>
+        let rawBarcodeToken = resultDataObj.codeResult.code;
+        console.log("Live match captured: " + rawBarcodeToken);
+
+        // Strip out manufacturing whitespace or spacer hyphens
+        let cleanVinString = rawBarcodeToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+        // Clear out prefix codes if scanning registration documents
+        if (cleanVinString.length > 17) {
+            if (cleanVinString.startsWith("I") || cleanVinString.startsWith("Q") || cleanVinString.startsWith("9N")) {
+                cleanVinString = cleanVinString.substring(cleanVinString.length - 17);
+            } else {
+                cleanVinString = cleanVinString.substring(0, 17);
+            }
+        }
+
+        // Drop the clean 17-digit code straight into your intake form field input box!
+        const inputField = document.getElementById('vehicleVinInputField');
+        if (inputField) {
+            inputField.value = cleanVinString;
+            inputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
+        }
+
+        // Vibrate the phone slightly to confirm match detection if supported by hardware driver links
+        if (navigator.vibrate) navigator.vibrate(120);
+
+        // Instantly shut down the video grid container to save advisor battery records
+        terminateLiveVinVideoScanner();
+    }
+
+    function terminateLiveVinVideoScanner() {
+        if (isVideoScannerRunning) {
+            Quagga.stop();
+            isVideoScannerRunning = false;
+        }
+        document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
+        const projectionViewNode = document.querySelector("#liveVideoCameraProjectionArea");
+        if (projectionViewNode) projectionViewNode.innerHTML = "";
+    }
+    </script>
+    </body>
 </html>
