@@ -6,6 +6,8 @@
     <title>Automotive Services Management System</title>
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 🏎️ LIGHTWEIGHT AUTOMOTIVE PHOTO BARCODE DECODER -->
+    <script src="https://unpkg.com" type="text/javascript"></script>
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -251,11 +253,12 @@
                             <!-- 📷 EXPLICIT ACCELERATED CAMERA BUTTON TRIGGER -->
                             <label class="cursor-pointer inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider h-auto shrink-0 select-none">
                                 📷 Scan VIN Barcode
-                                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="executeNativeDeviceVinScannerHook(this)">
+                                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="decodeVinFromCapturedPhotoAsset(this)">
                             </label>
                         </div>
-                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Scan VIN Barcode</b> to walk out to the vehicle and snap a photo of the white driver-side doorjamb sticker or registration card for quick logs.</p>
+                        <p class="text-[10px] font-medium text-slate-400 mt-1">Tap <b>Scan VIN Barcode</b> to walk out to the vehicle and snap a photo of the white driver-side doorjamb sticker or registration card for quick auto-population.</p>
                     </div>
+
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -775,23 +778,61 @@
     });
 
     // =========================================================
-    // 🚗 NATIVE ACCELERATED HIGH-SPEED MOBILE VIN INTAKE HOOKS
+    // 🚗 NATIVE ACCELERATED HIGH-SPEED MOBILE VIN DECODER
     // =========================================================
-    function executeNativeDeviceVinScannerHook(inputElement) {
+    function decodeVinFromCapturedPhotoAsset(inputElement) {
         if (!inputElement.files || inputElement.files.length === 0) return;
 
-        // Natively capture the processed high-contrast image file from your device motherboard
-        const targetPhotoAsset = inputElement.files[0];
-        console.log("Captured image document successfully: " + targetPhotoAsset.name + " (" + targetPhotoAsset.size + " bytes)");
+        // Isolate the single raw image file node item out of the browser upload array
+        const rawPhotoFile = inputElement.files[0];
+        console.log("Analyzing file block: " + rawPhotoFile.name);
 
-        // Automatically prompt visual focus straight to your text box to keep advisors moving fluidly
+        // Temporarily shift the placeholder text to let the advisor know calculations are active
         const targetInputField = document.getElementById('vehicleVinInputField');
         if (targetInputField) {
-            targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-            targetInputField.placeholder = "Confirm or enter VIN characters here...";
-            targetInputField.focus();
+            targetInputField.value = "";
+            targetInputField.placeholder = "⚙️ Scanning barcode from photo matrix...";
+            targetInputField.classList.add('ring-2', 'ring-amber-500', 'bg-amber-50/10');
         }
+
+        // Initialize a clean, dedicated client-side file reader instance
+        const html5PhotoDecoder = new Html5Qrcode("vehicleVinInputField"); // Binds to an off-screen node fallback safely
+
+        // Execute the image barcode extraction scan
+        html5PhotoDecoder.scanFile(rawPhotoFile, true)
+            .then(function(extractedTextToken) {
+                console.log("Barcode characters successfully read: ", extractedTextToken);
+
+                // Clean out spaces, dividers, or manufacturer padding symbols
+                let cleanVinString = extractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+                // If prefix padding characters are present, extract the standard 17-character sequence
+                if (cleanVinString.length > 17) {
+                    if (cleanVinString.startsWith("I") || cleanVinString.startsWith("Q") || cleanVinString.startsWith("9N")) {
+                        cleanVinString = cleanVinString.substring(cleanVinString.length - 17);
+                    } else {
+                        cleanVinString = cleanVinString.substring(0, 17);
+                    }
+                }
+
+                // Drop the finalized 17-character text token straight into your active input tag!
+                if (targetInputField) {
+                    targetInputField.value = cleanVinString;
+                    targetInputField.classList.remove('ring-2', 'ring-amber-500', 'bg-amber-50/10');
+                    targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
+                }
+            })
+            .catch(function(err) {
+                console.error("Barcode matching matrix missed: ", err);
+                alert("Could not identify a clear barcode in that snapshot. Please ensure the white driver-side doorjamb sticker is flat, well-lit, and completely in focus!");
+                if (targetInputField) {
+                    targetInputField.value = "";
+                    targetInputField.placeholder = "Type or paste 17-digit VIN code";
+                    targetInputField.classList.remove('ring-2', 'ring-amber-500', 'bg-amber-50/10');
+                }
+            });
     }
+
 </script>
 </body>
 </html>
