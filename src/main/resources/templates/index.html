@@ -799,66 +799,68 @@
 
         if (activeHtml5VinVideoScannerInstance) return;
 
-        // Initialize directly now that the head script tag guarantees the library exists
-        activeHtml5VinVideoScannerInstance = new Html5Qrcode("liveVideoCameraProjectionArea", {
-            useBarCodeDetectorIfSupported: true,
-            verbose: false
-        });
+        // 🧠 THE TIMING BUFFER FIX: Delays camera wake-up for 250ms so the popup modal can finish drawing first!
+        setTimeout(function() {
+            try {
+                activeHtml5VinVideoScannerInstance = new Html5Qrcode("liveVideoCameraProjectionArea", {
+                    useBarCodeDetectorIfSupported: true,
+                    verbose: false
+                });
 
-        const runtimeConfigurationConfig = {
-            fps: 24, // High frequency polling matrix for instantaneous capture loops
-            qrbox: function(viewWidth, viewHeight) {
-                // Returns an elegant, thin neon scanning window tailored for linear VIN labels
-                return { width: Math.min(viewWidth * 0.85, 290), height: 85 };
-            },
-            aspectRatio: 1.333333
-        };
+                const runtimeConfigurationConfig = {
+                    fps: 20, // Stable sampling frequency for mobile devices
+                    qrbox: function(viewWidth, viewHeight) {
+                        // Creates a tight horizontal lane optimized for linear VIN stripes
+                        return { width: Math.min(viewWidth * 0.85, 290), height: 85 };
+                    },
+                    aspectRatio: 1.333333
+                };
 
-        // Fire live hardware camera focus tracking tracking loops natively
-        activeHtml5VinVideoScannerInstance.start(
-            { facingMode: "environment" }, // Strictly forces device rear-facing lens array
-            runtimeConfigurationConfig,
-            onVinBarcodeFoundLive,
-            onVinBarcodeReadFailure
-        ).catch(err => {
-            console.error("Direct stream restricted or blocked by device privacy rules: ", err);
-            alert("Camera blocked. Please ensure you are viewing this via an HTTPS secure link and browser permissions are granted.");
-            terminateLiveVinVideoScanner();
-        });
+                // Launch the camera motherboard connection
+                activeHtml5VinVideoScannerInstance.start(
+                    { facingMode: "environment" }, // Forces rear phone camera lens
+                    runtimeConfigurationConfig,
+                    onVinBarcodeFoundLive,
+                    function(errorLog) {
+                        // 🛡️ INDEPENDENT ERROR BYPASS: Prevents camera stream crashes during frame slips
+                    }
+                ).catch(err => {
+                    console.error("Camera stream rejected at start: ", err);
+                    terminateLiveVinVideoScanner();
+                });
+            } catch (initError) {
+                console.error("Scanner failed to initialize on zero-width container: ", initError);
+                terminateLiveVinVideoScanner();
+            }
+        }, 250); // ⚡ 250ms delay guarantees the HTML modal is fully visible and ready!
     }
 
-    function onVinBarcodeFoundLive(rawExtractedTextToken, decodedResultObj) {
+    function onVinBarcodeFoundLive(rawExtractedTextToken) {
         if (!rawExtractedTextToken) return;
         console.log("Live match captured: " + rawExtractedTextToken);
 
-        // Strip out manufacturing gaps or specialized separator flags
-        let parsedVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+        // Strip gaps, punctuation, or formatting markers
+        let cleanVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
-        // If prefix codes are found on a registration card, trim down to the standard 17 characters
-        if (parsedVinString.length > 17) {
-            if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
-                parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
+        // If scanning registration documents with extra prefix keys, trim down to standard 17 digits
+        if (cleanVinString.length > 17) {
+            if (cleanVinString.startsWith("I") || cleanVinString.startsWith("Q") || cleanVinString.startsWith("9N")) {
+                cleanVinString = cleanVinString.substring(cleanVinString.length - 17);
             } else {
-                parsedVinString = parsedVinString.substring(0, 17);
+                cleanVinString = cleanVinString.substring(0, 17);
             }
         }
 
-        // Drop the finalized 17-digit string block straight into your form's input text box!
+        // Drop the clean string directly into your VIN field input box!
         const targetInputField = document.getElementById('vehicleVinInputField');
         if (targetInputField) {
-            targetInputField.value = parsedVinString;
+            targetInputField.value = cleanVinString;
             targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-
-            // Automatically fire an input change event to prompt your NHTSA API decoder instantly
-            targetInputField.dispatchEvent(new Event('change'));
+            targetInputField.dispatchEvent(new Event('change')); // Auto-fires your backend NHTSA decoder
         }
 
-        if (navigator.vibrate) navigator.vibrate(120); // Sharp haptic feedback verification click
+        if (navigator.vibrate) navigator.vibrate(120); // Sharp vibration feedback click confirmation
         terminateLiveVinVideoScanner();
-    }
-
-    function onVinBarcodeReadFailure(errorLogTrace) {
-        // Safe skip: prevents console flood lines during autofocus frames pass
     }
 
     function terminateLiveVinVideoScanner() {
