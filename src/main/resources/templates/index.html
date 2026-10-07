@@ -804,6 +804,29 @@
     // =========================================================
     let activeLocalCameraMediaStream = null;
     let isCurrentlyProcessingVideoFrame = false;
+    let preloadedOcrWorkerInstance = null;
+
+    // ⚡ PRELOAD ENGINE: Spin up worker and download language models immediately on page load
+    (async function initializeAndPreloadOcrWorker() {
+        try {
+            console.log("Initializing background OCR worker thread...");
+            preloadedOcrWorkerInstance = await Tesseract.createWorker('eng', 1, {
+                logger: function(progressLog) {
+                    // Catch the download stream and feed it directly to the UI bar if visible
+                    if (progressLog.status === 'initializing api' || progressLog.status === 'recognizing text') {
+                        const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
+                        if (feedbackTicker && isCurrentlyProcessingVideoFrame) {
+                            const percentValue = Math.floor(progressLog.progress * 100);
+                            feedbackTicker.innerText = "⚙️ Reading text matrices: " + percentValue + "% completed...";
+                        }
+                    }
+                }
+            });
+            console.log("OCR engine language modules cached and standby ready.");
+        } catch (preloadException) {
+            console.error("Failed to preload tracking data models: ", preloadException);
+        }
+    })();
 
     function activateLiveVinVideoScanner() {
         const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
@@ -842,8 +865,8 @@
         }
     }
 
-    // 🧠 FIXED POINT SNAPSHOT EXTRACTOR
-    function captureCurrentVideoFrameForOcr() {
+    // 🧠 HIGH-SPEED ISOLATED CANVAS SNAPSHOT READER
+    async function captureCurrentVideoFrameForOcr() {
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (!videoElement || videoElement.paused || videoElement.ended || isCurrentlyProcessingVideoFrame) return;
 
@@ -851,18 +874,16 @@
         const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
 
         if (feedbackTicker) {
-            feedbackTicker.innerText = "⚙️ Processing frozen text matrix frame... Please hold steady.";
+            feedbackTicker.innerText = "⚙️ Initializing text matrix worker... Please hold steady.";
             feedbackTicker.className = "text-[10px] font-black font-mono text-center text-amber-600 py-1 bg-amber-50 rounded border border-amber-100 animate-pulse";
         }
 
-        // Create an offline canvas to grab the exact frozen frame pixels
+        // Setup our crop area coordinates bounding rectangle
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-
         const videoWidth = videoElement.videoWidth;
         const videoHeight = videoElement.videoHeight;
 
-        // Calculate our strict 85% by 30% crop window coordinates
         const cropWidth = Math.floor(videoWidth * 0.85);
         const cropHeight = Math.floor(videoHeight * 0.30);
         const cropLeft = Math.floor((videoWidth - cropWidth) / 2);
@@ -870,59 +891,60 @@
 
         canvas.width = cropWidth;
         canvas.height = cropHeight;
-
-        // Slice out *only* the pixels inside the red bounding box
         ctx.drawImage(videoElement, cropLeft, cropTop, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-        // Run character text extraction on our crisp, isolated canvas image
-        Tesseract.recognize(canvas, 'eng')
-            .then(({ data: { text } }) => {
-                console.log("Text match extracted from frozen frame: ", text);
+        try {
+            // Use our preloaded standby worker to process the image canvas in milliseconds
+            let workerToUse = preloadedOcrWorkerInstance;
+            if (!workerToUse) {
+                // Emergency fallback if page loaded too fast and worker wasn't ready
+                workerToUse = await Tesseract.createWorker('eng');
+            }
 
-                // Clean alphanumeric data tokens
-                let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+            const { data: { text } } = await workerToUse.recognize(canvas);
+            console.log("Text match extracted from frozen frame: ", text);
 
-                // Scan the string row for a solid 17-character sequence
-                let matchedVinBlock = null;
-                for (let i = 0; i <= cleanTextToken.length - 17; i++) {
-                    let currentChunk = cleanTextToken.substring(i, i + 17);
-                    if (/^[A-HJ-NPR-Z0-9]{17}$/.test(currentChunk)) {
-                        matchedVinBlock = currentChunk;
-                        break;
-                    }
+            let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+            // Look for standard 17-digit automotive patterns
+            let matchedVinBlock = null;
+            for (let i = 0; i <= cleanTextToken.length - 17; i++) {
+                let currentChunk = cleanTextToken.substring(i, i + 17);
+                if (/^[A-HJ-NPR-Z0-9]{17}$/.test(currentChunk)) {
+                    matchedVinBlock = currentChunk;
+                    break;
                 }
+            }
 
-                // Fallback: If no strict regex matches, take the first 17-character block detected
-                if (!matchedVinBlock && cleanTextToken.length >= 17) {
-                    matchedVinBlock = cleanTextToken.substring(0, 17);
+            if (!matchedVinBlock && cleanTextToken.length >= 17) {
+                matchedVinBlock = cleanTextToken.substring(0, 17);
+            }
+
+            if (matchedVinBlock) {
+                const targetInputField = document.getElementById('vehicleVinInputField');
+                if (targetInputField) {
+                    targetInputField.value = matchedVinBlock;
+                    targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
                 }
+                if (navigator.vibrate) navigator.vibrate(150);
+                terminateLiveVinVideoScanner();
+            } else {
+                alert("Could not identify a clear 17-character VIN sequence in that shot. Extracted text read: \"" + text.trim() + "\"\n\nPlease make sure the text is completely flat inside the red lines and try tapping once more!");
+                resetFeedbackTickerBar();
+            }
+        } catch (ocrException) {
+            console.error("OCR tracking execution failure: ", ocrException);
+            resetFeedbackTickerBar();
+        }
+    }
 
-                if (matchedVinBlock) {
-                    const targetInputField = document.getElementById('vehicleVinInputField');
-                    if (targetInputField) {
-                        targetInputField.value = matchedVinBlock;
-                        targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-                    }
-
-                    if (navigator.vibrate) navigator.vibrate(150);
-                    terminateLiveVinVideoScanner();
-                } else {
-                    alert("Could not identify a clear 17-character VIN sequence in that shot. Please make sure the text is centered inside the red guide lines, well-lit, and try tapping again!");
-
-                    if (feedbackTicker) {
-                        feedbackTicker.innerText = "👆 Try again: Align VIN digits inside red box and tap screen to scan.";
-                        feedbackTicker.className = "text-[10px] font-black font-mono text-center text-indigo-600 py-1 bg-indigo-50 rounded border border-indigo-100";
-                    }
-                    isCurrentlyProcessingVideoFrame = false; // Reset lock to allow another try
-                }
-            })
-            .catch(err => {
-                console.error("OCR tracking execution failure: ", err);
-                isCurrentlyProcessingVideoFrame = false;
-                if (feedbackTicker) {
-                    feedbackTicker.innerText = "👆 Error reading frame. Align text and tap to try again.";
-                }
-            });
+    function resetFeedbackTickerBar() {
+        isCurrentlyProcessingVideoFrame = false;
+        const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
+        if (feedbackTicker) {
+            feedbackTicker.innerText = "👆 Try again: Align VIN digits inside red box and tap screen to scan.";
+            feedbackTicker.className = "text-[10px] font-black font-mono text-center text-indigo-600 py-1 bg-indigo-50 rounded border border-indigo-100";
+        }
     }
 
     function terminateLiveVinVideoScanner() {
@@ -937,7 +959,6 @@
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (videoElement) videoElement.srcObject = null;
     }
-
 </script>
-    </body>
+</body>
 </html>
