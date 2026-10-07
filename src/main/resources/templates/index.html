@@ -795,37 +795,39 @@
 
         if (isVideoScannerRunning) return;
 
-        // Enforce targeted stream configuration metrics tailored for mobile rear lenses
-        Quagga.init({
-            inputStream: {
-                name: "LiveStream",
-                type: "LiveStream",
-                target: document.querySelector("#liveVideoCameraProjectionArea"),
-                constraints: {
-                    width: 640,
-                    height: 480,
-                    facingMode: "environment" // Strictly forces phone back-facing lens array
+        // 🧠 FIXED LOOP ENGINE: Delays execution for 250 milliseconds to let the popup box expand fully first!
+        setTimeout(function() {
+            Quagga.init({
+                inputStream: {
+                    name: "LiveStream",
+                    type: "LiveStream",
+                    target: document.querySelector("#liveVideoCameraProjectionArea"),
+                    constraints: {
+                        width: { min: 640 }, // Flexible mobile layout parameters
+                        height: { min: 480 },
+                        facingMode: "environment" // Forces the rear lens
+                    },
+                    area: { top: "25%", right: "10%", left: "10%", bottom: "25%" }
                 },
-                area: { top: "30%", right: "10%", left: "10%", bottom: "30%" } // Focus viewfinder target window window
-            },
-            decoder: {
-                readers: ["code_128_reader", "code_39_reader"] // Auto barcode standards
-            },
-            locate: true
-        }, function(err) {
-            if (err) {
-                console.error("Camera stream connection rejected: ", err);
-                alert("Camera blocked. Please verify your phone's privacy permissions allow camera hardware access.");
-                terminateLiveVinVideoScanner();
-                return;
-            }
-            console.log("Video camera shutter stream initialized successfully.");
-            Quagga.start();
-            isVideoScannerRunning = true;
-        });
+                decoder: {
+                    readers: ["code_128_reader", "code_39_reader"] // Auto barcode rules
+                },
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error("Camera stream connection rejected: ", err);
+                    // 🚨 CLEAR INTERFACE ALERT FALLBACK LOG:
+                    alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
+                    terminateLiveVinVideoScanner();
+                    return;
+                }
+                console.log("Video camera shutter stream initialized successfully.");
+                Quagga.start();
+                isVideoScannerRunning = true;
+            });
 
-        // Attach frame-by-frame interception event loop listener
-        Quagga.onDetected(onVinBarcodeFoundLive);
+            Quagga.onDetected(onVinBarcodeFoundLive);
+        }, 250); // ⚡ 250ms buffer time clears hidden modal collision blocks completely!
     }
 
     function onVinBarcodeFoundLive(resultDataObj) {
