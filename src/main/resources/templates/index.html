@@ -795,40 +795,54 @@
 
         if (isVideoScannerRunning) return;
 
-        // 🧠 FIXED LOOP ENGINE: Delays execution for 250 milliseconds to let the popup box expand fully first!
-        setTimeout(function() {
-            Quagga.init({
-                inputStream: {
-                    name: "LiveStream",
-                    type: "LiveStream",
-                    target: document.querySelector("#liveVideoCameraProjectionArea"),
-                    constraints: {
-                        width: { min: 640 }, // Flexible mobile layout parameters
-                        height: { min: 480 },
-                        facingMode: "environment" // Forces the rear lens
-                    },
-                    area: { top: "25%", right: "10%", left: "10%", bottom: "25%" }
-                },
-                decoder: {
-                    readers: ["code_128_reader", "code_39_reader"] // Auto barcode rules
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.error("Camera stream connection rejected: ", err);
-                    // 🚨 CLEAR INTERFACE ALERT FALLBACK LOG:
-                    alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
-                    terminateLiveVinVideoScanner();
-                    return;
-                }
-                console.log("Video camera shutter stream initialized successfully.");
-                Quagga.start();
-                isVideoScannerRunning = true;
-            });
+        // 👑 NATIVE OVERRIDE HANDSHAKE: Forces the browser to immediately fire the permission prompt!
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function(stream) {
+                    // If permission is granted, shut down the temporary test line and start the scanner box
+                    stream.getTracks().forEach(track => track.stop());
 
-            Quagga.onDetected(onVinBarcodeFoundLive);
-        }, 250); // ⚡ 250ms buffer time clears hidden modal collision blocks completely!
+                    // Let the modal completely render before binding the viewfinder
+                    setTimeout(function() {
+                        Quagga.init({
+                            inputStream: {
+                                name: "LiveStream",
+                                type: "LiveStream",
+                                target: document.querySelector("#liveVideoCameraProjectionArea"),
+                                constraints: {
+                                    width: { min: 640 },
+                                    height: { min: 480 },
+                                    facingMode: "environment"
+                                },
+                                area: { top: "25%", right: "10%", left: "10%", bottom: "25%" }
+                            },
+                            decoder: {
+                                readers: ["code_128_reader", "code_39_reader"]
+                            },
+                            locate: true
+                        }, function(err) {
+                            if (err) {
+                                console.error("Quagga initialization failed: ", err);
+                                terminateLiveVinVideoScanner();
+                                return;
+                            }
+                            Quagga.start();
+                            isVideoScannerRunning = true;
+                        });
+
+                        Quagga.onDetected(onVinBarcodeFoundLive);
+                    }, 200);
+                })
+                .catch(function(err) {
+                    console.error("Native browser camera access denied: ", err);
+                    alert("Camera access denied. Please go to your phone's main App Settings and ensure your browser has permission to use the camera.");
+                    terminateLiveVinVideoScanner();
+                });
+        } else {
+            alert("Your browser or device does not support native video streaming APIs. Please ensure you are using a modern mobile browser over an HTTPS secure link.");
+        }
     }
+
 
     function onVinBarcodeFoundLive(resultDataObj) {
         if (!resultDataObj || !resultDataObj.codeResult || !resultDataObj.codeResult.code) return;
