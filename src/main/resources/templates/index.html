@@ -256,10 +256,10 @@
                             </button>
                         </div>
 
-                        <!-- 👁️ CRISP MODERN VIEWPORT OVERLAY PANEL -->
+                        <!-- 👁️ THE CORRECT ID ANCHOR POCKET MATCHING YESTERDAY'S SCOPE -->
                         <div id="vinVideoScannerHardwareContainer" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl max-w-sm mx-auto space-y-3 relative transition-all duration-300">
-                            <!-- Live Camera Shutter Stream Projects Directly Inside Here -->
-                            <div id="liveVideoCameraProjectionArea" class="w-full overflow-hidden rounded-lg bg-black aspect-video relative border border-slate-800"></div>
+                            <!-- ⚡ THE FIX: This ID must act as the primary structural node for the scanner library -->
+                            <div id="vehicleVinInputFieldReader" class="w-full overflow-hidden rounded-lg bg-black aspect-video relative border border-slate-800"></div>
 
                             <div class="flex justify-between items-center text-slate-400 px-1">
                                 <span class="text-[10px] font-bold text-indigo-400 animate-pulse tracking-wide flex items-center gap-1.5">
@@ -269,7 +269,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -799,48 +798,48 @@
 
         if (activeHtml5VinVideoScannerInstance) return;
 
-        // 🧠 THE TIMING BUFFER FIX: Delays camera wake-up for 300ms so the popup modal can finish drawing first!
+        // Delays camera wake-up for 300ms to let the modal completely finish rendering its dimensions
         setTimeout(function() {
             try {
-                // 👑 FIXED HOOK ANCHOR: Initializing using your text input field ID completely bypasses modal height bugs!
-                activeHtml5VinVideoScannerInstance = new Html5Qrcode("vehicleVinInputField", {
+                // 👑 THE CRITICAL SCOPE RECOVERY FIX: Binds directly to the verified viewer placeholder element node!
+                activeHtml5VinVideoScannerInstance = new Html5Qrcode("vehicleVinInputFieldReader", {
                     useBarCodeDetectorIfSupported: true,
                     verbose: false
                 });
 
                 const runtimeConfigurationConfig = {
-                    fps: 22, // High frequency polling matrix for instantaneous capture loops
+                    fps: 22, // High frequency scanning rate for instantaneous lock-on
                     qrbox: function(viewWidth, viewHeight) {
-                        // Creates an elegant, thin neon scanning window tailored for linear VIN labels
+                        // Returns a clean horizontal window lane tailored for long linear VIN stripes
                         return { width: Math.min(viewWidth * 0.85, 290), height: 85 };
                     },
                     aspectRatio: 1.333333
                 };
 
-                // Launch the camera stream directly into your layout projection area container
+                // Request direct lens streaming securely
                 activeHtml5VinVideoScannerInstance.start(
-                    { facingMode: "environment" }, // Strictly forces device rear-facing lens array
+                    { facingMode: "environment" }, // Forces device rear autofocus camera lens
                     runtimeConfigurationConfig,
                     onVinBarcodeFoundLive,
                     function(errorLog) {
-                        // 🛡️ INDEPENDENT ERROR BYPASS: Prevents camera stream crashes during autofocus frame slips
+                        // Local error bypass: keeps the thread active during normal autofocus frame slips
                     }
                 ).catch(err => {
-                    console.error("Camera stream rejected at start: ", err);
+                    console.error("Camera stream execution rejected: ", err);
                     terminateLiveVinVideoScanner();
                 });
             } catch (initError) {
-                console.error("Scanner failed to initialize on zero-width container: ", initError);
+                console.error("Scanner failed to initialize within the visibility scope: ", initError);
                 terminateLiveVinVideoScanner();
             }
-        }, 300); // 300ms delay guarantees the HTML modal is fully visible and ready!
+        }, 300);
     }
 
     function onVinBarcodeFoundLive(rawExtractedTextToken) {
         if (!rawExtractedTextToken) return;
-        console.log("Live match captured: " + rawExtractedTextToken);
+        console.log("Live barcode match captured: " + rawExtractedTextToken);
 
-        // Strip out manufacturing gaps or specialized separator flags
+        // Strip manufacturing gaps, spaces, or formatting punctuation
         let cleanVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
         // If prefix codes are found on a registration card, trim down to the standard 17 characters
@@ -852,15 +851,17 @@
             }
         }
 
-        // Drop the finalized 17-digit string block straight into your form's input text box!
+        // Drop the clean 17-digit string block straight into your form's input text box!
         const targetInputField = document.getElementById('vehicleVinInputField');
         if (targetInputField) {
             targetInputField.value = cleanVinString;
             targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-            targetInputField.dispatchEvent(new Event('change')); // Auto-fires your backend NHTSA decoder
+
+            // Automatically fire an input change event to prompt your NHTSA API decoder instantly
+            targetInputField.dispatchEvent(new Event('change'));
         }
 
-        if (navigator.vibrate) navigator.vibrate(120); // Sharp haptic feedback verification click confirmation
+        if (navigator.vibrate) navigator.vibrate(120); // Sharp haptic feedback click confirmation
         terminateLiveVinVideoScanner();
     }
 
@@ -877,7 +878,6 @@
             document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
         }
     }
-
 </script>
 </body>
 </html>
