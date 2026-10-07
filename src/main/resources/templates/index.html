@@ -827,6 +827,27 @@
                                 return;
                             }
                             Quagga.start();
+                            if (err) {
+                                console.error("Quagga initialization failed: ", err);
+                                terminateLiveVinVideoScanner();
+                                return;
+                            }
+                            Quagga.start();
+                            isVideoScannerRunning = true;
+
+                            // 👑 FORCE STREAM VISIBILITY OVERRIDE MATRIX:
+                            // This searches for the raw video tag inside your box and forces it to display
+                            setTimeout(function() {
+                                const nativeVideoTrackNode = document.querySelector("#liveVideoCameraProjectionArea video");
+                                if (nativeVideoTrackNode) {
+                                    nativeVideoTrackNode.style.width = "100%";
+                                    nativeVideoTrackNode.style.height = "100%";
+                                    nativeVideoTrackNode.style.objectFit = "cover";
+                                    nativeVideoTrackNode.style.display = "block";
+                                    nativeVideoTrackNode.removeAttribute("hidden");
+                                }
+                            }, 150); // Small delay ensures the canvas is generated before we style it
+
                             isVideoScannerRunning = true;
                         });
 
