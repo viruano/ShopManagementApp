@@ -259,11 +259,11 @@
 
                         <!-- 👁️ INTERACTIVE CROP-BOX VIEWPORT OVERLAY PANEL -->
                         <div id="vinVideoScannerHardwareContainer" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative max-w-sm mx-auto shadow-inner">
-                            <div class="relative w-full overflow-hidden rounded bg-black aspect-video">
-                                <!-- Live Camera Shutter Stream -->
+                            <!-- Tap-To-Freeze Trigger Hook added to the video container box -->
+                            <div onclick="captureCurrentVideoFrameForOcr()" class="relative w-full overflow-hidden rounded bg-black aspect-video cursor-pointer border border-slate-700 hover:opacity-95 transition">
                                 <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full h-full object-cover block"></video>
 
-                                <!-- 🔴 THE CROP BOX TARGETING OVERLAY: Guides the advisor to center the target text -->
+                                <!-- 🔴 THE CROP BOX TARGETING OVERLAY -->
                                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div class="w-[85%] h-[30%] border-2 border-red-500 bg-red-500/10 rounded shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] flex items-center justify-center">
                                         <div class="text-[9px] font-black text-white bg-red-600 px-2 py-0.5 rounded shadow uppercase tracking-wider animate-pulse">Align VIN Digits Here</div>
@@ -272,8 +272,8 @@
                             </div>
 
                             <!-- Status Notification Updates Bar -->
-                            <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-bold font-mono text-center text-slate-500 py-0.5">
-                                🔍 Shutter active. Place registration card digits inside the red finder box...
+                            <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-bold font-mono text-center text-indigo-600 py-1 bg-indigo-50 rounded border border-indigo-100">
+                                👆 Center the VIN text characters inside the red box and TAP THE SCREEN to capture!
                             </div>
 
                             <div class="flex justify-end pt-1">
@@ -800,10 +800,9 @@
     });
 
     // =========================================================
-    // 📷 NATIVE VIDEO CROP-BOX SCANNER & HIGH-SPEED LOGIC
+    // 📷 NATIVE VIDEO SHUTTER FRAME GRABBER EXTRACTOR
     // =========================================================
     let activeLocalCameraMediaStream = null;
-    let liveOcrProcessingIntervalTimer = null;
     let isCurrentlyProcessingVideoFrame = false;
 
     function activateLiveVinVideoScanner() {
@@ -811,6 +810,12 @@
         if (wrapper) wrapper.classList.remove('hidden');
 
         if (activeLocalCameraMediaStream) return;
+
+        const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
+        if (feedbackTicker) {
+            feedbackTicker.innerText = "👆 Center the VIN text characters inside the red box and TAP THE SCREEN to capture!";
+            feedbackTicker.className = "text-[10px] font-black font-mono text-center text-indigo-600 py-1 bg-indigo-50 rounded border border-indigo-100";
+        }
 
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({
@@ -826,10 +831,7 @@
                     const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
                     if (videoElement) {
                         videoElement.srcObject = stream;
-                        videoElement.play().then(function() {
-                            // Scan the isolated box frame every 700ms for fast feedback cycles
-                            liveOcrProcessingIntervalTimer = setInterval(executeLiveVideoFrameOcrAnalysis, 700);
-                        }).catch(function(e) { console.error(e); });
+                        videoElement.play().catch(function(e) { console.error(e); });
                     }
                 })
                 .catch(function(err) {
@@ -840,22 +842,27 @@
         }
     }
 
-    // 🧠 THE CROP FILTER EXTRACTION BLOCK
-    function executeLiveVideoFrameOcrAnalysis() {
+    // 🧠 FIXED POINT SNAPSHOT EXTRACTOR
+    function captureCurrentVideoFrameForOcr() {
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (!videoElement || videoElement.paused || videoElement.ended || isCurrentlyProcessingVideoFrame) return;
 
         isCurrentlyProcessingVideoFrame = true;
         const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
 
-        // Create an offline workspace canvas to compute the crop pixels
+        if (feedbackTicker) {
+            feedbackTicker.innerText = "⚙️ Processing frozen text matrix frame... Please hold steady.";
+            feedbackTicker.className = "text-[10px] font-black font-mono text-center text-amber-600 py-1 bg-amber-50 rounded border border-amber-100 animate-pulse";
+        }
+
+        // Create an offline canvas to grab the exact frozen frame pixels
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Calculate the exact 85% width by 30% height targeting box coordinates
         const videoWidth = videoElement.videoWidth;
         const videoHeight = videoElement.videoHeight;
 
+        // Calculate our strict 85% by 30% crop window coordinates
         const cropWidth = Math.floor(videoWidth * 0.85);
         const cropHeight = Math.floor(videoHeight * 0.30);
         const cropLeft = Math.floor((videoWidth - cropWidth) / 2);
@@ -864,31 +871,30 @@
         canvas.width = cropWidth;
         canvas.height = cropHeight;
 
-        // 🏎️ ISOLATE PIXELS: Slice out *only* the frames inside your red overlay guide
+        // Slice out *only* the pixels inside the red bounding box
         ctx.drawImage(videoElement, cropLeft, cropTop, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-        if (feedbackTicker) {
-            feedbackTicker.innerText = "⚡ Evaluating digits inside guide window...";
-            feedbackTicker.className = "text-[10px] font-black font-mono text-center text-amber-500 animate-pulse";
-        }
-
-        // Pass the optimized tiny sub-image snippet directly into the text engine
+        // Run character text extraction on our crisp, isolated canvas image
         Tesseract.recognize(canvas, 'eng')
             .then(({ data: { text } }) => {
-                console.log("Guide viewport read: ", text);
+                console.log("Text match extracted from frozen frame: ", text);
 
-                // Clean spaces, hyphens, and background document noise characters
+                // Clean alphanumeric data tokens
                 let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
-                // Isolate the continuous 17-digit pattern block
+                // Scan the string row for a solid 17-character sequence
                 let matchedVinBlock = null;
                 for (let i = 0; i <= cleanTextToken.length - 17; i++) {
                     let currentChunk = cleanTextToken.substring(i, i + 17);
-                    // Standard automotive character layouts omit letters I, O, and Q
                     if (/^[A-HJ-NPR-Z0-9]{17}$/.test(currentChunk)) {
                         matchedVinBlock = currentChunk;
                         break;
                     }
+                }
+
+                // Fallback: If no strict regex matches, take the first 17-character block detected
+                if (!matchedVinBlock && cleanTextToken.length >= 17) {
+                    matchedVinBlock = cleanTextToken.substring(0, 17);
                 }
 
                 if (matchedVinBlock) {
@@ -901,25 +907,25 @@
                     if (navigator.vibrate) navigator.vibrate(150);
                     terminateLiveVinVideoScanner();
                 } else {
+                    alert("Could not identify a clear 17-character VIN sequence in that shot. Please make sure the text is centered inside the red guide lines, well-lit, and try tapping again!");
+
                     if (feedbackTicker) {
-                        feedbackTicker.innerText = "⏳ Target missed. Keep text stable inside red window...";
-                        feedbackTicker.className = "text-[10px] font-bold font-mono text-center text-slate-500";
+                        feedbackTicker.innerText = "👆 Try again: Align VIN digits inside red box and tap screen to scan.";
+                        feedbackTicker.className = "text-[10px] font-black font-mono text-center text-indigo-600 py-1 bg-indigo-50 rounded border border-indigo-100";
                     }
-                    isCurrentlyProcessingVideoFrame = false; // Unlock thread to slice the next incoming video frame
+                    isCurrentlyProcessingVideoFrame = false; // Reset lock to allow another try
                 }
             })
             .catch(err => {
-                console.error("Frame skip: ", err);
+                console.error("OCR tracking execution failure: ", err);
                 isCurrentlyProcessingVideoFrame = false;
+                if (feedbackTicker) {
+                    feedbackTicker.innerText = "👆 Error reading frame. Align text and tap to try again.";
+                }
             });
     }
 
     function terminateLiveVinVideoScanner() {
-        if (liveOcrProcessingIntervalTimer) {
-            clearInterval(liveOcrProcessingIntervalTimer);
-            liveOcrProcessingIntervalTimer = null;
-        }
-
         if (activeLocalCameraMediaStream) {
             activeLocalCameraMediaStream.getTracks().forEach(track => track.stop());
             activeLocalCameraMediaStream = null;
@@ -931,7 +937,7 @@
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (videoElement) videoElement.srcObject = null;
     }
-    
+
 </script>
     </body>
 </html>
