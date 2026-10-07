@@ -799,46 +799,47 @@
     // 🚗 NATIVE ACCELERATED HIGH-SPEED MOBILE VIN INTAKE HOOKS
     // =========================================================
     function extractVinFromNativeDeviceSnapshot(inputElement) {
+        // 👑 CRITICAL INDEX FIX: Grabs the exact first raw image file from the browser list container array!
         if (!inputElement.files || inputElement.files.length === 0) return;
-
         const fileRecord = inputElement.files[0];
-        console.log("Captured image document successfully: " + fileRecord.name);
 
-        // Turn on the status feed bar alert layout to inform the advisor
+        console.log("Processing raw image asset: " + fileRecord.name + " (" + fileRecord.size + " bytes)");
+
+        // Trigger the visual indicator layout bar
         const statusIndicatorBar = document.getElementById('vinScannerProcessingStatusIndicatorBar');
         if (statusIndicatorBar) {
             statusIndicatorBar.classList.remove('hidden');
-            statusIndicatorBar.innerText = "⚙️ Decoding Automotive Linear Barcode... Please hold steady.";
+            statusIndicatorBar.innerText = "⚙️ Processing high-resolution vehicle safety label... Please hold steady.";
         }
 
-        // Initialize FileReader to convert image into a data URL for processing
-        const imageFileReader = new FileReader();
-        reader.onload = function(event) {
-            const dataUrlStringPayload = event.target.result;
+        try {
+            // 🧠 PERFORMANCE UPGRADE: Generate a clean local memory blob link instead of reading massive strings
+            const localBlobUrlObject = URL.createObjectURL(fileRecord);
 
-            // Execute Quagga2's static photo barcode parser utility
+            // Execute Quagga2's static photo barcode parser utility directly
             Quagga.decodeSingle({
-                src: dataUrlStringPayload,
+                src: localBlobUrlObject,
                 numOfWorkers: 0,
                 inputStream: {
-                    size: 800 // Downscales high-res mobile phone files internally for fast script parsing
+                    size: 1200 // Higher parsing area density context to clearly map microscopic linear stripes
                 },
                 decoder: {
-                    // Targets explicit linear barcodes found on automotive safety labels
-                    readers: ["code_128_reader", "code_39_reader"]
+                    readers: ["code_128_reader", "code_39_reader"] // Strict focus rules for automotive VIN label tags
                 },
-                locate: true // Auto-isolates the location of the barcode lines inside a messy photo frame
+                locate: true
             }, function(decodingResultObj) {
+                // Always clean out local memory frames to maintain high browser app performance speeds
+                URL.revokeObjectURL(localBlobUrlObject);
                 if (statusIndicatorBar) statusIndicatorBar.classList.add('hidden');
 
                 if (decodingResultObj && decodingResultObj.codeResult && decodingResultObj.codeResult.code) {
                     let rawExtractedTextToken = decodingResultObj.codeResult.code;
                     console.log("Raw barcode text extracted: " + rawExtractedTextToken);
 
-                    // Clean out manufacturer whitespace offsets or special character dividers
+                    // Clean out structural gaps or specialized separator flags
                     let parsedVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
-                    // If prefix padding characters are present, extract the standard 17-character sequence
+                    // If prefix codes are found on the sticker, trim down to the standard 17 characters
                     if (parsedVinString.length > 17) {
                         if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
                             parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
@@ -847,7 +848,7 @@
                         }
                     }
 
-                    // Drop the finalized 17-digit string block straight into your form's input text box!
+                    // Drop the final 17-digit string block straight into your form's text field box!
                     const targetInputField = document.getElementById('vehicleVinInputField');
                     if (targetInputField) {
                         targetInputField.value = parsedVinString;
@@ -855,13 +856,16 @@
                         targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
                     }
                 } else {
-                    // Fallback alerts if photo is blurry or dark
-                    alert("Could not extract a clean barcode line from that picture. Please make sure the white driver-side doorjamb sticker is flat, well-lit, and completely in focus!");
+                    // Fallback alert notifications if photo focus mapping encounters blurry frames
+                    alert("Could not extract a clean barcode line from that picture. Please ensure the white driver-side doorjamb sticker is flat, well-lit, and completely in focus!");
                 }
             });
-        };
-        imageFileReader.readAsDataURL(fileRecord);
+        } catch (runtimeExceptionError) {
+            console.error("Internal processing stream collision occurred: ", runtimeExceptionError);
+            if (statusIndicatorBar) statusIndicatorBar.classList.add('hidden');
+        }
     }
+
 </script>
 
 </body>
