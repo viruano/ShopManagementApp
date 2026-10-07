@@ -245,25 +245,28 @@
                         </select>
                     </div>
 
-                    <!-- 🚗 DYNAMIC AUTOMATED DRIVE-LANE INTAKE BARCODE TERMINAL -->
+                    <!-- 🚗 DYNAMIC LIVE DRIVE-LANE VEHICLE VIN SCANNER TERMINAL -->
                     <div class="col-span-2 space-y-3">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
                         <div class="flex gap-2">
                             <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <button type="button" onclick="activateLiveVinVideoScanner()" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
+                            <!-- ⚡ DIRECT TRIGGER: This click fires a raw browser handshake with zero delays -->
+                            <button type="button" onclick="activateLiveVinVideoScanner(event)" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
                                 📷 Live Scan
                             </button>
                         </div>
 
-                        <!-- 👁️ THE CORRECT ID ANCHOR POCKET MATCHING YESTERDAY'S SCOPE -->
+                        <!-- 👁️ CRISP MODERN VIEWPORT OVERLAY PANEL -->
                         <div id="vinVideoScannerHardwareContainer" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl max-w-sm mx-auto space-y-3 relative transition-all duration-300">
-                            <!-- ⚡ THE FIX: This ID must act as the primary structural node for the scanner library -->
-                            <div id="vehicleVinInputFieldReader" class="w-full overflow-hidden rounded-lg bg-black aspect-video relative border border-slate-800"></div>
+                            <!-- Native HTML5 Video Element with playsinline attribute to force inline rendering -->
+                            <div class="relative w-full overflow-hidden rounded-lg bg-black aspect-video border border-slate-800">
+                                <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full h-full object-cover block"></video>
+                            </div>
 
                             <div class="flex justify-between items-center text-slate-400 px-1">
                                 <span class="text-[10px] font-bold text-indigo-400 animate-pulse tracking-wide flex items-center gap-1.5">
-                                    <span class="h-1.5 w-1.5 bg-indigo-500 rounded-full"></span> Align doorjamb barcode in lens...
+                                    <span class="h-1.5 w-1.5 bg-indigo-500 rounded-full"></span> Camera viewport active...
                                 </span>
                                 <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-400 hover:text-rose-300 text-[10px] font-black uppercase tracking-wider transition">✕ Close Camera</button>
                             </div>
@@ -788,96 +791,67 @@
     });
 
     // =========================================================
-    // 📷 NATIVE LIVE VIDEO BARCODE INTERCEPTOR PLATFORM
+    // 📷 NATIVE BROWSER LIVE HARDWARE VIDEO SHUTTER STREAM
     // =========================================================
-    let activeHtml5VinVideoScannerInstance = null;
+    let activeLocalCameraMediaStream = null;
 
-    function activateLiveVinVideoScanner() {
+    function activateLiveVinVideoScanner(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
         if (wrapper) wrapper.classList.remove('hidden');
 
-        if (activeHtml5VinVideoScannerInstance) return;
+        if (activeLocalCameraMediaStream) return;
 
-        // Delays camera wake-up for 300ms to let the modal completely finish rendering its dimensions
-        setTimeout(function() {
-            try {
-                // 👑 THE CRITICAL SCOPE RECOVERY FIX: Binds directly to the verified viewer placeholder element node!
-                activeHtml5VinVideoScannerInstance = new Html5Qrcode("vehicleVinInputFieldReader", {
-                    useBarCodeDetectorIfSupported: true,
-                    verbose: false
-                });
+        // 👑 PURE USER-GESTURE HANDSHAKE: Fires instantly inside the click event to unlock permission popup rules
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "environment", // Enforces the phone's rear camera lens
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            })
+                .then(function(stream) {
+                    activeLocalCameraMediaStream = stream;
 
-                const runtimeConfigurationConfig = {
-                    fps: 22, // High frequency scanning rate for instantaneous lock-on
-                    qrbox: function(viewWidth, viewHeight) {
-                        // Returns a clean horizontal window lane tailored for long linear VIN stripes
-                        return { width: Math.min(viewWidth * 0.85, 290), height: 85 };
-                    },
-                    aspectRatio: 1.333333
-                };
-
-                // Request direct lens streaming securely
-                activeHtml5VinVideoScannerInstance.start(
-                    { facingMode: "environment" }, // Forces device rear autofocus camera lens
-                    runtimeConfigurationConfig,
-                    onVinBarcodeFoundLive,
-                    function(errorLog) {
-                        // Local error bypass: keeps the thread active during normal autofocus frame slips
+                    // Bind the raw pixel stream straight to your native HTML5 video element node
+                    const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
+                    if (videoElement) {
+                        videoElement.srcObject = stream;
+                        videoElement.setAttribute("playsinline", true);
+                        videoElement.play().catch(function(playErr) {
+                            console.error("Video play aborted by browser policy: ", playErr);
+                        });
                     }
-                ).catch(err => {
-                    console.error("Camera stream execution rejected: ", err);
+                })
+                .catch(function(err) {
+                    console.error("Native hardware stream rejected: ", err);
+                    alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
                     terminateLiveVinVideoScanner();
                 });
-            } catch (initError) {
-                console.error("Scanner failed to initialize within the visibility scope: ", initError);
-                terminateLiveVinVideoScanner();
-            }
-        }, 300);
-    }
-
-    function onVinBarcodeFoundLive(rawExtractedTextToken) {
-        if (!rawExtractedTextToken) return;
-        console.log("Live barcode match captured: " + rawExtractedTextToken);
-
-        // Strip manufacturing gaps, spaces, or formatting punctuation
-        let cleanVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
-
-        // If prefix codes are found on a registration card, trim down to the standard 17 characters
-        if (cleanVinString.length > 17) {
-            if (cleanVinString.startsWith("I") || cleanVinString.startsWith("Q") || cleanVinString.startsWith("9N")) {
-                cleanVinString = cleanVinString.substring(cleanVinString.length - 17);
-            } else {
-                cleanVinString = cleanVinString.substring(0, 17);
-            }
+        } else {
+            alert("Your browser or device does not support native video streaming APIs. Please ensure you are using a modern mobile browser over an HTTPS secure link.");
         }
-
-        // Drop the clean 17-digit string block straight into your form's input text box!
-        const targetInputField = document.getElementById('vehicleVinInputField');
-        if (targetInputField) {
-            targetInputField.value = cleanVinString;
-            targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-
-            // Automatically fire an input change event to prompt your NHTSA API decoder instantly
-            targetInputField.dispatchEvent(new Event('change'));
-        }
-
-        if (navigator.vibrate) navigator.vibrate(120); // Sharp haptic feedback click confirmation
-        terminateLiveVinVideoScanner();
     }
 
     function terminateLiveVinVideoScanner() {
-        if (activeHtml5VinVideoScannerInstance) {
-            activeHtml5VinVideoScannerInstance.stop().then(() => {
-                activeHtml5VinVideoScannerInstance = null;
-                document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
-            }).catch(err => {
-                activeHtml5VinVideoScannerInstance = null;
-                document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
-            });
-        } else {
-            document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
+        if (activeLocalCameraMediaStream) {
+            // Power down every single active hardware camera track to save advisor battery logs
+            activeLocalCameraMediaStream.getTracks().forEach(track => track.stop());
+            activeLocalCameraMediaStream = null;
+        }
+
+        document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
+        const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
+        if (videoElement) {
+            videoElement.srcObject = null;
         }
     }
+
 </script>
 </body>
 </html>
