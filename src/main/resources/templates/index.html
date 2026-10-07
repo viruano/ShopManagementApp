@@ -252,24 +252,35 @@
                         <div class="flex gap-2">
                             <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <!-- Native Trigger Button to wake up live hardware lenses -->
                             <button type="button" onclick="activateLiveVinVideoScanner()" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
                                 📷 Live Scan
                             </button>
                         </div>
 
-                        <!-- 👁️ NATIVE VIEWPORT OVERLAY PANEL (HIDDEN BY DEFAULT) -->
+                        <!-- 👁️ INTERACTIVE CROP-BOX VIEWPORT OVERLAY PANEL -->
                         <div id="vinVideoScannerHardwareContainer" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative max-w-sm mx-auto shadow-inner">
-                            <!-- Native HTML5 Video Element with playsinline attribute to force inline rendering -->
-                            <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full overflow-hidden rounded bg-black aspect-video object-cover block"></video>
+                            <div class="relative w-full overflow-hidden rounded bg-black aspect-video">
+                                <!-- Live Camera Shutter Stream -->
+                                <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full h-full object-cover block"></video>
 
-                            <div class="flex justify-between items-center px-1">
-                                <span class="text-[10px] font-black text-indigo-600 animate-pulse">⚡ Live service lane camera active...</span>
+                                <!-- 🔴 THE CROP BOX TARGETING OVERLAY: Guides the advisor to center the target text -->
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div class="w-[85%] h-[30%] border-2 border-red-500 bg-red-500/10 rounded shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] flex items-center justify-center">
+                                        <div class="text-[9px] font-black text-white bg-red-600 px-2 py-0.5 rounded shadow uppercase tracking-wider animate-pulse">Align VIN Digits Here</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status Notification Updates Bar -->
+                            <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-bold font-mono text-center text-slate-500 py-0.5">
+                                🔍 Shutter active. Place registration card digits inside the red finder box...
+                            </div>
+
+                            <div class="flex justify-end pt-1">
                                 <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
                             </div>
                         </div>
                     </div>
-
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -789,7 +800,7 @@
     });
 
     // =========================================================
-    // 📷 NATIVE VIDEO CAMERA SHUTTER & LIVE TEXT OCR TRACKER
+    // 📷 NATIVE VIDEO CROP-BOX SCANNER & HIGH-SPEED LOGIC
     // =========================================================
     let activeLocalCameraMediaStream = null;
     let liveOcrProcessingIntervalTimer = null;
@@ -804,7 +815,7 @@
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: "environment", // Enforces back lens
+                    facingMode: "environment",
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 }
@@ -816,48 +827,64 @@
                     if (videoElement) {
                         videoElement.srcObject = stream;
                         videoElement.play().then(function() {
-                            // ⚡ START THE LIVE INTERCEPTION LOOP WORKER:
-                            // Captures a frame every 800ms to evaluate text without lagging the phone battery
-                            liveOcrProcessingIntervalTimer = setInterval(executeLiveVideoFrameOcrAnalysis, 800);
+                            // Scan the isolated box frame every 700ms for fast feedback cycles
+                            liveOcrProcessingIntervalTimer = setInterval(executeLiveVideoFrameOcrAnalysis, 700);
                         }).catch(function(e) { console.error(e); });
                     }
                 })
                 .catch(function(err) {
-                    console.error("Hardware link rejected: ", err);
+                    console.error("Hardware connection failure: ", err);
                     alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
                     terminateLiveVinVideoScanner();
                 });
         }
     }
 
-    // 🧠 REAL-TIME MATRIX EXTRACTION ENGINE
+    // 🧠 THE CROP FILTER EXTRACTION BLOCK
     function executeLiveVideoFrameOcrAnalysis() {
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (!videoElement || videoElement.paused || videoElement.ended || isCurrentlyProcessingVideoFrame) return;
 
-        // Lock the track thread while processing this snapshot frame
         isCurrentlyProcessingVideoFrame = true;
+        const feedbackTicker = document.getElementById('liveOcrProcessingFeedbackTicker');
 
-        // Create a hidden workspace canvas to extract pixels from the video stream
+        // Create an offline workspace canvas to compute the crop pixels
         const canvas = document.createElement('canvas');
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-        // Run high-speed asynchronous text recognition over the snapshot canvas
+        // Calculate the exact 85% width by 30% height targeting box coordinates
+        const videoWidth = videoElement.videoWidth;
+        const videoHeight = videoElement.videoHeight;
+
+        const cropWidth = Math.floor(videoWidth * 0.85);
+        const cropHeight = Math.floor(videoHeight * 0.30);
+        const cropLeft = Math.floor((videoWidth - cropWidth) / 2);
+        const cropTop = Math.floor((videoHeight - cropHeight) / 2);
+
+        canvas.width = cropWidth;
+        canvas.height = cropHeight;
+
+        // 🏎️ ISOLATE PIXELS: Slice out *only* the frames inside your red overlay guide
+        ctx.drawImage(videoElement, cropLeft, cropTop, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+        if (feedbackTicker) {
+            feedbackTicker.innerText = "⚡ Evaluating digits inside guide window...";
+            feedbackTicker.className = "text-[10px] font-black font-mono text-center text-amber-500 animate-pulse";
+        }
+
+        // Pass the optimized tiny sub-image snippet directly into the text engine
         Tesseract.recognize(canvas, 'eng')
             .then(({ data: { text } }) => {
-                console.log("Live stream raw string read: ", text);
+                console.log("Guide viewport read: ", text);
 
-                // Strip spaces, punctuation, or formatting noise characters
+                // Clean spaces, hyphens, and background document noise characters
                 let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
 
-                // 👑 REGEX CHASSIS SEARCH MATRIX: Isolate any solid 17-digit string row block
+                // Isolate the continuous 17-digit pattern block
                 let matchedVinBlock = null;
                 for (let i = 0; i <= cleanTextToken.length - 17; i++) {
                     let currentChunk = cleanTextToken.substring(i, i + 17);
-                    // Automotive text standard strings ignore letters I, O, and Q to maintain contrast logs
+                    // Standard automotive character layouts omit letters I, O, and Q
                     if (/^[A-HJ-NPR-Z0-9]{17}$/.test(currentChunk)) {
                         matchedVinBlock = currentChunk;
                         break;
@@ -865,24 +892,24 @@
                 }
 
                 if (matchedVinBlock) {
-                    // Drop the final 17-character string straight into your text input field box!
                     const targetInputField = document.getElementById('vehicleVinInputField');
                     if (targetInputField) {
                         targetInputField.value = matchedVinBlock;
                         targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
                     }
 
-                    // Vibrate the device slightly to confirm lock verification
                     if (navigator.vibrate) navigator.vibrate(150);
-
-                    // Power down the shutter instantly
                     terminateLiveVinVideoScanner();
                 } else {
-                    isCurrentlyProcessingVideoFrame = false; // Release thread to scan next incoming frame
+                    if (feedbackTicker) {
+                        feedbackTicker.innerText = "⏳ Target missed. Keep text stable inside red window...";
+                        feedbackTicker.className = "text-[10px] font-bold font-mono text-center text-slate-500";
+                    }
+                    isCurrentlyProcessingVideoFrame = false; // Unlock thread to slice the next incoming video frame
                 }
             })
             .catch(err => {
-                console.error("Frame read catch skip: ", err);
+                console.error("Frame skip: ", err);
                 isCurrentlyProcessingVideoFrame = false;
             });
     }
@@ -904,7 +931,7 @@
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
         if (videoElement) videoElement.srcObject = null;
     }
-
+    
 </script>
     </body>
 </html>
