@@ -7,8 +7,9 @@
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 🚀 THE VISUAL STYLING ENGINE LINK -->
-    <script src="https://tailwindcss.com"></script>
+    <!-- 👁️ REAL-TIME LIVE VIEWPORT CHARACTER READING MATRIX -->
+    <script src="https://jsdelivr.net" type="text/javascript"></script>
+
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -788,9 +789,11 @@
     });
 
     // =========================================================
-    // 📷 NATIVE BROWSER LIVE HARDWARE VIDEO SHUTTER STREAM
+    // 📷 NATIVE VIDEO CAMERA SHUTTER & LIVE TEXT OCR TRACKER
     // =========================================================
     let activeLocalCameraMediaStream = null;
+    let liveOcrProcessingIntervalTimer = null;
+    let isCurrentlyProcessingVideoFrame = false;
 
     function activateLiveVinVideoScanner() {
         const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
@@ -798,11 +801,10 @@
 
         if (activeLocalCameraMediaStream) return;
 
-        // 👑 NATIVE OVERRIDE Handshake: Requests direct pixel streaming straight from hardware motherboards
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: "environment", // Forces back-facing camera lens
+                    facingMode: "environment", // Enforces back lens
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 }
@@ -810,38 +812,99 @@
                 .then(function(stream) {
                     activeLocalCameraMediaStream = stream;
 
-                    // Bind the raw pixel stream straight to your native HTML5 video node selector
                     const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
                     if (videoElement) {
                         videoElement.srcObject = stream;
-                        videoElement.play().catch(function(playErr) {
-                            console.error("Video play aborted by browser policy: ", playErr);
-                        });
+                        videoElement.play().then(function() {
+                            // ⚡ START THE LIVE INTERCEPTION LOOP WORKER:
+                            // Captures a frame every 800ms to evaluate text without lagging the phone battery
+                            liveOcrProcessingIntervalTimer = setInterval(executeLiveVideoFrameOcrAnalysis, 800);
+                        }).catch(function(e) { console.error(e); });
                     }
                 })
                 .catch(function(err) {
-                    console.error("Native hardware stream rejected: ", err);
+                    console.error("Hardware link rejected: ", err);
                     alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
                     terminateLiveVinVideoScanner();
                 });
-        } else {
-            alert("Your browser or device does not support native video streaming APIs. Please ensure you are using a modern mobile browser over an HTTPS secure link.");
         }
     }
 
+    // 🧠 REAL-TIME MATRIX EXTRACTION ENGINE
+    function executeLiveVideoFrameOcrAnalysis() {
+        const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
+        if (!videoElement || videoElement.paused || videoElement.ended || isCurrentlyProcessingVideoFrame) return;
+
+        // Lock the track thread while processing this snapshot frame
+        isCurrentlyProcessingVideoFrame = true;
+
+        // Create a hidden workspace canvas to extract pixels from the video stream
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+        // Run high-speed asynchronous text recognition over the snapshot canvas
+        Tesseract.recognize(canvas, 'eng')
+            .then(({ data: { text } }) => {
+                console.log("Live stream raw string read: ", text);
+
+                // Strip spaces, punctuation, or formatting noise characters
+                let cleanTextToken = text.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+
+                // 👑 REGEX CHASSIS SEARCH MATRIX: Isolate any solid 17-digit string row block
+                let matchedVinBlock = null;
+                for (let i = 0; i <= cleanTextToken.length - 17; i++) {
+                    let currentChunk = cleanTextToken.substring(i, i + 17);
+                    // Automotive text standard strings ignore letters I, O, and Q to maintain contrast logs
+                    if (/^[A-HJ-NPR-Z0-9]{17}$/.test(currentChunk)) {
+                        matchedVinBlock = currentChunk;
+                        break;
+                    }
+                }
+
+                if (matchedVinBlock) {
+                    // Drop the final 17-character string straight into your text input field box!
+                    const targetInputField = document.getElementById('vehicleVinInputField');
+                    if (targetInputField) {
+                        targetInputField.value = matchedVinBlock;
+                        targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
+                    }
+
+                    // Vibrate the device slightly to confirm lock verification
+                    if (navigator.vibrate) navigator.vibrate(150);
+
+                    // Power down the shutter instantly
+                    terminateLiveVinVideoScanner();
+                } else {
+                    isCurrentlyProcessingVideoFrame = false; // Release thread to scan next incoming frame
+                }
+            })
+            .catch(err => {
+                console.error("Frame read catch skip: ", err);
+                isCurrentlyProcessingVideoFrame = false;
+            });
+    }
+
     function terminateLiveVinVideoScanner() {
+        if (liveOcrProcessingIntervalTimer) {
+            clearInterval(liveOcrProcessingIntervalTimer);
+            liveOcrProcessingIntervalTimer = null;
+        }
+
         if (activeLocalCameraMediaStream) {
-            // Power down every single active hardware camera track to save advisor battery logs
             activeLocalCameraMediaStream.getTracks().forEach(track => track.stop());
             activeLocalCameraMediaStream = null;
         }
 
+        isCurrentlyProcessingVideoFrame = false;
         document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
+
         const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
-        if (videoElement) {
-            videoElement.srcObject = null;
-        }
+        if (videoElement) videoElement.srcObject = null;
     }
-    </script>
+
+</script>
     </body>
 </html>
