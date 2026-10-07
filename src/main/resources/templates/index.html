@@ -6,8 +6,9 @@
     <title>Automotive Services Management System</title>
     <!-- 🚀 THE VISUAL STYLING ENGINE LINK: RESTORES YOUR ENTIRE INTERFACE THEME INSTANTLY -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 🏎️ LIGHTWEIGHT LIVE VIDEO STREAM BARCODE ENGINE -->
-    <script src="https://jsdelivr.net" type="text/javascript"></script>
+
+    <!-- 🚀 THE VISUAL STYLING ENGINE LINK -->
+    <script src="https://tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-50 font-sans antialiased text-gray-900">
@@ -250,23 +251,24 @@
                         <div class="flex gap-2">
                             <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <!-- Trigger Button to wake up live hardware lenses -->
+                            <!-- Native Trigger Button to wake up live hardware lenses -->
                             <button type="button" onclick="activateLiveVinVideoScanner()" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
                                 📷 Live Scan
                             </button>
                         </div>
 
-                        <!-- 👁️ INTERACTIVE VIEWPORT OVERLAY PANEL (HIDDEN BY DEFAULT) -->
+                        <!-- 👁️ NATIVE VIEWPORT OVERLAY PANEL (HIDDEN BY DEFAULT) -->
                         <div id="vinVideoScannerHardwareContainer" class="hidden border-2 border-dashed border-indigo-600 rounded-lg p-2 bg-slate-50 space-y-2 relative max-w-sm mx-auto shadow-inner">
-                            <!-- Live Camera Shutter Stream Projects Directly Inside Here -->
-                            <div id="liveVideoCameraProjectionArea" class="w-full overflow-hidden rounded bg-black aspect-video relative"></div>
+                            <!-- Native HTML5 Video Element with playsinline attribute to force inline rendering -->
+                            <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full overflow-hidden rounded bg-black aspect-video object-cover block"></video>
 
                             <div class="flex justify-between items-center px-1">
-                                <span class="text-[10px] font-black text-indigo-600 animate-pulse">⚡ Center doorjamb barcode inside video window...</span>
+                                <span class="text-[10px] font-black text-indigo-600 animate-pulse">⚡ Live service lane camera active...</span>
                                 <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-wider">✕ Close Camera</button>
                             </div>
                         </div>
                     </div>
+
 
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
@@ -784,79 +786,42 @@
         const activeTab = urlParams.get('tab');
         if (activeTab) { switchTab(activeTab); }
     });
+
     // =========================================================
-    // 📷 LIVE HARDWARE VIDEO CAMERA STREAM BARCODE INTERCEPTOR
+    // 📷 NATIVE BROWSER LIVE HARDWARE VIDEO SHUTTER STREAM
     // =========================================================
-    let isVideoScannerRunning = false;
+    let activeLocalCameraMediaStream = null;
 
     function activateLiveVinVideoScanner() {
         const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
         if (wrapper) wrapper.classList.remove('hidden');
 
-        if (isVideoScannerRunning) return;
+        if (activeLocalCameraMediaStream) return;
 
-        // 👑 NATIVE OVERRIDE HANDSHAKE: Forces the browser to immediately fire the permission prompt!
+        // 👑 NATIVE OVERRIDE Handshake: Requests direct pixel streaming straight from hardware motherboards
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "environment", // Forces back-facing camera lens
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            })
                 .then(function(stream) {
-                    // If permission is granted, shut down the temporary test line and start the scanner box
-                    stream.getTracks().forEach(track => track.stop());
+                    activeLocalCameraMediaStream = stream;
 
-                    // Let the modal completely render before binding the viewfinder
-                    setTimeout(function() {
-                        Quagga.init({
-                            inputStream: {
-                                name: "LiveStream",
-                                type: "LiveStream",
-                                target: document.querySelector("#liveVideoCameraProjectionArea"),
-                                constraints: {
-                                    width: { min: 640 },
-                                    height: { min: 480 },
-                                    facingMode: "environment"
-                                },
-                                area: { top: "25%", right: "10%", left: "10%", bottom: "25%" }
-                            },
-                            decoder: {
-                                readers: ["code_128_reader", "code_39_reader"]
-                            },
-                            locate: true
-                        }, function(err) {
-                            if (err) {
-                                console.error("Quagga initialization failed: ", err);
-                                terminateLiveVinVideoScanner();
-                                return;
-                            }
-                            Quagga.start();
-                            if (err) {
-                                console.error("Quagga initialization failed: ", err);
-                                terminateLiveVinVideoScanner();
-                                return;
-                            }
-                            Quagga.start();
-                            isVideoScannerRunning = true;
-
-                            // 👑 FORCE STREAM VISIBILITY OVERRIDE MATRIX:
-                            // This searches for the raw video tag inside your box and forces it to display
-                            setTimeout(function() {
-                                const nativeVideoTrackNode = document.querySelector("#liveVideoCameraProjectionArea video");
-                                if (nativeVideoTrackNode) {
-                                    nativeVideoTrackNode.style.width = "100%";
-                                    nativeVideoTrackNode.style.height = "100%";
-                                    nativeVideoTrackNode.style.objectFit = "cover";
-                                    nativeVideoTrackNode.style.display = "block";
-                                    nativeVideoTrackNode.removeAttribute("hidden");
-                                }
-                            }, 150); // Small delay ensures the canvas is generated before we style it
-
-                            isVideoScannerRunning = true;
+                    // Bind the raw pixel stream straight to your native HTML5 video node selector
+                    const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
+                    if (videoElement) {
+                        videoElement.srcObject = stream;
+                        videoElement.play().catch(function(playErr) {
+                            console.error("Video play aborted by browser policy: ", playErr);
                         });
-
-                        Quagga.onDetected(onVinBarcodeFoundLive);
-                    }, 200);
+                    }
                 })
                 .catch(function(err) {
-                    console.error("Native browser camera access denied: ", err);
-                    alert("Camera access denied. Please go to your phone's main App Settings and ensure your browser has permission to use the camera.");
+                    console.error("Native hardware stream rejected: ", err);
+                    alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
                     terminateLiveVinVideoScanner();
                 });
         } else {
@@ -864,47 +829,18 @@
         }
     }
 
-
-    function onVinBarcodeFoundLive(resultDataObj) {
-        if (!resultDataObj || !resultDataObj.codeResult || !resultDataObj.codeResult.code) return;
-
-        let rawBarcodeToken = resultDataObj.codeResult.code;
-        console.log("Live match captured: " + rawBarcodeToken);
-
-        // Strip out manufacturing whitespace or spacer hyphens
-        let cleanVinString = rawBarcodeToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
-
-        // Clear out prefix codes if scanning registration documents
-        if (cleanVinString.length > 17) {
-            if (cleanVinString.startsWith("I") || cleanVinString.startsWith("Q") || cleanVinString.startsWith("9N")) {
-                cleanVinString = cleanVinString.substring(cleanVinString.length - 17);
-            } else {
-                cleanVinString = cleanVinString.substring(0, 17);
-            }
-        }
-
-        // Drop the clean 17-digit code straight into your intake form field input box!
-        const inputField = document.getElementById('vehicleVinInputField');
-        if (inputField) {
-            inputField.value = cleanVinString;
-            inputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-        }
-
-        // Vibrate the phone slightly to confirm match detection if supported by hardware driver links
-        if (navigator.vibrate) navigator.vibrate(120);
-
-        // Instantly shut down the video grid container to save advisor battery records
-        terminateLiveVinVideoScanner();
-    }
-
     function terminateLiveVinVideoScanner() {
-        if (isVideoScannerRunning) {
-            Quagga.stop();
-            isVideoScannerRunning = false;
+        if (activeLocalCameraMediaStream) {
+            // Power down every single active hardware camera track to save advisor battery logs
+            activeLocalCameraMediaStream.getTracks().forEach(track => track.stop());
+            activeLocalCameraMediaStream = null;
         }
+
         document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
-        const projectionViewNode = document.querySelector("#liveVideoCameraProjectionArea");
-        if (projectionViewNode) projectionViewNode.innerHTML = "";
+        const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
+        if (videoElement) {
+            videoElement.srcObject = null;
+        }
     }
     </script>
     </body>
