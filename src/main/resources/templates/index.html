@@ -394,7 +394,13 @@
                 <h3 class="text-sm font-black tracking-wider text-indigo-200 uppercase">📋 Master Shop Invoice Ledger Control</h3>
                 <p class="text-xs text-indigo-100 font-medium">Isolate active jobs on the shop floor or search past history logs comfortably.</p>
             </div>
-            <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-end flex-wrap gap-y-2">
+
+                <!-- ⚡ THE NEW WORK ORDER LAUNCHER BUTTON -->
+                <button type="button" onclick="openNewWorkOrderIntakeModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3 py-2 rounded-md border border-emerald-700 shadow-sm transition duration-150 uppercase tracking-wider shrink-0 select-none">
+                    ➕ New Work Order
+                </button>
+
                 <div class="inline-flex rounded-md shadow-sm">
                     <a th:href="@{/orders/toggle-view(showAll=false)}"
                        th:class="${!showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-700 transition'}">
@@ -412,6 +418,53 @@
                     <button type="submit" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded border border-indigo-600">Search</button>
                     <a th:if="${currentSearch != null}" th:href="@{/(tab='orders')}" class="text-indigo-200 hover:text-white text-xs font-black">✕</a>
                 </form>
+            </div>
+        </div>
+        <!-- 📋 CHOOSE VEHICLE WORK ORDER INTAKE MODAL WINDOW OVERLAY -->
+        <div id="newWorkOrderIntakeModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 text-slate-800">
+
+                <!-- Header -->
+                <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Initialize Repair Order</h3>
+                        <p class="text-[10px] text-slate-400">Select an active shop vehicle row to generate the invoice tracker template.</p>
+                    </div>
+                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="text-slate-400 hover:text-white transition text-sm">✕</button>
+                </div>
+
+                <!-- Scrollable Vehicle Selection Deck -->
+                <div class="p-4 max-h-[350px] overflow-y-auto space-y-2 bg-slate-50 text-left">
+                    <label class="block text-[11px] font-black uppercase text-slate-600 tracking-tight mb-1">Select Active Shop Vehicle Profile:</label>
+
+                    <!-- Loops through your logged vehicles fleet list -->
+                    <div th:each="v : ${vehicles}" class="bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
+                        <div class="space-y-0.5">
+                            <div class="text-xs font-black text-slate-800 uppercase tracking-tight">
+                                <span th:text="${v.year}">2020</span> <span th:text="${v.make}">Ford</span> <span th:text="${v.model}">Mustang</span>
+                            </div>
+                            <div class="text-[10px] font-bold font-mono text-indigo-600 tracking-wide bg-indigo-50 px-1.5 py-0.5 rounded w-fit">
+                                VIN: <span th:text="${v.vin}">1FA6P...</span>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/work-orders/create}" method="POST" class="m-0">
+                            <input type="hidden" name="vehicleId" th:value="${v.id}">
+                            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-black text-[10px] uppercase tracking-wider px-3 py-2 rounded shadow transition group-hover:bg-indigo-600">
+                                ⚡ Create
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(vehicles)}" class="text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
+                        ❌ No active vehicle profiles detected on the floor.
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
+                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</button>
+                </div>
             </div>
         </div>
 
@@ -925,7 +978,24 @@
             videoElement.srcObject = null;
         }
     }
+    // =========================================================
+    // 📑 CENTRAL WORK ORDER INTAKE MODAL WINDOW CONTROLLERS
+    // =========================================================
+    function openNewWorkOrderIntakeModal() {
+        const modal = document.getElementById('newWorkOrderIntakeModalWindow');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    }
 
+    function closeNewWorkOrderIntakeModal() {
+        const modal = document.getElementById('newWorkOrderIntakeModalWindow');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
 </script>
 </body>
 </html>
