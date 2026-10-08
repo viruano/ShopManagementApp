@@ -327,7 +327,7 @@ public class CustomerController {
     public String createNewWorkOrderFromTab(@RequestParam("vehicleId") Long vehicleId,
                                             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
-        // 1. Look up the vehicle profile directly from the autowired repository inside this controller
+        // 1. Look up the vehicle profile directly from your autowired repository layer
         Vehicle vehicleProfile = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid vehicle ID mapping link: " + vehicleId));
 
@@ -335,16 +335,20 @@ public class CustomerController {
         WorkOrder newWorkOrder = new WorkOrder();
         newWorkOrder.setVehicle(vehicleProfile);
 
-        // Enforce the default opened status matching your project's configuration parameters
-        newWorkOrder.setStatus(com.autorepair.shop.WorkOrderStatus.OPENED);
-        newWorkOrder.setCreatedAt(java.time.LocalDateTime.now());
-        newWorkOrder.setTaxRate(0.060); // Default local 6% shop tax coefficient
-        newWorkOrder.setTotalAmount(0.00); // Initialize financial ledger sheets at $0.00
+        // 👑 ALIGNS WITH WORKORDER.JAVA SPECIFICATIONS:
+        newWorkOrder.setStatus(com.autorepair.shop.WorkOrderStatus.OPENED); // Sets standard enum state
+        newWorkOrder.setPaymentStatus(com.autorepair.shop.PaymentStatus.UNPAID); // Sets payment tracking enum
+        newWorkOrder.setAmountPaid(java.math.BigDecimal.ZERO); // Handles the strict BigDecimal type mapping
+
+        // 🏷️ AUTOMATED INVOICE NUMBER SEQUENCE GENERATOR:
+        // Spangles a unique identifier stamp onto the index ledger card row using system timestamps
+        String generatedInvoiceTrackingToken = "WO-" + (System.currentTimeMillis() % 100000);
+        newWorkOrder.setInvoiceNumber(generatedInvoiceTrackingToken);
 
         // 3. Save the record directly into your work orders database table repository
         workOrderRepository.save(newWorkOrder);
 
-        redirectAttributes.addFlashAttribute("successMessage", "New Work Order opened successfully on the floor!");
+        redirectAttributes.addFlashAttribute("successMessage", "New Work Order successfully generated on the floor!");
         return "redirect:/?tab=orders"; // Smoothly redirects the view focus right back to Tab Section 3
     }
 }
