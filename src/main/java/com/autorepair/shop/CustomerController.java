@@ -266,24 +266,6 @@ public class CustomerController {
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
-    // --- WORK ORDER ACTIONS SECTION ---
-    @PostMapping("/orders/create")
-    public String createWorkOrderTicket(@RequestParam("vehicleId") Long vehicleId) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId).orElse(null);
-        if (vehicle != null) {
-            WorkOrder order = new WorkOrder();
-            long nextSequence = workOrderRepository.count() + 1001;
-            order.setInvoiceNumber("WO-" + nextSequence);
-            order.setVehicle(vehicle);
-            order.setStatus(WorkOrderStatus.OPENED);
-            order.setPaymentStatus(PaymentStatus.UNPAID);
-            order.setOdometerIn(vehicle.getOdometerIn() != null ? vehicle.getOdometerIn() : 0);
-            order.setOdometerOut(vehicle.getOdometerOut() != null ? vehicle.getOdometerOut() : 0);
-            workOrderRepository.save(order);
-        }
-        return "redirect:/?tab=orders";
-    }
-
     @GetMapping("/orders/toggle-view")
     public String toggleOrdersViewMode(@RequestParam("showAll") boolean showAll, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("showAllOrders", showAll);
@@ -337,5 +319,32 @@ public class CustomerController {
     public String removeLineItemFromWorksheet(@PathVariable("id") Long id, @RequestParam("workOrderId") Long workOrderId) {
         lineItemRepository.deleteById(id);
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
+    }
+    // =========================================================
+    // ➕ AUTOMATED WORK ORDER GENERATION FROM LEDGER TAB
+    // =========================================================
+    @PostMapping("/work-orders/create")
+    public String createNewWorkOrderFromTab(@RequestParam("vehicleId") Long vehicleId,
+                                            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+
+        // 1. Look up the vehicle profile directly from the autowired repository inside this controller
+        Vehicle vehicleProfile = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid vehicle ID mapping link: " + vehicleId));
+
+        // 2. Instantiate a clean, active shop worksheet tracking model row
+        WorkOrder newWorkOrder = new WorkOrder();
+        newWorkOrder.setVehicle(vehicleProfile);
+
+        // Enforce the default opened status matching your project's configuration parameters
+        newWorkOrder.setStatus(com.autorepair.shop.WorkOrderStatus.OPENED);
+        newWorkOrder.setCreatedAt(java.time.LocalDateTime.now());
+        newWorkOrder.setTaxRate(0.060); // Default local 6% shop tax coefficient
+        newWorkOrder.setTotalAmount(0.00); // Initialize financial ledger sheets at $0.00
+
+        // 3. Save the record directly into your work orders database table repository
+        workOrderRepository.save(newWorkOrder);
+
+        redirectAttributes.addFlashAttribute("successMessage", "New Work Order opened successfully on the floor!");
+        return "redirect:/?tab=orders"; // Smoothly redirects the view focus right back to Tab Section 3
     }
 }
