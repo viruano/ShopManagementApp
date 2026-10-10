@@ -411,6 +411,7 @@
                 </form>
             </div>
         </div>
+
         <!-- 📋 CHOOSE VEHICLE WORK ORDER INTAKE MODAL WINDOW OVERLAY -->
         <div id="newWorkOrderIntakeModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 text-slate-800">
@@ -424,7 +425,7 @@
                     <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="text-slate-400 hover:text-white transition text-sm">✕</button>
                 </div>
 
-                <!-- 🔍 NEW: HIGH-SPEED IN-MODAL SEARCH BAR FILTER LAYER -->
+                <!-- 🔍 HIGH-SPEED IN-MODAL SEARCH BAR FILTER LAYER -->
                 <div class="p-3 bg-slate-100 border-b border-slate-200">
                     <div class="relative">
                         <input type="text" id="modalVehicleLookupSearchField" onkeyup="filterModalVehicleDeckRowsLive()" placeholder="Search Name, Plate, Model, or VIN..." class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -436,7 +437,6 @@
                 <div id="modalVehicleSelectionScrollingDeck" class="p-4 max-h-[320px] overflow-y-auto space-y-2 bg-slate-50 text-left">
                     <label class="block text-[11px] font-black uppercase text-slate-600 tracking-tight mb-1">Select Active Shop Vehicle Profile:</label>
 
-                    <!-- ⚡ ENHANCED THYMELEAF LOOP: Added data-search tags for instant keyword matching -->
                     <div th:each="v : ${vehicles}"
                          th:data-search="${#strings.toUpperCase(v.year + ' ' + v.make + ' ' + v.model + ' ' + v.vin + ' ' + (v.licensePlate != null ? v.licensePlate : '') + ' ' + (v.customer != null ? v.customer.firstName + ' ' + v.customer.lastName : ''))}"
                          class="modal-vehicle-searchable-row bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
@@ -462,9 +462,8 @@
                         </form>
                     </div>
 
-                    <!-- ❌ NEW: Dynamic Empty Search State Fallback Container -->
                     <div id="modalSearchEmptyStateRowCard" class="hidden text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
-                        ❌ No matching vehicle profiles or owners found.
+                        ❌ No matching vehicle profiles found.
                     </div>
 
                     <div th:if="${#lists.isEmpty(vehicles)}" class="text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
@@ -472,7 +471,7 @@
                     </div>
                 </div>
 
-                <!-- Footer -->
+                <!-- Footer (Safely Encapsulated and Closed) -->
                 <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
                     <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</button>
                 </div>
@@ -483,7 +482,6 @@
         <div id="addLineItemModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-all text-slate-800">
 
-                <!-- Modal Header -->
                 <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
                     <div>
                         <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Add Billable Line Item</h3>
@@ -492,21 +490,17 @@
                     <button type="button" onclick="closeLineItemModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
                 </div>
 
-                <!-- Form Fields Container -->
                 <form th:action="@{/work-orders/add-item}" method="POST" class="p-4 space-y-4 m-0">
-                    <!-- Hidden field tracking our active focused parent invoice context -->
                     <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder != null ? focusedWorkOrder.id : ''}">
 
-                    <!-- Item Type Discriminator Selection row -->
                     <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Item Advanced Billing Type:</label>
+                        <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Item Billing Type:</label>
                         <select name="itemType" id="formItemType" onchange="toggleLineItemFormFieldsBasedOnType()" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="PART">📦 Direct Purchase Part / Component</option>
                             <option value="LABOR">🔧 Service Labor / Book Hours</option>
                         </select>
                     </div>
 
-                    <!-- 📦 EXPLICIT PARTS PROCUREMENT SUB-PANEL (HIDDEN AUTOMATICALLY FOR LABOR ROWS) -->
                     <div id="partsProcurementFormFieldsSubGroup" class="grid grid-cols-2 gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                         <div class="col-span-1">
                             <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
@@ -517,7 +511,7 @@
                             <input type="text" name="vendor" id="formVendor" placeholder="e.g. NAPA, AutoZone" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost (Per Unit Paid By Shop):</label>
+                            <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost:</label>
                             <div class="relative">
                                 <span class="absolute left-2.5 top-1.5 text-xs text-slate-400 font-bold">$</span>
                                 <input type="number" step="0.01" name="wholesaleCost" id="formWholesaleCost" value="0.00" class="w-full pl-6 pr-3 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -525,15 +519,14 @@
                         </div>
                     </div>
 
-                    <!-- Common Text Description Panel -->
                     <div>
                         <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Billing Description Name:</label>
                         <input type="text" name="description" id="formDescription" required placeholder="e.g. Premium Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
 
-                    <!-- Quantity & Retail Pricing Blocks Row -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
+                            <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black uppercase text-slate-600 mb-1">Part Qty Count:</label>
                             <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black uppercase text-slate-600 mb-1">Part Qty Count:</label>
                             <input type="number" step="0.01" name="quantity" id="formQuantity" value="1.00" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
