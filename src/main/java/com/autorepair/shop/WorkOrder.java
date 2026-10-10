@@ -39,6 +39,19 @@ public class WorkOrder {
         this.dateOpened = LocalDateTime.now();
     }
 
+    // Calculates the absolute total wholesale parts cost outlays tied to this single repair ticket
+    public BigDecimal getPartsWholesaleTotalSum() {
+        return lineItems.stream()
+                .filter(item -> item.getItemType() == LineItemType.PART)
+                .map(LineItem::getLineWholesaleTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Calculates the net gross profit dollar sum cleared on this specific invoice record
+    public BigDecimal getWorkOrderGrossProfit() {
+        return getTotalDue().subtract(getPartsWholesaleTotalSum());
+    }
+
     // 💰 FINANCIAL CALCULATORS (Executed live on dashboard loads)
     public BigDecimal getPartsSubtotal() {
         return lineItems.stream()

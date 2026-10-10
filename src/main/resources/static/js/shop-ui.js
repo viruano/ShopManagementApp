@@ -98,3 +98,42 @@ function toggleShopAnalyticsMetrics() {
         drawer.classList.toggle('hidden');
     }
 }
+
+// =========================================================
+// 📦 DIRECT-PROCUREMENT MODAL FORM DISPLAY INTERACTION LINKS
+// =========================================================
+function toggleLineItemFormFieldsBasedOnType() {
+    const typeSelector = document.getElementById('formItemType');
+    const procurementGroup = document.getElementById('partsProcurementFormFieldsSubGroup');
+    const qtyLabel = document.getElementById('formQuantityFieldTitleLabel');
+
+    if (!typeSelector || !procurementGroup || !qtyLabel) return;
+
+    if (typeSelector.value === 'LABOR') {
+        // Hide wholesaler cost parameters for mechanical labor entries
+        procurementGroup.style.display = "none";
+        qtyLabel.innerText = "Labor Book Hours:";
+
+        // Reset parts fields to clean defaults
+        document.getElementById('formPartNumber').value = "";
+        document.getElementById('formVendor').value = "";
+        document.getElementById('formWholesaleCost').value = "0.00";
+    } else {
+        // Expose procurement data subfields for direct part purchases
+        procurementGroup.style.display = "grid";
+        qtyLabel.innerText = "Part Qty Count:";
+    }
+}
+
+function openLineItemModal() {
+    const modal = document.getElementById('addLineItemModalWindow');
+    if (modal) {
+        modal.classList.remove('hidden');
+        toggleLineItemFormFieldsBasedOnType(); // Validate form status on open
+    }
+}
+
+function closeLineItemModal() {
+    const modal = document.getElementById('addLineItemModalWindow');
+    if (modal) modal.classList.add('hidden');
+}
