@@ -387,7 +387,6 @@
                 <p class="text-xs text-indigo-100 font-medium">Isolate active jobs on the shop floor or search past history logs comfortably.</p>
             </div>
             <div class="flex items-center space-x-3 w-full md:w-auto justify-end flex-wrap gap-y-2">
-
                 <!-- ⚡ THE NEW WORK ORDER LAUNCHER BUTTON -->
                 <button type="button" onclick="openNewWorkOrderIntakeModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3 py-2 rounded-md border border-emerald-700 shadow-sm transition duration-150 uppercase tracking-wider shrink-0 select-none">
                     ➕ New Work Order
@@ -420,23 +419,38 @@
                 <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
                     <div>
                         <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Initialize Repair Order</h3>
-                        <p class="text-[10px] text-slate-400">Select an active shop vehicle row to generate the invoice tracker template.</p>
+                        <p class="text-[10px] text-slate-400">Search and select a vehicle profile to generate the invoice tracker template.</p>
                     </div>
                     <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="text-slate-400 hover:text-white transition text-sm">✕</button>
                 </div>
 
+                <!-- 🔍 NEW: HIGH-SPEED IN-MODAL SEARCH BAR FILTER LAYER -->
+                <div class="p-3 bg-slate-100 border-b border-slate-200">
+                    <div class="relative">
+                        <input type="text" id="modalVehicleLookupSearchField" onkeyup="filterModalVehicleDeckRowsLive()" placeholder="Search Name, Plate, Model, or VIN..." class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
+                    </div>
+                </div>
+
                 <!-- Scrollable Vehicle Selection Deck -->
-                <div class="p-4 max-h-[350px] overflow-y-auto space-y-2 bg-slate-50 text-left">
+                <div id="modalVehicleSelectionScrollingDeck" class="p-4 max-h-[320px] overflow-y-auto space-y-2 bg-slate-50 text-left">
                     <label class="block text-[11px] font-black uppercase text-slate-600 tracking-tight mb-1">Select Active Shop Vehicle Profile:</label>
 
-                    <!-- Loops through your logged vehicles fleet list -->
-                    <div th:each="v : ${vehicles}" class="bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
+                    <!-- ⚡ ENHANCED THYMELEAF LOOP: Added data-search tags for instant keyword matching -->
+                    <div th:each="v : ${vehicles}"
+                         th:data-search="${#strings.toUpperCase(v.year + ' ' + v.make + ' ' + v.model + ' ' + v.vin + ' ' + (v.licensePlate != null ? v.licensePlate : '') + ' ' + (v.customer != null ? v.customer.firstName + ' ' + v.customer.lastName : ''))}"
+                         class="modal-vehicle-searchable-row bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
+
                         <div class="space-y-0.5">
                             <div class="text-xs font-black text-slate-800 uppercase tracking-tight">
                                 <span th:text="${v.year}">2020</span> <span th:text="${v.make}">Ford</span> <span th:text="${v.model}">Mustang</span>
                             </div>
-                            <div class="text-[10px] font-bold font-mono text-indigo-600 tracking-wide bg-indigo-50 px-1.5 py-0.5 rounded w-fit">
-                                VIN: <span th:text="${v.vin}">1FA6P...</span>
+                            <div class="text-[10px] font-bold text-slate-500 font-mono tracking-wide">
+                                VIN: <span class="text-indigo-600 font-bold" th:text="${v.vin}">1FA6P...</span>
+                                <span th:if="${v.licensePlate != null}" th:text="' | Plate: ' + ${v.licensePlate}"></span>
+                            </div>
+                            <div th:if="${v.customer != null}" class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                Owner: <span class="text-slate-600" th:text="${v.customer.firstName + ' ' + v.customer.lastName}">John Doe</span>
                             </div>
                         </div>
 
@@ -446,6 +460,11 @@
                                 ⚡ Create
                             </button>
                         </form>
+                    </div>
+
+                    <!-- ❌ NEW: Dynamic Empty Search State Fallback Container -->
+                    <div id="modalSearchEmptyStateRowCard" class="hidden text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
+                        ❌ No matching vehicle profiles or owners found.
                     </div>
 
                     <div th:if="${#lists.isEmpty(vehicles)}" class="text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
@@ -746,248 +765,9 @@
         </div>
     </div> <!-- This closes your section-orders panel wrapper perfectly -->
 </main>
-
-<script>
-    function switchTab(tabId) {
-        const sections = ['customers', 'vehicles', 'orders'];
-        sections.forEach(s => document.getElementById('section-' + s).classList.add('hidden'));
-        document.getElementById('section-' + tabId).classList.remove('hidden');
-
-        const btns = ['customers', 'vehicles', 'orders'];
-        btns.forEach(b => document.getElementById('tab-btn-' + b).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 border-transparent text-gray-500 hover:text-gray-700");
-
-        const activeColor = tabId === 'vehicles' ? 'border-emerald-600 text-emerald-600' : 'border-indigo-600 text-indigo-600';
-        document.getElementById('tab-btn-' + tabId).className = "py-2 px-4 border-b-2 font-bold text-sm transition-all duration-150 " + activeColor;
-    }
-
-    function toggleRegistrationForm() {
-        const pane = document.getElementById('registrationFormPane');
-        const grid = document.getElementById('clientIndexGridTable');
-        if (pane.classList.contains('hidden')) {
-            pane.classList.remove('hidden');
-            grid.classList.remove('lg:col-span-3');
-            grid.classList.add('lg:col-span-2');
-        } else {
-            pane.classList.add('hidden');
-            grid.classList.remove('lg:col-span-2');
-            grid.classList.add('lg:col-span-3');
-        }
-    }
-
-    function toggleVehicleRegistrationForm() {
-        const pane = document.getElementById('vehicleRegistrationFormPane');
-        const grid = document.getElementById('vehicleFleetGridTable');
-        if (pane.classList.contains('hidden')) {
-            pane.classList.remove('hidden');
-            grid.classList.remove('lg:col-span-3');
-            grid.classList.add('lg:col-span-2');
-        } else {
-            pane.classList.add('hidden');
-            grid.classList.remove('lg:col-span-2');
-            grid.classList.add('lg:col-span-3');
-        }
-    }
-
-    function applyLaborGuideSelection() {
-        const selector = document.getElementById('laborGuideSelector');
-        const selectedOption = selector.options[selector.selectedIndex];
-
-        if (selectedOption.value) {
-            const rawText = selectedOption.text;
-            const descriptionPart = rawText.split(']').pop().split('—').shift().trim();
-            const bookHours = selectedOption.value;
-
-            document.getElementById('formItemType').value = 'LABOR';
-            document.getElementById('formQuantity').value = bookHours;
-            document.getElementById('formDescription').value = descriptionPart;
-
-            const priceField = document.getElementById('formRetailPrice');
-            if (!priceField.value || priceField.value === "0.00") {
-                priceField.value = "120.00";
-            }
-        }
-    }
-
-    function formatPhoneNumber(value) {
-        if (!value) return value;
-        const phoneNumber = value.replace(/\D/g, '');
-        const phoneNumberLength = phoneNumber.length;
-        if (phoneNumberLength < 4) return phoneNumber;
-        if (phoneNumberLength < 7) {
-            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-        }
-        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-    }
-
-    document.addEventListener('input', function(e) {
-        if (e.target && e.target.classList.contains('phone-mask')) {
-            const input = e.target;
-            const selectionStart = input.selectionStart;
-            const originalLength = input.value.length;
-            input.value = formatPhoneNumber(input.value);
-            const newLength = input.value.length;
-            input.setSelectionRange(selectionStart + (newLength - originalLength), selectionStart + (newLength - originalLength));
-        }
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab');
-        if (activeTab) { switchTab(activeTab); }
-    });
-
-    // =========================================================
-    // 📷 NATIVE BROWSER SHAPE DETECTION HARDWARE DRIVER CODE
-    // =========================================================
-    let activeLocalCameraMediaStream = null;
-    let hardwareScannerPollingLoopTimer = null;
-    let isCurrentlyProcessingFrame = false;
-    let nativeBarcodeDecoderInstance = null;
-
-    // Check on startup if the device motherboard supports hardware-accelerated scanning
-    if ('BarcodeDetector' in window) {
-        nativeBarcodeDecoderInstance = new BarcodeDetector({
-            formats: ['code_128', 'code_39', 'qr_code'] // Strictly focus on automotive VIN barcode parameters
-        });
-        console.log("Hardware-accelerated Barcode Detection engine successfully hooked into device motherboard.");
-    }
-
-    function activateLiveVinVideoScanner(event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        const wrapper = document.getElementById('vinVideoScannerHardwareContainer');
-        if (wrapper) wrapper.classList.remove('hidden');
-
-        if (activeLocalCameraMediaStream) return;
-
-        // Wake up the exact, verified working native browser camera layout stream
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "environment", // Enforces rear autofocus camera array
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            })
-                .then(function(stream) {
-                    activeLocalCameraMediaStream = stream;
-
-                    const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
-                    if (videoElement) {
-                        videoElement.srcObject = stream;
-                        videoElement.setAttribute("playsinline", true);
-                        videoElement.play().then(function() {
-                            // ⚡ FAST HARDWARE POLLING LAYER: Feeds frame snapshots directly to the phone's CPU chips every 300ms
-                            hardwareScannerPollingLoopTimer = setInterval(executeNativeHardwareBarcodeExtractionPass, 300);
-                        }).catch(function(e) { console.error(e); });
-                    }
-                })
-                .catch(function(err) {
-                    console.error("Native hardware stream rejected: ", err);
-                    alert("Camera blocked. Please verify your phone settings or ensure you are viewing this via an HTTPS secure link.");
-                    terminateLiveVinVideoScanner();
-                });
-        }
-    }
-
-    // 🧠 AUTOMATED DATA CAPTURE LAYER: Passes data straight to device processor chip matrices
-    function executeNativeHardwareBarcodeExtractionPass() {
-        const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
-        if (!videoElement || videoElement.paused || videoElement.ended || isCurrentlyProcessingFrame) return;
-
-        // If the specific phone brand doesn't support hardware scanning, fall back gracefully to a prompt uploader message
-        if (!nativeBarcodeDecoderInstance) {
-            clearInterval(hardwareScannerPollingLoopTimer);
-            const ticker = document.getElementById('liveOcrProcessingFeedbackTicker');
-            if (ticker) {
-                ticker.innerText = "❌ Device hardware scanning disabled. Please type or paste the 17-digit VIN code manually.";
-                ticker.className = "text-[10px] font-black font-mono text-center text-rose-400 py-1 bg-slate-950 border border-slate-800 rounded";
-            }
-            return;
-        }
-
-        isCurrentlyProcessingFrame = true;
-
-        // Hand the live running HTML5 video tag object directly to your phone's processor chips!
-        nativeBarcodeDecoderInstance.detect(videoElement)
-            .then(function(detectedBarcodesArray) {
-                if (detectedBarcodesArray.length > 0) {
-                    // Grab the raw text string returned directly by the phone's operating system
-                    let rawExtractedTextToken = detectedBarcodesArray[0].rawValue;
-                    console.log("Motherboard barcode match returned: " + rawExtractedTextToken);
-
-                    // Clean manufacturer gaps, spaces, or specialized formatting dividers
-                    let parsedVinString = rawExtractedTextToken.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
-
-                    // Trim prefix padding down to the standard 17 characters
-                    if (parsedVinString.length > 17) {
-                        if (parsedVinString.startsWith("I") || parsedVinString.startsWith("Q") || parsedVinString.startsWith("9N")) {
-                            parsedVinString = parsedVinString.substring(parsedVinString.length - 17);
-                        } else {
-                            parsedVinString = parsedVinString.substring(0, 17);
-                        }
-                    }
-
-                    // 🎉 AUTO-FILL SUCCESS: Populates your template text input fields instantly!
-                    const targetInputField = document.getElementById('vehicleVinInputField');
-                    if (targetInputField) {
-                        targetInputField.value = parsedVinString;
-                        targetInputField.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/10');
-                        targetInputField.dispatchEvent(new Event('change')); // Auto-fires your backend specs decoder
-                    }
-
-                    if (navigator.vibrate) navigator.vibrate(120); // Sharp haptic confirmation vibration click
-                    terminateLiveVinVideoScanner();
-                } else {
-                    isCurrentlyProcessingFrame = false; // Open path to feed next video frame chunk straight to phone chips
-                }
-            })
-            .catch(function(err) {
-                console.error("Motherboard processing pass error: ", err);
-                isCurrentlyProcessingFrame = false;
-            });
-    }
-
-    function terminateLiveVinVideoScanner() {
-        if (hardwareScannerPollingLoopTimer) {
-            clearInterval(hardwareScannerPollingLoopTimer);
-            hardwareScannerPollingLoopTimer = null;
-        }
-
-        if (activeLocalCameraMediaStream) {
-            activeLocalCameraMediaStream.getTracks().forEach(track => track.stop());
-            activeLocalCameraMediaStream = null;
-        }
-
-        isCurrentlyProcessingFrame = false;
-        document.getElementById('vinVideoScannerHardwareContainer').classList.add('hidden');
-
-        const videoElement = document.getElementById('nativeLiveVideoCameraShutterTrack');
-        if (videoElement) {
-            videoElement.srcObject = null;
-        }
-    }
-    // =========================================================
-    // 📑 CENTRAL WORK ORDER INTAKE MODAL WINDOW CONTROLLERS
-    // =========================================================
-    function openNewWorkOrderIntakeModal() {
-        const modal = document.getElementById('newWorkOrderIntakeModalWindow');
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-    }
-
-    function closeNewWorkOrderIntakeModal() {
-        const modal = document.getElementById('newWorkOrderIntakeModalWindow');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    }
-</script>
+<!-- 📦 CONSOLIDATED EXTERNAL MODULAR BUSINESS LOGIC LINK LAYERS -->
+<script th:src="@{/js/shop-ui.js}" type="text/javascript"></script>
+<script th:src="@{/js/work-orders.js}" type="text/javascript"></script>
+<script th:src="@{/js/vin-scanner.js}" type="text/javascript"></script>
 </body>
 </html>
