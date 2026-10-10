@@ -294,52 +294,51 @@
 
                 <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No matching fleet vehicles active.</div>
                 <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
+                    <!-- 👑 PERFECTLY BALANCED 5-COLUMN WORKSPACE TABLE MATRIX -->
                     <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
                         <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
                         <tr>
-                            <th class="px-4 py-3">Vehicle File</th>
+                            <th class="px-4 py-3">Vehicle details</th>
                             <th class="px-4 py-3">Powertrain</th>
                             <th class="px-4 py-3">License & VIN</th>
-                            <th class="px-4 py-3">Owner</th>
+                            <th class="px-4 py-3">Assigned Owner</th>
                             <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
                         <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50 align-middle">
 
-                            <!-- 📝 CONDITION A: THIS VEHICLE ROW IS IN EDIT MODE -->
+                            <!-- 📝 CONDITION A: THIS VEHICLE ROW IS IN EDIT MODE (TOTAL 5 COLUMNS) -->
                             <th:block th:if="${editVehicleId != null && editVehicleId == vh.id}">
                                 <td class="px-4 py-3 text-sm font-bold text-slate-400" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}"></td>
                                 <td class="px-4 py-3 text-sm" colspan="4">
-                                    <form th:id="'vehicleUpdateForm-' + ${vh.id}" th:action="@{/vehicles/update/{id}(id=${vh.id})}" method="POST" class="space-y-2 w-full bg-slate-50 p-3 rounded border border-indigo-100 shadow-inner">
+                                    <form th:id="'vehicleUpdateForm-' + ${vh.id}" th:action="@{/vehicles/update/{id}(id=${vh.id})}" method="POST" class="space-y-2 w-full bg-slate-50 p-3 rounded border border-indigo-100 shadow-inner m-0">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Chassis:</span>
-                                            <input type="text" name="year" th:value="${vh.year}" required class="w-16 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none">
-                                            <input type="text" name="make" th:value="${vh.make}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
-                                            <input type="text" name="model" th:value="${vh.model}" required class="w-28 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
-                                            <input type="text" name="subModel" th:value="${vh.subModel}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none">
+                                            <input type="text" name="year" th:value="${vh.year}" required class="w-16 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none text-slate-800 font-bold">
+                                            <input type="text" name="make" th:value="${vh.make}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
+                                            <input type="text" name="model" th:value="${vh.model}" required class="w-28 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
+                                            <input type="text" name="subModel" th:value="${vh.subModel}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
                                         </div>
                                         <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
                                             <div class="flex flex-wrap items-center gap-2">
                                                 <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Powertrain:</span>
-                                                <input type="text" name="engineSize" th:value="${vh.engineSize}" placeholder="Engine" class="w-24 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white focus:outline-none">
-                                                <input type="text" name="drivetrain" th:value="${vh.drivetrain}" placeholder="Drivetrain" class="w-16 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none">
+                                                <input type="text" name="engineSize" th:value="${vh.engineSize}" placeholder="Engine" class="w-24 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
+                                                <input type="text" name="drivetrain" th:value="${vh.drivetrain}" placeholder="Drivetrain" class="w-16 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none text-slate-800 font-bold">
                                                 <span class="text-gray-300">|</span>
-                                                <input type="text" name="licensePlate" th:value="${vh.licensePlate}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono font-bold text-center uppercase focus:outline-none">
-                                                <input type="text" name="vin" th:value="${vh.vin}" required class="w-44 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono uppercase tracking-tighter focus:outline-none">
+                                                <input type="text" name="licensePlate" th:value="${vh.licensePlate}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono font-bold text-center uppercase focus:outline-none text-slate-800">
+                                                <input type="text" name="vin" th:value="${vh.vin}" required class="w-44 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono uppercase tracking-tighter focus:outline-none text-slate-800">
                                             </div>
                                             <div class="flex items-center space-x-1.5 pl-4">
-                                                <button type="submit" th:form="'vehicleUpdateForm-' + ${vh.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save</button>
-                                                <a th:href="@{/(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
+                                                <button type="submit" th:form="'vehicleUpdateForm-' + ${vh.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150 uppercase tracking-wide">💾 Save</button>
+                                                <a th:href="@{/(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150 uppercase tracking-wide">✕ Cancel</a>
                                             </div>
                                         </div>
                                     </form>
                                 </td>
                             </th:block>
 
-                            <!-- ========================================================= -->
-                            <!-- 📄 CONDITION B: STANDARD STATIC FLEET VEHICLE VIEW LAYER -->
-                            <!-- ========================================================= -->
+                            <!-- 📄 CONDITION B: STANDARD STATIC FLEET VEHICLE VIEW LAYER (TOTAL 5 COLUMNS) -->
                             <th:block th:if="${editVehicleId == null || editVehicleId != vh.id}">
                                 <td class="px-4 py-3 font-semibold text-gray-900">
                                     <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
@@ -359,10 +358,9 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
-                                <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
-                                <td class="px-4 py-3 text-right whitespace-nowrap space-x-1 flex items-center justify-end">
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
                                     <a th:href="@{/(tab='vehicles', editVehicleId=${vh.id})}"
-                                       class="inline-flex items-center text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1 border border-slate-200 rounded transition duration-150">
+                                       class="inline-flex items-center text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1 border border-slate-200 rounded transition duration-150 uppercase tracking-wide">
                                         ✏️ Edit
                                     </a>
                                 </td>
@@ -477,9 +475,8 @@
                 </div>
             </div>
         </div>
-
         <!-- 📋 ADD NEW LINE ITEM INVOICE MODAL FORM -->
-<!--        <div id="addLineItemModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">-->
+        <div id="addLineItemModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-all text-slate-800">
 
                 <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
@@ -526,7 +523,6 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black uppercase text-slate-600 mb-1">Part Qty Count:</label>
                             <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black uppercase text-slate-600 mb-1">Part Qty Count:</label>
                             <input type="number" step="0.01" name="quantity" id="formQuantity" value="1.00" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
@@ -618,7 +614,8 @@
                             <span th:text="${order.paymentStatus}" th:class="${order.paymentStatus == T(com.autorepair.shop.PaymentStatus).FULLY_PAID ? 'bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold' : (order.paymentStatus == T(com.autorepair.shop.PaymentStatus).PARTIALLY_PAID ? 'bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold' : 'bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold')}"></span>
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <a th:href="@{/(tab='orders', focusedWorkOrderId=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150">
+                            <!-- 👑 INDEPENDENT VIEWPORT ROUTER LINK: Prevents customer tab redirection locks -->
+                            <a th:href="@{/work-orders/focus/{id}(id=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150 select-none">
                                 🔍 Edit Work Order
                             </a>
                         </td>
@@ -627,6 +624,7 @@
                 </table>
             </div>
         </div>
+
         <!-- ========================================================= -->
         <!-- ⚡ SUB-WORKSPACE: SINGLE SELECTED WORK ORDER WORKSHEET     -->
         <!-- ========================================================= -->
@@ -643,7 +641,8 @@
                         2022 Ford F-150 ➔ John Doe
                     </span>
                 </div>
-                <a th:href="@{/(tab='orders')}" class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition">
+                <!-- 👑 UPGRADED BACK NAVIGATION LINK: Forces the view state engine to lock securely on the orders tab -->
+                <a th:href="@{/?tab=orders}" class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition select-none">
                     ⬅️ Back to Master Index
                 </a>
             </div>
@@ -708,7 +707,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
                 <!-- Left Column Form Panel: Add Item Intake Card -->
-                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm h-fit">
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm h-fit text-slate-800">
                     <h3 class="text-sm font-black text-slate-900 mb-3">Add Row to Invoice: <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h3>
 
                     <div class="mb-3 bg-slate-50 p-2 border rounded border-slate-200">
@@ -719,44 +718,60 @@
                         </select>
                     </div>
 
-                    <form th:action="@{/line-items/add}" th:object="${newLineItem}" method="POST" class="space-y-3">
+                    <!-- 👑 UPGRADED HIGH-SPEED DIRECT-PROCUREMENT ACTION ROUTE -->
+                    <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                         <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Billing Type</label>
-                                <select th:field="*{itemType}" id="formItemType" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold">
-                                    <option th:value="${T(com.autorepair.shop.LineItemType).PART}">PART</option>
-                                    <option th:value="${T(com.autorepair.shop.LineItemType).LABOR}">LABOR</option>
+                                <label class="block text-[10px] font-black text-slate-600 mb-0.5">Item Billing Type</label>
+                                <select name="itemType" id="formItemType" onchange="toggleLineItemFormFieldsBasedOnType()" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                                    <option value="PART">📦 PART</option>
+                                    <option value="LABOR">🔧 LABOR</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Qty / Hours</label>
-                                <input type="number" step="0.1" th:field="*{quantity}" id="formQuantity" required class="w-full px-2 py-1 border rounded text-xs">
+                                <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black text-slate-600 mb-0.5">Qty / Hours</label>
+                                <input type="number" step="0.1" name="quantity" id="formQuantity" value="1.0" required class="w-full px-2 py-1 border rounded text-xs font-bold">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Description / Action</label>
-                            <input type="text" th:field="*{description}" id="formDescription" required placeholder="Ceramic Brake Pads" class="w-full px-2 py-1 border rounded text-xs">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="hidden" th:field="*{costPrice}" value="0.00">
+
+                        <!-- 📦 INDIVIDUAL DIRECT-PROCUREMENT SUBFIELDS (TOGGLES AUTO VIA SHOP-UI.JS) -->
+                        <div id="partsProcurementFormFieldsSubGroup" class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded border border-slate-200">
+                            <div class="col-span-1">
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
+                                <input type="text" name="partNumber" id="formPartNumber" placeholder="FIL-1356" class="w-full px-2 py-1 border rounded text-xs font-mono uppercase bg-white text-slate-800 font-bold">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Vendor Name:</label>
+                                <input type="text" name="vendor" id="formVendor" placeholder="NAPA, AutoZone" class="w-full px-2 py-1 border rounded text-xs bg-white text-slate-800 font-bold">
+                            </div>
                             <div class="col-span-2">
-                                <label class="block text-[10px] font-semibold text-gray-500 mb-0.5">Billed Retail Price</label>
-                                <input type="number" step="0.01" th:field="*{retailPrice}" id="formRetailPrice" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right">
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost Paid by Shop:</label>
+                                <input type="number" step="0.01" name="wholesaleCost" id="formWholesaleCost" value="0.00" class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white text-slate-800 font-bold">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-xs shadow transition">⚡ Bill Row to Invoice</button>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 mb-0.5">Description / Action Name</label>
+                            <input type="text" name="description" id="formDescription" required placeholder="Premium Front Ceramic Brake Pads" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 mb-0.5">Billed Retail Price</label>
+                            <input type="number" step="0.01" name="retailPrice" id="formRetailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold bg-white">
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2 rounded text-xs shadow transition uppercase tracking-wider">⚡ Bill Row to Invoice</button>
                     </form>
                 </div>
 
                 <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout -->
-                <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
-                    <!-- 🏢 FLEXBOX HEADER ROW: FORCES HORIZONTAL SIDE-BY-SIDE ALIGNMENT -->
+                <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm text-slate-800">
                     <div class="flex flex-wrap items-baseline justify-between border-b border-gray-100 pb-3 mb-4 gap-2">
                         <h2 class="text-base font-black text-slate-900">
                             Live Line Items for <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}">WO-1001</span>
                         </h2>
-                        <!-- 👥 FLOATS TO THE RIGHT SIDE ON THE SAME HORIZONTAL LINE -->
                         <span class="text-xs text-slate-400 font-semibold font-mono tracking-tight"
                               th:text="${focusedWorkOrder.vehicle.year + ' ' + focusedWorkOrder.vehicle.make + ' ' + focusedWorkOrder.vehicle.model + ' | ' + focusedWorkOrder.vehicle.customer.firstName + ' ' + focusedWorkOrder.vehicle.customer.lastName}">
                             2022 Ford F-150 | John Doe
@@ -770,7 +785,8 @@
                             <thead class="bg-gray-50 text-gray-500 font-black uppercase tracking-wider">
                             <tr>
                                 <th class="px-3 py-2">Type</th>
-                                <th class="px-3 py-2">Description</th>
+                                <th class="px-3 py-2">Procurement Specs</th>
+                                <th class="px-3 py-2">Description / Job Action</th>
                                 <th class="px-3 py-2">Qty/Hrs × Price</th>
                                 <th class="px-3 py-2">Total</th>
                                 <th class="px-3 py-2 text-right">Actions</th>
@@ -779,63 +795,84 @@
                             <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
                             <tr th:each="item : ${lineItems}" class="hover:bg-gray-50 align-middle">
 
-                                <!-- INLINE INTERACTIVE EDITS BLOCK -->
+                                <!-- INLINE INTERACTIVE EDITS ROW BLOCK -->
                                 <th:block th:if="${editItemId != null && editItemId == item.id}">
-                                    <td colspan="5" class="p-0">
-                                        <form th:action="@{/line-items/update/{id}(id=${item.id})}" method="POST" class="flex items-center justify-between gap-2 p-1.5 bg-indigo-50/40 w-full">
+                                    <td colspan="6" class="p-0 bg-indigo-50/30">
+                                        <form th:action="@{/work-orders/add-item}" method="POST" class="flex items-center justify-between gap-2 p-2 w-full m-0">
                                             <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
-                                            <div class="flex items-center space-x-2 flex-1">
-                                                <span th:text="${item.itemType}" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded font-bold text-[10px]"></span>
-                                                <input type="text" name="description" th:value="${item.description}" required class="flex-1 px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:outline-none font-bold">
+                                            <input type="hidden" name="itemType" th:value="${item.itemType}">
+
+                                            <div class="flex flex-wrap items-center gap-2 flex-1">
+                                                <span th:text="${item.itemType}" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded font-black text-[9px] uppercase tracking-wide"></span>
+                                                <input type="text" name="description" th:value="${item.description}" required class="flex-1 min-w-[150px] px-2 py-1 border border-indigo-400 rounded text-xs bg-white font-bold text-slate-800">
                                             </div>
-                                            <div class="flex items-center gap-1">
+                                            <div class="flex items-center gap-1.5 shrink-0">
                                                 <input type="number" step="0.1" name="quantity" th:value="${item.quantity}" required class="w-12 px-1 py-1 border border-indigo-400 rounded text-xs text-center font-mono font-bold bg-white">
-                                                <span class="text-gray-400">×</span>
+                                                <span class="text-gray-400 font-bold">×</span>
                                                 <input type="number" step="0.01" name="retailPrice" th:value="${item.retailPrice}" required class="w-16 px-1 py-1 border border-indigo-400 rounded text-xs text-right font-mono font-bold bg-white">
                                             </div>
-                                            <div class="flex items-center space-x-1 pl-2">
-                                                <button type="submit" class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-1 rounded shadow transition">💾 Save</button>
-                                                <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="bg-gray-100 text-gray-600 font-bold text-[10px] px-2 py-1 border rounded transition">✕</a>
+                                            <div class="flex items-center space-x-1 pl-2 shrink-0">
+                                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] px-2.5 py-1 rounded shadow transition uppercase">💾 Save</button>
+                                                <a th:href="@{/work-orders/focus/{id}(id=${focusedWorkOrder.id})}" class="bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold text-[10px] px-2.5 py-1 rounded transition uppercase">✕</a>
                                             </div>
                                         </form>
                                     </td>
                                 </th:block>
 
-                                <!-- STATIC VIEW ITEMS RECORD ROW BLOCK -->
                                 <th:block th:if="${editItemId == null || editItemId != item.id}">
-                                    <td class="px-3 py-2">
-                                        <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold text-[10px]' : 'bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold text-[10px]'}"></span>
+                                    <td class="px-3 py-2 font-black text-[10px] uppercase tracking-wide text-slate-500" th:text="${item.itemType}">PART</td>
+                                    <td class="px-3 py-2 font-mono text-[10px] text-slate-600">
+                                        <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).PART}">
+                                            Num: <span class="font-bold text-slate-800" th:text="${item.partNumber != null ? item.partNumber : 'N/A'}"></span><br>
+                                            Cost: <span class="font-bold text-emerald-600" th:text="'$' + ${item.wholesaleCost}"></span> <span class="text-[9px] text-slate-400" th:text="'(' + ${item.vendor} + ')'"></span>
+                                        </div>
+                                        <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).LABOR}" class="text-slate-400 italic">Book Labor Action</div>
                                     </td>
-                                    <td class="px-3 py-2 font-bold text-gray-900" th:text="${item.description}"></td>
-                                    <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}"></td>
-                                    <td class="px-3 py-2 text-emerald-600 font-bold font-mono" th:text="${'$' + item.getLineTotal()}"></td>
-                                    <td class="px-3 py-2 text-right whitespace-nowrap space-x-1">
-                                        <a th:href="@{/(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, editItemId=${item.id})}" class="text-indigo-600 hover:text-indigo-800 font-bold">✏️ Edit</a>
-                                        <a th:href="@{/line-items/delete/{id}(workOrderId=${focusedWorkOrder.id}, id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?')" class="text-rose-600 hover:text-rose-800 font-bold pl-1.5">🗑️ Delete</a>
+                                    <td class="px-3 py-2 font-bold text-slate-800" th:text="${item.description}">Ceramic Brake Pads</td>
+                                    <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}">1.0 × $120.00</td>
+                                    <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="'$' + ${item.getLineTotal()}">$120.00</td>
+                                    <td class="px-3 py-2 text-right space-x-1.5 whitespace-nowrap">
+                                        <a th:href="@{/?tab=orders&focusedWorkOrderId={woId}&editItemId={itemId}(woId=${focusedWorkOrder.id}, itemId=${item.id})}" class="text-indigo-600 hover:text-indigo-900 text-[10px] font-black uppercase tracking-wider transition">Edit</a>
+                                        <a th:href="@{/line-items/delete(id=${item.id}, workOrderId=${focusedWorkOrder.id})}" class="text-rose-600 hover:text-rose-900 text-[10px] font-black uppercase tracking-wider transition" onclick="return confirm('Erase this line row from worksheet account Ledger history?')">Delete</a>
                                     </td>
                                 </th:block>
+
                             </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- CALCULATION BALANCE BLOCKS FOOTER SUMMARY CONTAINER -->
-                    <div class="mt-4 border-t border-gray-200 pt-3 flex flex-col items-end space-y-1 text-xs text-gray-600 font-semibold">
-                        <div>Parts Billed: <span class="font-mono text-gray-900 font-black" th:text="${'$' + #numbers.formatDecimal(totalParts, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
-                        <div>Labor Billed: <span class="font-mono text-gray-900 font-black" th:text="${'$' + #numbers.formatDecimal(totalLabor, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
-                        <div class="text-slate-900 border-t border-dashed border-gray-300 pt-1.5 mt-1 flex space-x-6 text-sm">
-                            <div>Invoice Total: <span class="text-indigo-600 font-mono font-black" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
-                            <div class="border-l border-slate-300 pl-4">Remaining Balance: <span class="text-rose-600 font-mono font-black" th:text="${'$' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</span></div>
+                    <!-- REPAIR WORKORDER GRAND TOTALS FOOTER -->
+                    <div class="mt-6 border-t border-gray-100 pt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div class="text-[11px] text-slate-400 leading-tight">
+                            ℹ️ Review gross profit summaries inside the toggleable metrics analytics drawer. All values dynamically recalculate via strict backend BigDecimal type-safe matrices [Shopmonkey auto repair app].
+                        </div>
+                        <div class="space-y-1.5 font-bold text-xs text-slate-700 max-w-xs ml-auto w-full font-mono">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400 uppercase font-sans font-black text-[10px]">Parts Subtotal:</span>
+                                <span th:text="${'$' + totalParts}">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400 uppercase font-sans font-black text-[10px]">Labor Subtotal:</span>
+                                <span th:text="${'$' + totalLabor}">$0.00</span>
+                            </div>
+                            <div class="flex justify-between border-t border-slate-300 pt-1.5 text-sm font-black text-slate-900">
+                                <span class="text-indigo-600 uppercase font-sans text-[11px]">Grand Balance Due:</span>
+                                <span th:text="${'$' + totalRevenue}">$0.00</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div> <!-- Closes Right Column Table View Panel -->
+            </div> <!-- Closes SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE Grid -->
+        </div> <!-- Closes ⚡ SUB-WORKSPACE: SINGLE SELECTED WORK ORDER WORKSHEET -->
+    </div> <!-- Closes TAB SECTION 3: WORK ORDERS CONSOLE -->
 
-            </div>
-    </div> <!-- This closes your section-orders panel wrapper perfectly -->
-</main>
+</main> <!-- 👑 RE-ADDED CRITICAL GLOBAL OPERATIONAL WRAPPER TAG -->
+
 <!-- 📦 CONSOLIDATED EXTERNAL MODULAR BUSINESS LOGIC LINK LAYERS -->
 <script th:src="@{/js/shop-ui.js}" type="text/javascript"></script>
 <script th:src="@{/js/work-orders.js}" type="text/javascript"></script>
 <script th:src="@{/js/vin-scanner.js}" type="text/javascript"></script>
+
 </body>
 </html>
