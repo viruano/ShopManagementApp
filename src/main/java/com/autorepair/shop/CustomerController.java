@@ -28,7 +28,9 @@ public class CustomerController {
     @Autowired
     private LineItemRepository lineItemRepository;
 
-    // --- MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE ---
+    // =========================================================
+    // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
+    // =========================================================
     @GetMapping("/")
     public String viewDashboard(
             @RequestParam(value = "tab", required = false, defaultValue = "customers") String tab,
@@ -125,31 +127,28 @@ public class CustomerController {
         return "index";
     }
 
+    // =========================================================
     // 🏎️ FIXED LIVE EXTERNAL DATA ENGINE USING STRING BUFFER PARSING
+    // =========================================================
     private void decodeVinLive(Vehicle vehicle, String vin) {
         if (vin == null || vin.trim().length() < 10) return;
 
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-            // String apiUrl = "https://dot.gov" + vin.trim() + "?format=json";
-            String apiUrl = "https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/"+ vin.trim()  + "?format=json";
+            String apiUrl = "https://dot.gov" + vin.trim() + "?format=json";
 
-            // ⚡ STEP 1: FETCH AS RAW STRING TO BYPASS CONVERTER TRAPS
             String jsonRaw = restTemplate.getForObject(apiUrl, String.class);
 
             if (jsonRaw != null && !jsonRaw.trim().isEmpty()) {
-                // ⚡ STEP 2: USE OBJECTMAPPER TO PARSE THE TREE SAFE AND DIRECT
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(jsonRaw);
 
                 if (root != null && root.has("Results")) {
                     com.fasterxml.jackson.databind.JsonNode results = root.get("Results");
 
-                    // The decodevinvalues endpoint returns an array where results are inside the first index element [0]
                     if (results.isArray() && results.size() > 0) {
                         com.fasterxml.jackson.databind.JsonNode vehicleData = results.get(0);
 
-                        // Extract flat fields directly from the first element node array
                         String year = vehicleData.path("ModelYear").asText("");
                         String make = vehicleData.path("Make").asText("");
                         String model = vehicleData.path("Model").asText("");
@@ -157,22 +156,20 @@ public class CustomerController {
                         String engine = vehicleData.path("DisplacementL").asText("");
                         String drive = vehicleData.path("DriveType").asText("");
 
-                        // Map properties cleanly to your entity fields if values exist
                         if (!year.isEmpty() && !year.equalsIgnoreCase("null")) vehicle.setYear(year.trim());
-                        if (!make.isEmpty() && !make.equalsIgnoreCase("null")) vehicle.setMake(make.trim());
-                        if (!model.isEmpty() && !model.equalsIgnoreCase("null")) vehicle.setModel(model.trim());
-                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null")) vehicle.setSubModel(trim.trim());
+                        if (!make.isEmpty() && !make.equalsIgnoreCase("null")) vehicle.setMake(make.trim().toUpperCase());
+                        if (!model.isEmpty() && !model.equalsIgnoreCase("null")) vehicle.setModel(model.trim().toUpperCase());
+                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null")) vehicle.setSubModel(trim.trim().toUpperCase());
                         if (!engine.isEmpty() && !engine.equalsIgnoreCase("null")) vehicle.setEngineSize(engine.trim() + "L");
-                        if (!drive.isEmpty() && !drive.equalsIgnoreCase("null")) vehicle.setDrivetrain(drive.trim());
+                        if (!drive.isEmpty() && !drive.equalsIgnoreCase("null")) vehicle.setDrivetrain(drive.trim().toUpperCase());
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("NHTSA Network Parser Timeout: " + e.getMessage());
-            // Safe resilient database fallbacks if internet line drop or server downtime occurs
+            System.err.println("NHTSA Network Parser Timeout fallback log: " + e.getMessage());
             vehicle.setYear("2020");
-            vehicle.setMake("Unknown");
-            vehicle.setModel("Chassis Unmapped");
+            vehicle.setMake("UNKNOWN");
+            vehicle.setModel("CHASSIS UNMAPPED");
         }
     }
 
@@ -188,7 +185,6 @@ public class CustomerController {
         customerRepository.save(customer);
         return "redirect:/?tab=customers";
     }
-
     @PostMapping("/customers/update/{id}")
     public String updateCustomer(@PathVariable("id") Long id,
                                  @RequestParam("firstName") String firstName,
@@ -232,7 +228,7 @@ public class CustomerController {
 
     @PostMapping("/vehicles/update/{id}")
     public String updateVehicleProfileInline(@PathVariable("id") Long id,
-                                             @RequestParam("year") String year,
+                                             @RequestParam("year") String year, // <-- 🔑 Fixed to String
                                              @RequestParam("make") String make,
                                              @RequestParam("model") String model,
                                              @RequestParam("subModel") String subModel,
@@ -241,12 +237,12 @@ public class CustomerController {
                                              @RequestParam("licensePlate") String licensePlate,
                                              @RequestParam("vin") String vin) {
         vehicleRepository.findById(id).ifPresent(vehicle -> {
-            vehicle.setYear(year != null ? year.trim() : "");
-            vehicle.setMake(make != null ? make.trim() : "");
-            vehicle.setModel(model != null ? model.trim() : "");
-            vehicle.setSubModel(subModel != null ? subModel.trim() : "");
+            vehicle.setYear(year != null ? year.trim() : ""); // <-- 🔑 Clean String Assignment
+            vehicle.setMake(make != null ? make.trim().toUpperCase() : "");
+            vehicle.setModel(model != null ? model.trim().toUpperCase() : "");
+            vehicle.setSubModel(subModel != null ? subModel.trim().toUpperCase() : "");
             vehicle.setEngineSize(engineSize != null ? engineSize.trim() : "");
-            vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim() : "");
+            vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim().toUpperCase() : "");
             vehicle.setLicensePlate(licensePlate != null ? licensePlate.trim().toUpperCase() : "");
             vehicle.setVin(vin != null ? vin.trim().toUpperCase() : "");
             vehicleRepository.save(vehicle);
@@ -314,6 +310,14 @@ public class CustomerController {
     }
 
     // =========================================================
+    // 👁️ INVOICE FOCUS LEDGER SELECTOR VIEWPORT (404 FIX)
+    // =========================================================
+    @GetMapping("/work-orders/focus/{id}")
+    public String focusSpecificWorkOrderSheetFromLedger(@PathVariable("id") Long id) {
+        return "redirect:/?tab=orders&focusedWorkOrderId=" + id;
+    }
+
+    // =========================================================
     // 📦 DIRECT-PROCUREMENT LINE ITEM INVOICE INTAKE ENDPOINT
     // =========================================================
     @PostMapping("/work-orders/add-item")
@@ -328,9 +332,9 @@ public class CustomerController {
             @RequestParam("retailPrice") BigDecimal retailPrice,
             RedirectAttributes redirectAttributes) {
 
-        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId).orElseThrow(() -> new IllegalArgumentException("Invalid work order id reference: " + workOrderId));
+        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid work order id reference: " + workOrderId));
 
-        // 2. Instantiate a direct-procurement row item record line
         LineItem newLineItem = new LineItem();
         newLineItem.setWorkOrder(workOrderRecord);
         newLineItem.setItemType(LineItemType.valueOf(itemType));
@@ -338,19 +342,16 @@ public class CustomerController {
         newLineItem.setQuantity(quantity);
         newLineItem.setRetailPrice(retailPrice);
 
-        // 3. Map part-specific metrics uniquely if dealing with a physical part line item
         if (LineItemType.PART.name().equals(itemType)) {
             newLineItem.setPartNumber(partNumber);
             newLineItem.setVendor(vendor);
             newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
         } else {
-            // Guarantee labor inputs contain clean blank values for clear bookkeeping records
             newLineItem.setPartNumber(null);
             newLineItem.setVendor(null);
             newLineItem.setWholesaleCost(BigDecimal.ZERO);
         }
 
-        // 4. Persist the row straight to your line items table registry
         lineItemRepository.save(newLineItem);
 
         redirectAttributes.addFlashAttribute("successMessage", "Line item successfully added to invoice record!");
