@@ -22,22 +22,28 @@ public class InvoicePdfService {
     @Value("${shop.config.demo-mode:false}")
     private boolean isDemoMode;
 
-    @Value("${shop.config.live.name}")
+    @Value("${shop.config.live.name:Main Street Auto Repair}")
     private String liveName;
-    @Value("${shop.config.live.address}")
+
+    @Value("${shop.config.live.address:123 Main St, Annapolis, MD}")
     private String liveAddress;
-    @Value("${shop.config.live.phone}")
+
+    @Value("${shop.config.live.phone:(555) 123-4567}")
     private String livePhone;
-    @Value("${shop.config.live.tax-rate}")
+
+    @Value("${shop.config.live.tax-rate:0.06}")
     private double liveTaxRate;
 
-    @Value("${shop.config.demo.name}")
+    @Value("${shop.config.demo.name:Demo Shop Management}")
     private String demoName;
-    @Value("${shop.config.demo.address}")
+
+    @Value("${shop.config.demo.address:456 Workshop Way, Cloud City}")
     private String demoAddress;
-    @Value("${shop.config.demo.phone}")
+
+    @Value("${shop.config.demo.phone:(555) 987-6543}")
     private String demoPhone;
-    @Value("${shop.config.demo.tax-rate}")
+
+    @Value("${shop.config.demo.tax-rate:0.06}")
     private double demoTaxRate;
 
     // ⚡ ENVIRONMENT SWITCH VALUE SOLVER ENGINE METHOD
