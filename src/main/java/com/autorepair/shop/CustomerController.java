@@ -289,66 +289,71 @@ public class CustomerController {
         return "redirect:/?tab=orders&focusedWorkOrderId=" + id;
     }
 
-    // --- LINE ITEMS INVOICING ACTIONS ---
-    @PostMapping("/line-items/add")
-    public String addLineItemToWorkOrder(@ModelAttribute("newLineItem") LineItem item, @RequestParam("workOrderId") Long workOrderId) {
-        workOrderRepository.findById(workOrderId).ifPresent(order -> {
-            item.setWorkOrder(order);
-            if (item.getCostPrice() == null) item.setCostPrice(BigDecimal.ZERO);
-            lineItemRepository.save(item);
-        });
-        return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
-    }
-
-    @PostMapping("/line-items/update/{id}")
-    public String processLineItemUpdateInline(@PathVariable("id") Long id,
-                                              @RequestParam("description") String desc,
-                                              @RequestParam("quantity") Double qty,
-                                              @RequestParam("retailPrice") BigDecimal retail,
-                                              @RequestParam("workOrderId") Long workOrderId) {
-        lineItemRepository.findById(id).ifPresent(item -> {
-            item.setDescription(desc);
-            item.setQuantity(qty);
-            item.setRetailPrice(retail);
-            lineItemRepository.save(item);
-        });
-        return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
-    }
-
-    @GetMapping("/line-items/delete/{id}")
-    public String removeLineItemFromWorksheet(@PathVariable("id") Long id, @RequestParam("workOrderId") Long workOrderId) {
-        lineItemRepository.deleteById(id);
-        return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
-    }
     // =========================================================
     // ➕ AUTOMATED WORK ORDER GENERATION FROM LEDGER TAB
     // =========================================================
     @PostMapping("/work-orders/create")
     public String createNewWorkOrderFromTab(@RequestParam("vehicleId") Long vehicleId,
-                                            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-
-        // 1. Look up the vehicle profile directly from your autowired repository layer
+                                            RedirectAttributes redirectAttributes) {
         Vehicle vehicleProfile = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid vehicle ID mapping link: " + vehicleId));
 
-        // 2. Instantiate a clean, active shop worksheet tracking model row
         WorkOrder newWorkOrder = new WorkOrder();
         newWorkOrder.setVehicle(vehicleProfile);
+        newWorkOrder.setStatus(WorkOrderStatus.OPENED);
+        newWorkOrder.setPaymentStatus(PaymentStatus.UNPAID);
+        newWorkOrder.setAmountPaid(BigDecimal.ZERO);
 
-        // 👑 ALIGNS WITH WORKORDER.JAVA SPECIFICATIONS:
-        newWorkOrder.setStatus(com.autorepair.shop.WorkOrderStatus.OPENED); // Sets standard enum state
-        newWorkOrder.setPaymentStatus(com.autorepair.shop.PaymentStatus.UNPAID); // Sets payment tracking enum
-        newWorkOrder.setAmountPaid(java.math.BigDecimal.ZERO); // Handles the strict BigDecimal type mapping
-
-        // 🏷️ AUTOMATED INVOICE NUMBER SEQUENCE GENERATOR:
-        // Spangles a unique identifier stamp onto the index ledger card row using system timestamps
         String generatedInvoiceTrackingToken = "WO-" + (System.currentTimeMillis() % 100000);
         newWorkOrder.setInvoiceNumber(generatedInvoiceTrackingToken);
 
-        // 3. Save the record directly into your work orders database table repository
         workOrderRepository.save(newWorkOrder);
 
         redirectAttributes.addFlashAttribute("successMessage", "New Work Order successfully generated on the floor!");
-        return "redirect:/?tab=orders"; // Smoothly redirects the view focus right back to Tab Section 3
+        return "redirect:/?tab=orders";
+    }
+
+    // =========================================================
+    // 📦 DIRECT-PROCUREMENT LINE ITEM INVOICE INTAKE ENDPOINT
+    // =========================================================
+    @PostMapping("/work-orders/add-item")
+    public String addDirectPurchaseLineItemToWorkOrder(
+            @RequestParam("workOrderId") Long workOrderId,
+            @RequestParam("itemType") String itemType,
+            @RequestParam(value = "partNumber", required = false) String partNumber,
+            @RequestParam(value = "vendor", required = false) String vendor,
+            @RequestParam(value = "wholesaleCost", required = false) BigDecimal wholesaleCost,
+            @RequestParam("description") String description,
+            @RequestParam("quantity") BigDecimal quantity,
+            @RequestParam("retailPrice") BigDecimal retailPrice,
+            RedirectAttributes redirectAttributes) {
+
+        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId).orElseThrow(() -> new IllegalArgumentException("Invalid work order id reference: " + workOrderId));
+
+        // 2. Instantiate a direct-procurement row item record line
+        LineItem newLineItem = new LineItem();
+        newLineItem.setWorkOrder(workOrderRecord);
+        newLineItem.setItemType(LineItemType.valueOf(itemType));
+        newLineItem.setDescription(description);
+        newLineItem.setQuantity(quantity);
+        newLineItem.setRetailPrice(retailPrice);
+
+        // 3. Map part-specific metrics uniquely if dealing with a physical part line item
+        if (LineItemType.PART.name().equals(itemType)) {
+            newLineItem.setPartNumber(partNumber);
+            newLineItem.setVendor(vendor);
+            newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
+        } else {
+            // Guarantee labor inputs contain clean blank values for clear bookkeeping records
+            newLineItem.setPartNumber(null);
+            newLineItem.setVendor(null);
+            newLineItem.setWholesaleCost(BigDecimal.ZERO);
+        }
+
+        // 4. Persist the row straight to your line items table registry
+        lineItemRepository.save(newLineItem);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Line item successfully added to invoice record!");
+        return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 }
