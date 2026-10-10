@@ -29,7 +29,7 @@ public class LineItem {
     @Column(name = "quantity", nullable = false, precision = 10, scale = 2)
     private BigDecimal quantity = BigDecimal.ONE; // Represents parts count (e.g., 2.0) or labor hours (e.g., 1.5)
 
-    @Column(name = "wholesale_cost", nullable = false, precision = 10, scale = 2)
+    @Column(name = "wholesale_cost", nullable = true, precision = 10, scale = 2)
     private BigDecimal wholesaleCost = BigDecimal.ZERO; // The price the shop paid the distributor for this specific item
 
     @Column(name = "retail_price", nullable = false, precision = 10, scale = 2)
