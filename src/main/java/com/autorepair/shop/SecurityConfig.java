@@ -60,20 +60,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disabled for local development line item post edits
                 .authorizeHttpRequests(auth -> auth
+                        // 👥 Permitted assets
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+
+                        // 👑 THE PRINTER PATH OVERRIDE MAPPING:
+                        // Sitting safely inside the auth lamda configuration block context
+                        .requestMatchers("/orders/*/print").permitAll()
+
+                        // All other shop floor operations demand strict login authentication
                         .anyRequest().authenticated()
                 )
-
-                // 👑 THE CRITICAL PRINTER OVERRIDE:
-                // Permits the blank printing window tab to bypass login constraints natively
-                .requestMatchers("/orders/*/print").permitAll()
                 .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
-                .logout(logout -> logout
-                        .permitAll()
-                );
+                .logout(logout -> logout.permitAll());
+
         return http.build();
     }
+
 }
