@@ -341,9 +341,6 @@ public class CustomerController {
             return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
         }
 
-        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid work order reference ID: " + workOrderId));
-
         LineItem newLineItem = new LineItem();
         newLineItem.setWorkOrder(workOrderRecord);
         newLineItem.setDescription(description.trim());
