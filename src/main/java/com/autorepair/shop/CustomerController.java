@@ -318,43 +318,51 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 📦 DIRECT-PROCUREMENT LINE ITEM INVOICE INTAKE ENDPOINT
-    // =========================================================
+    // 📦 REVISED DIRECT-PROCUREMENT INTAKE ENGINE
+    // =========================================================a
     @PostMapping("/work-orders/add-item")
     public String addDirectPurchaseLineItemToWorkOrder(
             @RequestParam("workOrderId") Long workOrderId,
             @RequestParam("itemType") String itemType,
-            @RequestParam(value = "partNumber", required = false) String partNumber,
-            @RequestParam(value = "vendor", required = false) String vendor,
-            @RequestParam(value = "wholesaleCost", required = false) BigDecimal wholesaleCost,
             @RequestParam("description") String description,
             @RequestParam("quantity") BigDecimal quantity,
             @RequestParam("retailPrice") BigDecimal retailPrice,
+            @RequestParam(value = "partNumber", required = false) String partNumber,
+            @RequestParam(value = "vendor", required = false) String vendor,
+            @RequestParam(value = "wholesaleCost", required = false) BigDecimal wholesaleCost,
             RedirectAttributes redirectAttributes) {
 
         WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid work order id reference: " + workOrderId));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid work order reference ID: " + workOrderId));
 
         LineItem newLineItem = new LineItem();
         newLineItem.setWorkOrder(workOrderRecord);
-        newLineItem.setItemType(LineItemType.valueOf(itemType));
-        newLineItem.setDescription(description);
+        newLineItem.setDescription(description.trim());
         newLineItem.setQuantity(quantity);
         newLineItem.setRetailPrice(retailPrice);
 
-        if (LineItemType.PART.name().equals(itemType)) {
-            newLineItem.setPartNumber(partNumber);
-            newLineItem.setVendor(vendor);
-            newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
-        } else {
+        // 🔍 Map incoming section flows type-safely to database constraints
+        if ("LABOR".equalsIgnoreCase(itemType)) {
+            newLineItem.setItemType(LineItemType.LABOR);
             newLineItem.setPartNumber(null);
             newLineItem.setVendor(null);
             newLineItem.setWholesaleCost(BigDecimal.ZERO);
+        } else if ("PART".equalsIgnoreCase(itemType)) {
+            newLineItem.setItemType(LineItemType.PART);
+            newLineItem.setPartNumber(partNumber != null ? partNumber.trim().toUpperCase() : "N/A");
+            newLineItem.setVendor(vendor != null ? vendor.trim().toUpperCase() : "STOCK");
+            newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
+        } else if ("MISC".equalsIgnoreCase(itemType)) {
+            // Miscellaneous packages behave like a part with no trackable SKU overhead
+            newLineItem.setItemType(LineItemType.PART);
+            newLineItem.setPartNumber("MISC-MAT");
+            newLineItem.setVendor(vendor != null && !vendor.trim().isEmpty() ? vendor.trim().toUpperCase() : "SHOP");
+            newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
         }
 
         lineItemRepository.save(newLineItem);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Line item successfully added to invoice record!");
+        redirectAttributes.addFlashAttribute("successMessage", "Item successfully added to invoice worksheet ledger!");
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 }
