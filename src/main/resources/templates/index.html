@@ -928,6 +928,7 @@
                     </div>
 
                     <!-- FINANCIAL RECORD SUMS FOOTER PANEL -->
+                    <!-- FINANCIAL RECORD SUMS FOOTER PANEL -->
                     <div class="mt-6 border-t border-gray-100 pt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <div class="text-[11px] text-slate-400 leading-tight">
                             ℹ️ Review gross profit summaries inside the toggleable metrics analytics drawer. All values dynamically recalculate via strict backend BigDecimal type-safe matrices [Shopmonkey auto repair app].
@@ -941,6 +942,13 @@
                                 <span class="text-slate-400 uppercase font-sans font-black text-[10px]">Labor Subtotal:</span>
                                 <span th:text="${'$' + totalLabor}">$0.00</span>
                             </div>
+
+                            <!-- 👑 NEW REVENUE GROSS PROFIT ROW DISPLAY BADGE -->
+                            <div class="flex justify-between border-t border-dashed border-slate-300 pt-1 text-emerald-600">
+                                <span class="uppercase font-sans font-black text-[10px]">Ticket Net Profit:</span>
+                                <span th:text="${'+$' + totalProfit}">+$0.00</span>
+                            </div>
+
                             <div class="flex justify-between border-t border-slate-300 pt-1.5 text-sm font-black text-slate-900">
                                 <span class="text-indigo-600 uppercase font-sans text-[11px]">Grand Balance Due:</span>
                                 <span th:text="${'$' + totalRevenue}">$0.00</span>

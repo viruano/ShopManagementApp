@@ -103,6 +103,7 @@ public class CustomerController {
                 model.addAttribute("totalParts", order.getPartsSubtotal());
                 model.addAttribute("totalLabor", order.getLaborSubtotal());
                 model.addAttribute("totalRevenue", order.getTotalDue());
+                model.addAttribute("totalProfit", order.getGrandProfitDollars());
                 model.addAttribute("amountPaid", order.getAmountPaid());
                 model.addAttribute("remainingBalance", order.getRemainingBalance());
             });

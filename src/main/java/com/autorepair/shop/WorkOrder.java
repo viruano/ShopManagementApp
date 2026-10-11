@@ -88,6 +88,22 @@ public class WorkOrder {
         return getTotalDue().subtract(amountPaid);
     }
 
+    // =========================================================
+    // 📈 GRAND METRIC REVENUE ACCUMULATORS
+    // =========================================================
+
+    /**
+     * Aggregates total net profit dollars across all part and material items on the ticket.
+     */
+    public BigDecimal getGrandProfitDollars() {
+        if (this.lineItems == null || this.lineItems.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return this.lineItems.stream()
+                .map(LineItem::getMarginProfitDollars)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     // Standard Getters & Setters mapping parameters completely...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
