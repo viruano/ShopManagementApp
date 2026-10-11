@@ -403,4 +403,28 @@ public class CustomerController {
         redirectAttributes.addFlashAttribute("successMessage", "Item successfully added to invoice worksheet ledger!");
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
+
+    // =========================================================
+    // 🖨️ CUSTOM INVOICE PDF EXPORT LAYOUT ROUTER
+    // =========================================================
+    @GetMapping("/orders/{id}/print")
+    public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
+        workOrderRepository.findById(id).ifPresent(order -> {
+            model.addAttribute("order", order);
+            model.addAttribute("vehicle", order.getVehicle());
+            model.addAttribute("customer", order.getVehicle().getCustomer());
+            model.addAttribute("lineItems", order.getLineItems());
+
+            // Core financial aggregations passed explicitly for template binding
+            model.addAttribute("partsSubtotal", order.getPartsSubtotal());
+            model.addAttribute("laborSubtotal", order.getLaborSubtotal());
+            model.addAttribute("grandTotal", order.getTotalDue());
+            model.addAttribute("amountPaid", order.getAmountPaid());
+            model.addAttribute("balanceDue", order.getRemainingBalance());
+        });
+
+        // Routes straight to our dedicated print layout template
+        return "print-invoice";
+    }
+
 }
