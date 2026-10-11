@@ -13,30 +13,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid testing form entries
                 .authorizeHttpRequests(auth -> auth
-                        // 👥 1. Permitted Public Static Asset Pathways
+                        // 👥 1. Permitted Public Static Assets
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 
-                        // 🖨️ 2. Permitted Read-Only Print Document Layout Mappings
+                        // 🖨️ 2. Permitted Print Viewport Mappings
                         .requestMatchers("/orders/*/print").permitAll()
 
-                        // 🔐 3. Explicitly Permitted Core Authentication Gateways (BREAKS INFINITE REDIRECTS)
+                        // 🔐 3. Permitted Core Security Endpoints (CRITICAL REDIRECT LOOP FIX)
                         .requestMatchers("/login", "/logout", "/error").permitAll()
 
-                        // 👑 4. All other internal ERP shop operations demand strict login authentication
+                        // 👑 4. All other shop floor operations demand strict login authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login") // Custom processing mapping route
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
+                        // 👑 String-shorthand matching bypassing explicit class dependencies
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
                         .permitAll()
                 );
 
