@@ -39,6 +39,36 @@ public class LineItem {
     // 🧠 REAL-TIME AUTO WORKSHOP FINANCIAL CALCULATORS
     // =========================================================
 
+    // =========================================================
+    // 📈 DYNAMIC FINANCIAL ANALYTICS MATRIX
+    // =========================================================
+
+    /**
+     * Calculates Net Profit Margin Dollars: (Retail - Wholesale) * Quantity
+     */
+    public BigDecimal getMarginProfitDollars() {
+        if (this.itemType == LineItemType.LABOR || this.wholesaleCost == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal unitProfit = this.retailPrice.subtract(this.wholesaleCost);
+        return unitProfit.multiply(this.quantity);
+    }
+
+    /**
+     * Calculates Gross Profit Margin Percentage: ((Retail - Wholesale) / Retail) * 100
+     */
+    public BigDecimal getMarginPercentage() {
+        if (this.itemType == LineItemType.LABOR || this.wholesaleCost == null
+                || this.retailPrice.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal unitProfit = this.retailPrice.subtract(this.wholesaleCost);
+        return unitProfit.divide(this.retailPrice, 4, java.math.RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"))
+                .setScale(1, java.math.RoundingMode.HALF_UP);
+    }
+
     // Calculates the total billed amount to the customer for this specific line item
     public BigDecimal getLineTotal() {
         return retailPrice.multiply(quantity);

@@ -863,9 +863,37 @@
                                     <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-black text-[9px]' : 'bg-purple-100 text-indigo-800 px-2 py-0.5 rounded font-black text-[9px]'}">PART</span>
                                 </td>
                                 <td class="px-3 py-2 font-mono text-[10px] text-slate-500">
-                                    <span th:if="${item.itemType == T(com.autorepair.shop.LineItemType).PART}" th:text="${(item.partNumber != null ? item.partNumber : 'N/A') + ' [' + (item.vendor != null ? item.vendor : 'STOCK') + ']'}">FIL-1356 [NAPA]</span>
-                                    <span th:if="${item.itemType == T(com.autorepair.shop.LineItemType).LABOR}" class="text-slate-400">-- Flat Labor --</span>
+                                    <!-- 📦 PHYSICAL COMPONENT SPECS INTERFACE -->
+                                    <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).PART}">
+                                        <div class="font-bold text-slate-800">
+                                            Num: <span th:text="${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
+                                        </div>
+                                        <div>
+                                            Cost: <span class="text-slate-600" th:text="'$' + ${item.wholesaleCost}"></span>
+                                            <span class="text-[9px] text-slate-400 font-sans" th:text="'(' + ${item.vendor} + ')'"></span>
+                                        </div>
+
+                                        <!-- 📊 LIVE GROSS PROFIT METRICS BADGE LAYERS -->
+                                        <div class="mt-1 flex flex-wrap gap-1 font-sans text-[9px] font-black uppercase tracking-tight select-none">
+                                            <!-- Gross Dollar Spread Badge -->
+                                            <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
+                                                  th:text="'Net: +$' + ${item.getMarginProfitDollars()}">
+                                                Net: +$0.00
+                                            </span>
+                                            <!-- Margin % Badge: Turns Green if healthy (>= 40%), amber if slim (< 40%) -->
+                                            <span th:class="${item.getMarginPercentage() >= 40 ? 'bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200' : 'bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200'}"
+                                                  th:text="${item.getMarginPercentage()} + '% Margin'">
+                                                0% Margin
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🔧 SERVICE LABOR SPEC PLACEHOLDER -->
+                                    <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).LABOR}" class="text-slate-400 italic font-sans">
+                                        Pure Flat Labor Action
+                                    </div>
                                 </td>
+
                                 <td class="px-3 py-2 font-bold text-slate-900" th:text="${item.description}">Premium Front Brake Pads</td>
                                 <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}">1.0 × $120.00</td>
                                 <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="'$' + ${item.getLineTotal()}">$120.00</td>
