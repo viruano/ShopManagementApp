@@ -64,6 +64,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
+
+                // 👑 THE CRITICAL PRINTER OVERRIDE:
+                // Permits the blank printing window tab to bypass login constraints natively
+                .requestMatchers("/orders/*/print").permitAll()
                 .formLogin(form -> form
                         .permitAll()
                 )
