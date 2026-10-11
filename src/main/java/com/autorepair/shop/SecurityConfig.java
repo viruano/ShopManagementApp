@@ -61,14 +61,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 👥 Permitted assets
+                        // 👥 1. Permitted Public Static Assets
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 
-                        // 👑 THE PRINTER PATH OVERRIDE MAPPING:
-                        // Sitting safely inside the auth lamda configuration block context
+                        // 🖨️ 2. Permitted Print Viewport Mappings
                         .requestMatchers("/orders/*/print").permitAll()
 
-                        // All other shop floor operations demand strict login authentication
+                        // 🔐 3. Permitted Core Security Endpoints (CRITICAL REDIRECT LOOP FIX)
+                        .requestMatchers("/login", "/logout", "/error").permitAll()
+
+                        // 👑 4. All other shop floor operations demand strict login authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -76,7 +78,11 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll());
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                );
 
         return http.build();
     }
