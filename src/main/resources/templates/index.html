@@ -703,70 +703,125 @@
                 </form>
             </div>
 
-            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <!-- Left Column Form Panel: Dedicated Stacking Intake Core -->
+            <div class="space-y-4 h-fit text-slate-800">
 
-                <!-- Left Column Form Panel: Add Item Intake Card -->
-                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm h-fit text-slate-800">
-                    <h3 class="text-sm font-black text-slate-900 mb-3">Add Row to Invoice: <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}"></span></h3>
+                <!-- PANEL A: 🔧 DEDICATED FLAT-RATE LABOR ACTIONS CARD -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
+                        <span class="text-base">🔧</span>
+                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Service Labor</h3>
+                    </div>
 
+                    <!-- Flat-Rate Labor Guide Matrix Dropdown Dropdown -->
                     <div class="mb-3 bg-slate-50 p-2 border rounded border-slate-200">
-                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Flat-Rate Labor Guide Matrix</label>
-                        <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-2 py-1 border rounded text-xs bg-white">
+                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Labor Guide Book Times</label>
+                        <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-2 py-1 border rounded text-xs bg-white text-slate-800 font-bold focus:outline-none">
                             <option value="" disabled selected>-- Lookup Menu Book Times --</option>
                             <option th:each="guide : ${laborCatalog}" th:value="${guide.standardHours}" th:text="${'[' + guide.category + '] ' + guide.jobAction + ' — ' + guide.standardHours + ' Hrs'}"></option>
                         </select>
                     </div>
 
-                    <!-- 👑 UPGRADED HIGH-SPEED DIRECT-PROCUREMENT ACTION ROUTE -->
                     <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                         <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                        <input type="hidden" name="itemType" value="LABOR">
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-black text-slate-600 mb-0.5">Item Billing Type</label>
-                                <select name="itemType" id="formItemType" onchange="toggleLineItemFormFieldsBasedOnType()" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
-                                    <option value="PART">📦 PART</option>
-                                    <option value="LABOR">🔧 LABOR</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black text-slate-600 mb-0.5">Qty / Hours</label>
-                                <input type="number" step="0.1" name="quantity" id="formQuantity" value="1.0" required class="w-full px-2 py-1 border rounded text-xs font-bold">
-                            </div>
-                        </div>
-
-                        <!-- 📦 INDIVIDUAL DIRECT-PROCUREMENT SUBFIELDS (TOGGLES AUTO VIA SHOP-UI.JS) -->
-                        <div id="partsProcurementFormFieldsSubGroup" class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded border border-slate-200">
-                            <div class="col-span-1">
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
-                                <input type="text" name="partNumber" id="formPartNumber" placeholder="FIL-1356" class="w-full px-2 py-1 border rounded text-xs font-mono uppercase bg-white text-slate-800 font-bold">
-                            </div>
-                            <div class="col-span-1">
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Vendor Name:</label>
-                                <input type="text" name="vendor" id="formVendor" placeholder="NAPA, AutoZone" class="w-full px-2 py-1 border rounded text-xs bg-white text-slate-800 font-bold">
-                            </div>
+                        <div class="grid grid-cols-3 gap-2">
                             <div class="col-span-2">
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost Paid by Shop:</label>
-                                <input type="number" step="0.01" name="wholesaleCost" id="formWholesaleCost" value="0.00" class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white text-slate-800 font-bold">
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Labor Job Description</label>
+                                <input type="text" name="description" id="formDescription" required placeholder="e.g. Perform Diagnostic Scan" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Book Hours</label>
+                                <input type="number" step="0.1" name="quantity" id="formQuantity" value="1.0" required class="w-full px-2 py-1 border rounded text-xs font-mono font-bold text-center">
                             </div>
                         </div>
-
                         <div>
-                            <label class="block text-[10px] font-black text-slate-600 mb-0.5">Description / Action Name</label>
-                            <input type="text" name="description" id="formDescription" required placeholder="Premium Front Ceramic Brake Pads" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold">
+                            <label class="block text-[10px] font-black text-slate-500 mb-0.5">Labor Rate ($ / Hour)</label>
+                            <input type="number" step="0.01" name="retailPrice" id="formRetailPrice" value="125.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold">
                         </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-600 mb-0.5">Billed Retail Price</label>
-                            <input type="number" step="0.01" name="retailPrice" id="formRetailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold bg-white">
-                        </div>
-
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2 rounded text-xs shadow transition uppercase tracking-wider">⚡ Bill Row to Invoice</button>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Labor Row</button>
                     </form>
                 </div>
 
-                <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout -->
+                <!-- PANEL B: 📦 DEDICATED DIRECT-PROCUREMENT PARTS CARD -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
+                        <span class="text-base">📦</span>
+                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Replacement Part</h3>
+                    </div>
+
+                    <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                        <input type="hidden" name="itemType" value="PART">
+
+                        <div class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded border border-slate-200">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
+                                <input type="text" name="partNumber" placeholder="FIL-1356" required class="w-full px-2 py-1 border rounded text-xs font-mono uppercase bg-white font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Vendor:</label>
+                                <input type="text" name="vendor" placeholder="NAPA, AutoZone" required class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost (Shop Paid):</label>
+                                <input type="number" step="0.01" name="wholesaleCost" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white font-bold text-slate-800">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Part Component Name</label>
+                                <input type="text" name="description" required placeholder="e.g. Front Ceramic Pads" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Quantity</label>
+                                <input type="number" step="1" name="quantity" value="1" required class="w-full px-2 py-1 border rounded text-xs font-mono font-bold text-center">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 mb-0.5">Retail Price (Billed to Client)</label>
+                            <input type="number" step="0.01" name="retailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold">
+                        </div>
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Part Row</button>
+                    </form>
+                </div>
+
+                <!-- PANEL C: ✨ DEDICATED UNQUANTIFIED MISCELLANEOUS MATERIALS CARD -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
+                        <span class="text-base">✨</span>
+                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Shop Supplies / Misc</h3>
+                    </div>
+
+                    <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                        <input type="hidden" name="itemType" value="MISC">
+                        <input type="hidden" name="quantity" value="1.00">
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 mb-0.5">Material / Fee Description</label>
+                            <input type="text" name="description" required placeholder="e.g. Shop Supplies, Fluids & Consumables" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Associated Cost (Optional)</label>
+                                <input type="number" step="0.01" name="wholesaleCost" value="0.00" class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 mb-0.5">Flat Charge (Taxable)</label>
+                                <input type="number" step="0.01" name="retailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold bg-white">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Material Fee</button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout -->
                 <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm text-slate-800">
                     <div class="flex flex-wrap items-baseline justify-between border-b border-gray-100 pb-3 mb-4 gap-2">
                         <h2 class="text-base font-black text-slate-900">
