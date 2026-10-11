@@ -135,7 +135,8 @@ public class CustomerController {
 
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-            String apiUrl = "https://dot.gov" + vin.trim() + "?format=json";
+            // String apiUrl = "https://dot.gov" + vin.trim() + "?format=json";
+            String apiUrl = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/"+ vin.trim() +"?format=json";
 
             String jsonRaw = restTemplate.getForObject(apiUrl, String.class);
 
