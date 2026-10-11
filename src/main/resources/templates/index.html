@@ -786,9 +786,11 @@
                                 <span class="text-base">📦</span>
                                 <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Replacement Part</h3>
                             </div>
+
                             <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                                 <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
                                 <input type="hidden" name="itemType" value="PART">
+
                                 <div class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded border border-slate-200">
                                     <div>
                                         <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
@@ -799,10 +801,15 @@
                                         <input type="text" name="vendor" placeholder="NAPA, AutoZone" required class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
                                     </div>
                                     <div class="col-span-2">
-                                        <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost (Shop Paid):</label>
-                                        <input type="number" step="0.01" name="wholesaleCost" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white font-bold text-slate-800">
+                                        <div class="flex justify-between items-baseline mb-0.5">
+                                            <label class="block text-[9px] font-black uppercase text-slate-500">Wholesale Cost (Shop Paid):</label>
+                                            <!-- ⚡ QUICK ENGINE EVENT TRIGGER LINK -->
+                                            <button type="button" onclick="runInlineMatrixPartsPriceCalc()" class="text-[9px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-tighter">⚡ Run Matrix Matrix</button>
+                                        </div>
+                                        <input type="number" step="0.01" name="wholesaleCost" id="partsCardWholesaleCostField" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white font-bold text-slate-800">
                                     </div>
                                 </div>
+
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="col-span-2">
                                         <label class="block text-[10px] font-black text-slate-500 mb-0.5">Part Component Name</label>
@@ -815,7 +822,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-slate-500 mb-0.5">Retail Price (Billed to Client)</label>
-                                    <input type="number" step="0.01" name="retailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold">
+                                    <input type="number" step="0.01" name="retailPrice" id="partsCardRetailPriceField" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold text-slate-800">
                                 </div>
                                 <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Part Row</button>
                             </form>

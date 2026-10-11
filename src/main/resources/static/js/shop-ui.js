@@ -137,3 +137,29 @@ function closeLineItemModal() {
     const modal = document.getElementById('addLineItemModalWindow');
     if (modal) modal.classList.add('hidden');
 }
+
+// =========================================================
+// 🧮 FRONTEND SLIDING CLIENT MATRIX PRICE PREVIEW
+// =========================================================
+function runInlineMatrixPartsPriceCalc() {
+    const costField = document.getElementById('partsCardWholesaleCostField');
+    const retailField = document.getElementById('partsCardRetailPriceField');
+
+    if (!costField || !retailField) return;
+
+    const wholesaleCost = parseFloat(costField.value) || 0;
+    let multiplier = 1.30; // Default Tier 5 standard fallback
+
+    if (wholesaleCost <= 10.00) {
+        multiplier = 3.00;
+    } else if (wholesaleCost <= 50.00) {
+        multiplier = 2.00;
+    } else if (wholesaleCost <= 100.00) {
+        multiplier = 1.60;
+    } else if (wholesaleCost <= 300.00) {
+        multiplier = 1.45;
+    }
+
+    const calculatedRetail = wholesaleCost * multiplier;
+    retailField.value = calculatedRetail.toFixed(2);
+}

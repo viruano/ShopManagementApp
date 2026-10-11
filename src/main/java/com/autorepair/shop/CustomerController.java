@@ -377,6 +377,27 @@ public class CustomerController {
             newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
         }
 
+        // Inside your addDirectPurchaseLineItemToWorkOrder method...
+        BigDecimal finalizedRetailPrice = retailPrice;
+
+        if (LineItemType.PART.name().equals(itemType)) {
+            newLineItem.setPartNumber(partNumber);
+            newLineItem.setVendor(vendor);
+            BigDecimal cleanCost = wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO;
+            newLineItem.setWholesaleCost(cleanCost);
+
+            // 👑 AUTO-MATRIX ACTIVATION CHECK:
+            if (finalizedRetailPrice == null || finalizedRetailPrice.compareTo(BigDecimal.ZERO) == 0) {
+                finalizedRetailPrice = WorkOrder.calculateMatrixRetailPrice(cleanCost);
+            }
+        } else {
+            newLineItem.setPartNumber(null);
+            newLineItem.setVendor(null);
+            newLineItem.setWholesaleCost(BigDecimal.ZERO);
+        }
+
+        newLineItem.setRetailPrice(finalizedRetailPrice);
+
         lineItemRepository.save(newLineItem);
 
         redirectAttributes.addFlashAttribute("successMessage", "Item successfully added to invoice worksheet ledger!");

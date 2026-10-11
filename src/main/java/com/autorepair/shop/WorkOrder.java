@@ -104,6 +104,41 @@ public class WorkOrder {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    // =========================================================
+    // 📈 AUTOMATED AUTOMOTIVE MATRIX MULTIPLIER CALCULATOR
+    // =========================================================
+
+    /**
+     * Applies a sliding scale parts multiplier matrix to maximize retail profitability.
+     * Tier 1: $0.00 to $10.00 ➔ 3.0x Multiplier (300% Gross Markup)
+     * Tier 2: $10.01 to $50.00 ➔ 2.0x Multiplier (200% Gross Markup)
+     * Tier 3: $50.01 to $100.00 ➔ 1.6x Multiplier (160% Gross Markup)
+     * Tier 4: $100.01 to $300.00 ➔ 1.45x Multiplier (145% Gross Markup)
+     * Tier 5: Over $300.01 ➔ 1.3x Multiplier (130% Gross Markup)
+     * [Shopmonkey auto repair app standard pricing rule configuration blueprint]
+     */
+    public static BigDecimal calculateMatrixRetailPrice(BigDecimal wholesaleCost) {
+        if (wholesaleCost == null || wholesaleCost.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal multiplier;
+
+        if (wholesaleCost.compareTo(new BigDecimal("10.00")) <= 0) {
+            multiplier = new BigDecimal("3.00");
+        } else if (wholesaleCost.compareTo(new BigDecimal("50.00")) <= 0) {
+            multiplier = new BigDecimal("2.00");
+        } else if (wholesaleCost.compareTo(new BigDecimal("10.000")) <= 0) {
+            multiplier = new BigDecimal("1.60");
+        } else if (wholesaleCost.compareTo(new BigDecimal("300.00")) <= 0) {
+            multiplier = new BigDecimal("1.45");
+        } else {
+            multiplier = new BigDecimal("1.30");
+        }
+
+        return wholesaleCost.multiply(multiplier).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
     // Standard Getters & Setters mapping parameters completely...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
