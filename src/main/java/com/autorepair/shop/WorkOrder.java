@@ -67,8 +67,21 @@ public class WorkOrder {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    // =========================================================
+    // 🧮 AGGREGATE FINANCIAL BALANCE ENGINE MATRICES
+    // =========================================================
     public BigDecimal getTotalDue() {
-        return getPartsSubtotal().add(getLaborSubtotal());
+        BigDecimal partsTotal = getPartsSubtotal();
+        BigDecimal laborTotal = getLaborSubtotal();
+
+        // 🔒 SAFETY TOGGLE ENGINE: Automatically strips sales tax if the profile is flagged as a B2B Fleet Account
+        BigDecimal taxRate = new BigDecimal("0.06"); // Standard 6% base tax rule sample
+        if (this.vehicle != null && this.vehicle.getCustomer() != null && this.vehicle.getCustomer().isTaxExempt()) {
+            taxRate = BigDecimal.ZERO;
+        }
+
+        BigDecimal partsTax = partsTotal.multiply(taxRate);
+        return partsTotal.add(laborTotal).add(partsTax).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     public BigDecimal getRemainingBalance() {

@@ -185,6 +185,9 @@ public class CustomerController {
         customerRepository.save(customer);
         return "redirect:/?tab=customers";
     }
+    // =========================================================
+    // 👥 UPDATE CLIENT INDEX PROFILE LEDGER RECORD
+    // =========================================================
     @PostMapping("/customers/update/{id}")
     public String updateCustomer(@PathVariable("id") Long id,
                                  @RequestParam("firstName") String firstName,
@@ -194,7 +197,9 @@ public class CustomerController {
                                  @RequestParam("street") String street,
                                  @RequestParam("city") String city,
                                  @RequestParam("state") String state,
-                                 @RequestParam("zip") String zip) {
+                                 @RequestParam("zip") String zip,
+                                 @RequestParam(value = "taxExempt", required = false, defaultValue = "false") boolean taxExempt) {
+
         customerRepository.findById(id).ifPresent(customer -> {
             if (firstName != null && !firstName.trim().isEmpty()) customer.setFirstName(firstName.trim());
             customer.setLastName(lastName != null ? lastName.trim() : "");
@@ -204,8 +209,13 @@ public class CustomerController {
             customer.setCity(city != null ? city.trim() : "");
             customer.setState(state != null ? state.trim() : "");
             customer.setZip(zip != null ? zip.trim() : "");
+
+            // 🚚 Persist the live commercial fleet toggle selection securely
+            customer.setTaxExempt(taxExempt);
+
             customerRepository.save(customer);
         });
+
         return "redirect:/?tab=customers";
     }
 

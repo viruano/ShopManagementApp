@@ -35,6 +35,10 @@ public class Customer {
     private String city;
     private String state;
     private String zip;
+    // =========================================================
+    // 🚚 COMMERCIAL FLEET MANAGEMENT PROPERTIES
+    // =========================================================
+    private boolean taxExempt;
 
     // Default Constructor
     public Customer() {}
@@ -60,4 +64,18 @@ public class Customer {
     public void setState(String state) { this.state = state; }
     public String getZip() { return zip; }
     public void setZip(String zip) { this.zip = zip; }
+
+    public boolean isTaxExempt() {
+        return taxExempt;
+    }
+
+    // 👑 ADDED FOR COGNITIVE & FRAMEWORK REDUNDANCY:
+    public boolean getTaxExempt() {
+        return taxExempt;
+    }
+
+    public void setTaxExempt(boolean taxExempt) {
+        this.taxExempt = taxExempt;
+    }
+
 }
