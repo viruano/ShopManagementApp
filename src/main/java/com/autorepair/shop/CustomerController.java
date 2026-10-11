@@ -335,6 +335,15 @@ public class CustomerController {
         WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid work order reference ID: " + workOrderId));
 
+        // 🔒 SAFETY LOCK ENGINE CORE BLOCK: Prevents database pollution on finalized tickets
+        if (workOrderRecord.getStatus() != WorkOrderStatus.OPENED) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Security Alert: This invoice record is locked out and cannot accept line changes!");
+            return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
+        }
+
+        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid work order reference ID: " + workOrderId));
+
         LineItem newLineItem = new LineItem();
         newLineItem.setWorkOrder(workOrderRecord);
         newLineItem.setDescription(description.trim());
