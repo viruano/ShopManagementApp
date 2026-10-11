@@ -36,9 +36,22 @@ public class Customer {
     private String state;
     private String zip;
     // =========================================================
-    // 🚚 COMMERCIAL FLEET MANAGEMENT PROPERTIES
+    // 🚚 COMMERCIAL FLEET MANAGEMENT PROPERTIES (MIGRATION FIX)
     // =========================================================
-    private boolean taxExempt;
+    private Boolean taxExempt; // 👑 Changed from primitive 'boolean' to 'Boolean' object wrapper
+
+    public boolean isTaxExempt() {
+        // Defensive checking prevents NullPointerExceptions on historical rows
+        return this.taxExempt != null && this.taxExempt;
+    }
+
+    public boolean getTaxExempt() {
+        return isTaxExempt();
+    }
+
+    public void setTaxExempt(boolean taxExempt) {
+        this.taxExempt = taxExempt;
+    }
 
     // Default Constructor
     public Customer() {}
@@ -64,18 +77,5 @@ public class Customer {
     public void setState(String state) { this.state = state; }
     public String getZip() { return zip; }
     public void setZip(String zip) { this.zip = zip; }
-
-    public boolean isTaxExempt() {
-        return taxExempt;
-    }
-
-    // 👑 ADDED FOR COGNITIVE & FRAMEWORK REDUNDANCY:
-    public boolean getTaxExempt() {
-        return taxExempt;
-    }
-
-    public void setTaxExempt(boolean taxExempt) {
-        this.taxExempt = taxExempt;
-    }
 
 }
