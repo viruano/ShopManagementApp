@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>XYZ Auto Services — Login</title>
+    <!-- Include Tailwind Framework for pristine rendering layouts -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
+
+<div class="max-w-md w-full bg-slate-950 border border-slate-800 p-8 rounded-xl shadow-2xl space-y-6">
+
+    <!-- Header Brand Text -->
+    <div class="text-center space-y-2">
+        <h1 class="text-2xl font-black uppercase tracking-tight text-white">XYZ Auto Services LLC</h1>
+        <p class="text-xs text-slate-400 font-medium">Workshop ERP Management Platform Desk</p>
+    </div>
+
+    <!-- 🚨 Defensively Checked Flash Message Alerts: Stops layout parsing crashes -->
+    <div th:if="${param.containsKey('error')}" class="bg-rose-950 border border-rose-800 text-rose-300 p-3 rounded-lg text-xs font-bold text-center">
+        ❌ Invalid username credentials or password mismatch log.
+    </div>
+    <div th:if="${param.containsKey('logout')}" class="bg-indigo-950 border border-indigo-900 text-indigo-300 p-3 rounded-lg text-xs font-bold text-center">
+        🔒 Session terminated safely. Log back in to continue floor work.
+    </div>
+
+    <!-- Master Authentication Input Action Form -->
+    <form th:action="@{/login}" method="POST" class="space-y-4 m-0">
+        <div>
+            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1.5 tracking-wider">Username Handle:</label>
+            <input type="text" name="username" required placeholder="admin"
+                   class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+        </div>
+
+        <div>
+            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1.5 tracking-wider">Security Access Password:</label>
+            <input type="password" name="password" required placeholder="••••••••"
+                   class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+        </div>
+
+        <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-2.5 rounded-lg shadow-md cursor-pointer transition select-none uppercase tracking-wider h-10 pt-1">
+            Authorize Session ➔
+        </button>
+    </form>
+
+    <div class="text-center pt-2">
+        <p class="text-[10px] text-slate-500 font-medium font-mono">Software Architecture Managed by Your Development Agency</p>
+    </div>
+</div>
+
+</body>
+</html>
