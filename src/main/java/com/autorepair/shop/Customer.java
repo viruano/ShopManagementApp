@@ -35,6 +35,21 @@ public class Customer {
     private String city;
     private String state;
     private String zip;
+
+    // =========================================================
+    // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY
+    // =========================================================
+    @jakarta.persistence.Column(name = "tenant_id", nullable = false)
+    private String tenantId;
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
     // =========================================================
     // 🚚 COMMERCIAL FLEET MANAGEMENT PROPERTIES (MIGRATION FIX)
     // =========================================================

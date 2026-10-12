@@ -45,6 +45,13 @@ public class CustomerController {
             @RequestParam(value = "editVehicleId", required = false) Long editVehicleId,
             Model model) {
 
+        // 🔒 SaaS MULTI-TENANT IDENTITY CHECK
+        // Extract the unique logged-in shop identifier from the active request thread
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) {
+            activeTenant = "xyz-auto"; // Safe fallback developer tracker token
+        }
+
         // Retain the active browser panel selection tab state across redirects
         model.addAttribute("activeTab", tab);
         model.addAttribute("editCustomerId", editCustomerId);
@@ -56,22 +63,29 @@ public class CustomerController {
         if (!model.containsAttribute("newVehicle")) model.addAttribute("newVehicle", new Vehicle());
         if (!model.containsAttribute("newLineItem")) model.addAttribute("newLineItem", new LineItem());
 
-        // Always provide global dropdown dependencies
-        List<Customer> allCustomers = customerRepository.findAll();
+        // 🔒 TENANT-ISOLATED CUSTOMER DATA ENGINE
+        // Strictly loads dropdown and list records belonging to the current tenant
+        List<Customer> tenantCustomers = customerRepository.findByTenantId(activeTenant);
+        model.addAttribute("customers", tenantCustomers);
+
+        // 🚗 Global Fallbacks for vehicle records until column migrations are complete
         List<Vehicle> allVehicles = vehicleRepository.findAll();
-        model.addAttribute("customers", allCustomers);
         model.addAttribute("vehicles", allVehicles);
 
-        // 👥 PANEL 1 LAYER: CUSTOMERS MANAGEMENT CHECKSETS
+        // 👥 PANEL 1 LAYER: CUSTOMERS MANAGEMENT CHECKSETS (TENANT SECURED)
         if ("customers".equals(tab)) {
-            List<Customer> filteredCustomers = (search != null && !search.trim().isEmpty()) ?
-                    customerRepository.findByCustomerNumberContainingIgnoreCaseOrPhoneContainingOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                            search.trim(), search.trim(), search.trim(), search.trim()) : allCustomers;
+            List<Customer> filteredCustomers;
+            if (search != null && !search.trim().isEmpty()) {
+                // Execute our custom fiewall-secure multi-column keyword query mapping
+                filteredCustomers = customerRepository.searchTenantCustomers(search.trim(), activeTenant);
+            } else {
+                filteredCustomers = tenantCustomers;
+            }
             model.addAttribute("customers", filteredCustomers);
             model.addAttribute("currentSearch", search);
         }
 
-        // 🚗 PANEL 2 LAYER: VEHICLES FLEET CHECKSETS
+        // 🚗 PANEL 2 LAYER: VEHICLES FLEET CHECKSETS (Global Mapping)
         if ("vehicles".equals(tab)) {
             List<Vehicle> filteredVehicles = (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) ?
                     vehicleRepository.findByLicensePlateContainingIgnoreCaseOrVinContainingIgnoreCase(
@@ -80,7 +94,7 @@ public class CustomerController {
             model.addAttribute("currentVehicleSearch", vehicleSearch);
         }
 
-        // 📋 PANEL 3 LAYER: INVOICING WORK ORDERS ARCHITECTURE
+        // 📋 PANEL 3 LAYER: INVOICING WORK ORDERS ARCHITECTURE (Global Mapping)
         List<WorkOrder> visibleOrders;
         boolean showAll = model.containsAttribute("showAllOrders") && (boolean) model.getAttribute("showAllOrders");
         model.addAttribute("showAllOrders", showAll);
