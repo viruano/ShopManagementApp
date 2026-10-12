@@ -698,7 +698,7 @@
                                 Apply Status
                             </button>
                             <!-- 👑 TO THIS CORRECT PATH EXTENSION PATTERN: -->
-                            <a th:href="@{/orders/' + ${focusedWorkOrder.id} + '/print}"
+                            <a th:href="@{|/orders/${focusedWorkOrder.id}/print|}"
                                target="_blank"
                                class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">
                                 🖨️ Print
