@@ -48,6 +48,10 @@ public class ShopManagementAppApplication {
 
                 // 1. Create Mock Customer Profile
                 Customer demoCustomer = new Customer();
+
+                // 👑 THE CRITICAL DATA INTEGRITY SAFEGUARD FIX:
+                demoCustomer.setCustomerNumber("CUST-DEMO-991"); // Fulfills the SQL NOT-NULL constraint!
+
                 demoCustomer.setFirstName("Sarah");
                 demoCustomer.setLastName("Jenkins");
                 demoCustomer.setPhone("(443) 555-8821");
@@ -57,7 +61,7 @@ public class ShopManagementAppApplication {
                 demoCustomer.setState("MD");
                 demoCustomer.setZip("21401");
                 demoCustomer.setTaxExempt(false);
-                demoCustomer.setTenantId("main-st-demo"); // 🔒 Tied strictly to Demo Sandbox!
+                demoCustomer.setTenantId("main-st-demo");
                 demoCustomer = customerRepository.save(demoCustomer);
 
                 // 2. Create Mock Vehicle Service File
