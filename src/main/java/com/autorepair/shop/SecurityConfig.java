@@ -11,23 +11,30 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 🚚 TENANT 1: LIVE PRODUCTION WORKSPACE ANCHORS
-    @Value("${SHOP_SECURITY_LIVE_USERNAME:admin}")
+    private final TenantFilter tenantFilter;
+
+    public SecurityConfig(TenantFilter tenantFilter) {
+        this.tenantFilter = tenantFilter;
+    }
+
+    // 🚚 ALIGNED DYNAMIC SHOP INJECTION ANCHORS:
+    // Connects seamlessly to your newly configured Railway variable layout names
+    @Value("${XYZ_SHOP_LIVE_USERNAME:admin}")
     private String shopUsername;
 
-    @Value("${SHOP_SECURITY_LIVE_PASSWORD:shop2026}")
+    @Value("${XYZ_SHOP_LIVE_PASSWORD:shop2026}")
     private String shopPassword;
 
-    // 🚚 TENANT 2: MAIN STREET DEMO WORKSPACE ANCHORS
-    @Value("${SHOP_SECURITY_DEMO_USERNAME:demo}")
+    @Value("${DEMO_SHOP_LIVE_USERNAME:demo}")
     private String demoUsername;
 
-    @Value("${SHOP_SECURITY_DEMO_PASSWORD:demo2026}")
+    @Value("${DEMO_SHOP_LIVE_PASSWORD:demo2026}")
     private String demoPassword;
 
     @Bean
@@ -35,36 +42,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid shop form entries
                 .authorizeHttpRequests(auth -> auth
-                        // 👥 1. Permitted Public Static Asset Patches
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-
-                        // 🖨️ 2. Permitted Print Viewport Mappings (PREVENTS BLANK TABS)
                         .requestMatchers("/orders/*/print").permitAll()
-
-                        // 👑 3. All other internal ERP shop operations demand strict authentication
                         .anyRequest().authenticated()
                 )
-                .formLogin(Customizer.withDefaults()) // Uses the auto-generated native prompt window
-                .logout(logout -> logout.permitAll());
+                .formLogin(Customizer.withDefaults())
+                .logout(logout -> logout.permitAll())
+                .addFilterAfter(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // =========================================================
-    // 🔐 ENVIRONMENT-BOUND MULTI-TENANT CREDENTIAL REGISTRY
-    // =========================================================
     @Bean
     public UserDetailsService userDetailsService() {
         @SuppressWarnings("deprecation")
-
-        // Profile A: Primary Live Production Account
         UserDetails customShopUser = User.withDefaultPasswordEncoder()
                 .username(shopUsername.trim())
                 .password(shopPassword.trim())
                 .roles("ADMIN")
                 .build();
 
-        // Profile B: Secondary Main Street Demo Garage Account
         UserDetails demoShopUser = User.withDefaultPasswordEncoder()
                 .username(demoUsername.trim())
                 .password(demoPassword.trim())
