@@ -407,15 +407,15 @@ public class CustomerController {
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
-    // 🚚 DYNAMIC SHOP LOCATION INJECTION ANCHORS
-    // Pulls your customized shop profile markers straight from your properties file rules
-    @Value("${shop.address.street:27 Hicks Av}")
-    private String shopStreet;
+    // 🚚 CORRECTED DYNAMIC SHOP INSTANCE VARIABLES
+    // Pulls directly from your exact property keys in application.properties
+    @Value("${shop.config.live.name:XYZ Auto Services LLC}")
+    private String shopName;
 
-    @Value("${shop.address.city-state-zip:Annapolis, MD 21401}")
-    private String shopCityStateZip;
+    @Value("${shop.config.live.address:27 Hicks Av, Annapolis, MD 21401}")
+    private String shopAddress;
 
-    @Value("${shop.address.phone:(410) 555-0199}")
+    @Value("${shop.config.live.phone:(410) 555-0199}")
     private String shopPhone;
 
     // =========================================================
@@ -443,11 +443,12 @@ public class CustomerController {
         model.addAttribute("amountPaid", order.getAmountPaid());
         model.addAttribute("balanceDue", order.getRemainingBalance());
 
-        // 👑 PASS THE ENVIRONMENT-SPECIFIC CONFIGURATION ADdRESSES TO THE VIEW LAYER:
-        model.addAttribute("shopStreet", shopStreet);
-        model.addAttribute("shopCityStateZip", shopCityStateZip);
+        // 👑 PASS YOUR EXACT ENVIRONMENT METRICS TO THE VIEW LAYER:
+        model.addAttribute("shopName", shopName);
+        model.addAttribute("shopAddress", shopAddress);
         model.addAttribute("shopPhone", shopPhone);
 
         return "print-invoice";
     }
+
 }
