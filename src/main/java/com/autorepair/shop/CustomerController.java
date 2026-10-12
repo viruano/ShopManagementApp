@@ -409,22 +409,27 @@ public class CustomerController {
     // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
-        workOrderRepository.findById(id).ifPresent(order -> {
-            model.addAttribute("order", order);
-            model.addAttribute("vehicle", order.getVehicle());
-            model.addAttribute("customer", order.getVehicle().getCustomer());
-            model.addAttribute("lineItems", order.getLineItems());
+        // Ensure the record actually exists in the persistence layer
+        java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
 
-            // Core financial aggregations passed explicitly for template binding
-            model.addAttribute("partsSubtotal", order.getPartsSubtotal());
-            model.addAttribute("laborSubtotal", order.getLaborSubtotal());
-            model.addAttribute("grandTotal", order.getTotalDue());
-            model.addAttribute("amountPaid", order.getAmountPaid());
-            model.addAttribute("balanceDue", order.getRemainingBalance());
-        });
+        if (orderOpt.isEmpty()) {
+            System.err.println("Printer Error: Work Order ID " + id + " was not found in PostgreSQL tables!");
+            return "redirect:/?tab=orders"; // Safe fallback redirect
+        }
 
-        // Routes straight to our dedicated print layout template
-        return "print-invoice.html";
+        WorkOrder order = orderOpt.get();
+        model.addAttribute("order", order);
+        model.addAttribute("vehicle", order.getVehicle());
+        model.addAttribute("customer", order.getVehicle().getCustomer());
+        model.addAttribute("lineItems", order.getLineItems());
+
+        // Pass financial aggregations explicitly for template binding matching
+        model.addAttribute("partsSubtotal", order.getPartsSubtotal());
+        model.addAttribute("laborSubtotal", order.getLaborSubtotal());
+        model.addAttribute("grandTotal", order.getTotalDue());
+        model.addAttribute("amountPaid", order.getAmountPaid());
+        model.addAttribute("balanceDue", order.getRemainingBalance());
+
+        return "print-invoice";
     }
-
 }
