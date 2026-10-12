@@ -404,18 +404,27 @@ public class CustomerController {
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
+    // 🚚 DYNAMIC SHOP LOCATION INJECTION ANCHORS
+    // Pulls your customized shop profile markers straight from your properties file rules
+    @Value("${shop.address.street:27 Hicks Av}")
+    private String shopStreet;
+
+    @Value("${shop.address.city-state-zip:Annapolis, MD 21401}")
+    private String shopCityStateZip;
+
+    @Value("${shop.address.phone:(410) 555-0199}")
+    private String shopPhone;
+
     // =========================================================
     // 🖨️ CUSTOM INVOICE PDF EXPORT LAYOUT ROUTER
     // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
 
-        // 🚨 THE CRITICAL SYSTEM DEBUG LINE:
         System.out.println("⚡ [DEBUG] INVOICE PRINT ENDPOINT ACTIVATED! Target Work Order ID: " + id);
 
         java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
         if (orderOpt.isEmpty()) {
-            System.err.println("Printer Error: Work Order ID " + id + " was not found in PostgreSQL tables!");
             return "redirect:/?tab=orders";
         }
 
@@ -431,7 +440,11 @@ public class CustomerController {
         model.addAttribute("amountPaid", order.getAmountPaid());
         model.addAttribute("balanceDue", order.getRemainingBalance());
 
+        // 👑 PASS THE ENVIRONMENT-SPECIFIC CONFIGURATION ADdRESSES TO THE VIEW LAYER:
+        model.addAttribute("shopStreet", shopStreet);
+        model.addAttribute("shopCityStateZip", shopCityStateZip);
+        model.addAttribute("shopPhone", shopPhone);
+
         return "print-invoice";
     }
-
 }
