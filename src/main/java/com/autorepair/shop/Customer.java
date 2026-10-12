@@ -37,17 +37,21 @@ public class Customer {
     private String zip;
 
     // =========================================================
-    // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY
+    // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY (MIGRATION FIX)
     // =========================================================
-    @jakarta.persistence.Column(name = "tenant_id", nullable = false)
+    @jakarta.persistence.Column(name = "tenant_id", nullable = true) // 👑 Set nullable to true to pass old rows safely
     private String tenantId;
 
     public String getTenantId() {
-        return tenantId;
+        // Defensive checking assigns old existing null database rows to your core shop tenant automatically
+        if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
+            return "xyz-auto";
+        }
+        return this.tenantId;
     }
 
     public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+        this.tenantId = tenantId != null ? tenantId.trim() : null;
     }
 
     // =========================================================
