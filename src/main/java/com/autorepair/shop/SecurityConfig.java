@@ -16,12 +16,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 🚚 DYNAMIC ENVIRONMENTAL ACCESS VARIABLES
-    // Pulls your custom credentials directly from your live Railway dashboard keys
-    @Value("${spring.security.user.name:admin}")
+    // 🚚 DYNAMIC SHOP DASHBOARD INJECTION ANCHORS
+    // Pulls directly from your custom named Railway application parameters
+    @Value("${SHOP_SECURITY_LIVE_USERNAME:admin}")
     private String shopUsername;
 
-    @Value("${spring.security.user.password:shop2026}")
+    @Value("${SHOP_SECURITY_LIVE_PASSWORD:shop2026}")
     private String shopPassword;
 
     @Bean
