@@ -16,13 +16,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 🚚 DYNAMIC SHOP DASHBOARD INJECTION ANCHORS
-    // Pulls directly from your custom named Railway application parameters
+    // 🚚 TENANT 1: LIVE PRODUCTION WORKSPACE ANCHORS
     @Value("${SHOP_SECURITY_LIVE_USERNAME:admin}")
     private String shopUsername;
 
     @Value("${SHOP_SECURITY_LIVE_PASSWORD:shop2026}")
     private String shopPassword;
+
+    // 🚚 TENANT 2: MAIN STREET DEMO WORKSPACE ANCHORS
+    @Value("${DEMO_SECURITY_LIVE_USERNAME:demo}")
+    private String demoUsername;
+
+    @Value("${DEMO_SECURITY_LIVE_PASSWORD:demo2026}")
+    private String demoPassword;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,17 +51,26 @@ public class SecurityConfig {
     }
 
     // =========================================================
-    // 🔐 ENVIRONMENT-BOUND DYNAMIC CREDENTIAL BEAN
+    // 🔐 ENVIRONMENT-BOUND MULTI-TENANT CREDENTIAL REGISTRY
     // =========================================================
     @Bean
     public UserDetailsService userDetailsService() {
         @SuppressWarnings("deprecation")
+
+        // Profile A: Primary Live Production Account
         UserDetails customShopUser = User.withDefaultPasswordEncoder()
                 .username(shopUsername.trim())
                 .password(shopPassword.trim())
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(customShopUser);
+        // Profile B: Secondary Main Street Demo Garage Account
+        UserDetails demoShopUser = User.withDefaultPasswordEncoder()
+                .username(demoUsername.trim())
+                .password(demoPassword.trim())
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(customShopUser, demoShopUser);
     }
 }
