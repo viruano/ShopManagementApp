@@ -1,5 +1,8 @@
 package com.autorepair.shop;
 
+// 👑 ADD THIS CRITICAL IMPORT STATEMENT:
+import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
