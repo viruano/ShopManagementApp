@@ -409,12 +409,14 @@ public class CustomerController {
     // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
-        // Ensure the record actually exists in the persistence layer
-        java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
 
+        // 🚨 THE CRITICAL SYSTEM DEBUG LINE:
+        System.out.println("⚡ [DEBUG] INVOICE PRINT ENDPOINT ACTIVATED! Target Work Order ID: " + id);
+
+        java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
         if (orderOpt.isEmpty()) {
             System.err.println("Printer Error: Work Order ID " + id + " was not found in PostgreSQL tables!");
-            return "redirect:/?tab=orders"; // Safe fallback redirect
+            return "redirect:/?tab=orders";
         }
 
         WorkOrder order = orderOpt.get();
@@ -423,7 +425,6 @@ public class CustomerController {
         model.addAttribute("customer", order.getVehicle().getCustomer());
         model.addAttribute("lineItems", order.getLineItems());
 
-        // Pass financial aggregations explicitly for template binding matching
         model.addAttribute("partsSubtotal", order.getPartsSubtotal());
         model.addAttribute("laborSubtotal", order.getLaborSubtotal());
         model.addAttribute("grandTotal", order.getTotalDue());
@@ -432,4 +433,5 @@ public class CustomerController {
 
         return "print-invoice";
     }
+
 }
