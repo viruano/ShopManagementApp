@@ -424,7 +424,7 @@ public class CustomerController {
         });
 
         // Routes straight to our dedicated print layout template
-        return "print-invoice";
+        return "print-invoice.html";
     }
 
 }
