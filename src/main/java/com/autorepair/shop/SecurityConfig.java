@@ -24,10 +24,10 @@ public class SecurityConfig {
     private String shopPassword;
 
     // 🚚 TENANT 2: MAIN STREET DEMO WORKSPACE ANCHORS
-    @Value("${SHOP_SECURITY_DEMO_PASSWORD:demo}")
+    @Value("${SHOP_SECURITY_DEMO_USERNAME:demo}")
     private String demoUsername;
 
-    @Value("${SHOP_SECURITY_DEMO_USERNAME:demo2026}")
+    @Value("${SHOP_SECURITY_DEMO_PASSWORD:demo2026}")
     private String demoPassword;
 
     @Bean
