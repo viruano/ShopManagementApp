@@ -255,11 +255,19 @@ public class CustomerController {
         return "redirect:/?tab=customers";
     }
 
-    // --- VEHICLE ACTIONS SECTION (SaaS TENANT FIREWALL SECURED) ---
+    // =========================================================
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL SECURED)
+    // =========================================================
     @PostMapping("/vehicles/register")
-    public String registerVehicle(@ModelAttribute("newVehicle") @Valid Vehicle vehicle, BindingResult result, RedirectAttributes ra) {
+    public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
+                                  BindingResult result,
+                                  RedirectAttributes ra) {
+
+        // 🔒 Extract the active SaaS tenant context securely
         String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) activeTenant = "xyz-auto";
+        if (activeTenant == null) {
+            activeTenant = "xyz-auto";
+        }
 
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.newVehicle", result);
@@ -267,23 +275,57 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
-        // 👑 THE SaaS FIREWALL STAMP:
+        // 👑 THE CORRECT MULTI-TENANT PROPERTY STAMP:
+        // Do NOT instantiate a new Vehicle() object here!
+        // Simply apply the tenant token straight to the existing form-bound 'vehicle' instance.
         vehicle.setTenantId(activeTenant);
 
+        // Clean up capitalization filters on strings before saving to PostgreSQL rows
+        if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
+        if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
+        if (vehicle.getVin() != null) vehicle.setVin(vehicle.getVin().trim().toUpperCase());
+        if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
+
         vehicleRepository.save(vehicle);
+
         return "redirect:/?tab=vehicles";
     }
 
-    @PostMapping("/vehicles/update/{id}")
-    public String updateVehicle(@PathVariable("id") Long id, @RequestParam("licensePlate") String licensePlate) {
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) activeTenant = "xyz-auto";
 
-        // 👑 ROW-LEVEL SECURITY CHECK:
+    // =========================================================
+    // 🚗 UPDATE VEHICLE SERVICE FILE LEDGER (SaaS FIREWALL SECURED)
+    // =========================================================
+    @PostMapping("/vehicles/update/{id}")
+    public String updateVehicle(@PathVariable("id") Long id,
+                                @RequestParam(value = "year", required = false) Integer year,
+                                @RequestParam(value = "make", required = false) String make,
+                                @RequestParam(value = "model", required = false) String model,
+                                @RequestParam(value = "vin", required = false) String vin,
+                                @RequestParam(value = "licensePlate", required = false) String licensePlate,
+                                @RequestParam(value = "subModel", required = false) String subModel,
+                                @RequestParam(value = "engineSize", required = false) String engineSize,
+                                @RequestParam(value = "drivetrain", required = false) String drivetrain) {
+
+        // 🔒 Extract the active request thread's tenant workspace ID automatically
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) {
+            activeTenant = "xyz-auto";
+        }
+
+        // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+        // Ensures updates only execute if the vehicle file belongs strictly to this active shop session context
         vehicleRepository.findByIdAndTenantId(id, activeTenant).ifPresent(vehicle -> {
-            if (licensePlate != null && !licensePlate.trim().isEmpty()) {
-                vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
-            }
+            if (year != null && year > 0) vehicle.setYear(year.toString());
+            if (make != null && !make.trim().isEmpty()) vehicle.setMake(make.trim().toUpperCase());
+            if (model != null && !model.trim().isEmpty()) vehicle.setModel(model.trim().toUpperCase());
+            if (vin != null && !vin.trim().isEmpty()) vehicle.setVin(vin.trim().toUpperCase());
+            if (licensePlate != null && !licensePlate.trim().isEmpty()) vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
+
+            // Handle optional specifications variables cleanly
+            vehicle.setSubModel(subModel != null ? subModel.trim() : null);
+            vehicle.setEngineSize(engineSize != null ? engineSize.trim().toUpperCase() : null);
+            vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim().toUpperCase() : null);
+
             vehicleRepository.save(vehicle);
         });
 
