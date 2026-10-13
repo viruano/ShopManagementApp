@@ -264,6 +264,7 @@ public class CustomerController {
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
                                   BindingResult result,
+                                  @RequestParam(value = "customer", required = false) Long targetCustomerId, // 👑 DIRECT FOREIGN KEY PARAMETER CAPTURE
                                   RedirectAttributes ra) {
 
         // 🔒 Extract the active SaaS tenant context securely
@@ -283,20 +284,23 @@ public class CustomerController {
             String cleanVin = vehicle.getVin().trim().toUpperCase();
             System.out.println("🔌 [DECODER] Triggering NHTSA API lookup via VinDecoderService for: " + cleanVin);
 
-            // 👑 THE CRITICAL RELATION FIX:
-            // Extract the persistent database Primary Key ID of the account owner right from the form
-            Customer formOwner = vehicle.getCustomer();
-            Long targetCustomerId = (formOwner != null) ? formOwner.getId() : null;
+            // Retain the temporary form attributes before overwriting the reference pointer
             String assignedPlate = vehicle.getLicensePlate();
 
             // Overwrite the local pointer with the object returned by your service
             vehicle = vinDecoderService.decodeVin(cleanVin);
 
-            // Re-stitch the relational graph by fetching the actual managed record row from the DB
+            // 👑 THE CRITICAL RELATION RE-STITCH BIND:
+            // Fetch the actual managed record row straight from the DB using our direct request param ID
             if (targetCustomerId != null) {
                 customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
             }
             vehicle.setLicensePlate(assignedPlate);
+        } else {
+            // Fallback for manual data entry if the VIN field is completely empty
+            if (targetCustomerId != null) {
+                customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
+            }
         }
 
         // 👑 2. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
