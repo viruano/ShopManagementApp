@@ -283,16 +283,19 @@ public class CustomerController {
             String cleanVin = vehicle.getVin().trim().toUpperCase();
             System.out.println("🔌 [DECODER] Triggering NHTSA API lookup via VinDecoderService for: " + cleanVin);
 
-            // Retain the temporary form relations (Account Owner dropdown and License Plate field)
-            Customer assignedOwner = vehicle.getCustomer();
+            // 👑 THE CRITICAL RELATION FIX:
+            // Extract the persistent database Primary Key ID of the account owner right from the form
+            Customer formOwner = vehicle.getCustomer();
+            Long targetCustomerId = (formOwner != null) ? formOwner.getId() : null;
             String assignedPlate = vehicle.getLicensePlate();
 
-            // 👑 THE CRITICAL INTEGRATION BIND:
-            // Overwrite the local pointer with the fully populated object returned by your service!
+            // Overwrite the local pointer with the object returned by your service
             vehicle = vinDecoderService.decodeVin(cleanVin);
 
-            // Re-stitch the form parameters back onto your newly compiled object architecture
-            vehicle.setCustomer(assignedOwner);
+            // Re-stitch the relational graph by fetching the actual managed record row from the DB
+            if (targetCustomerId != null) {
+                customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
+            }
             vehicle.setLicensePlate(assignedPlate);
         }
 
