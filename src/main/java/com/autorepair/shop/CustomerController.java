@@ -31,6 +31,9 @@ public class CustomerController {
     @Autowired
     private LineItemRepository lineItemRepository;
 
+    @Autowired
+    private VinDecoderService vinDecoderService;
+
     // =========================================================
     // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
     // =========================================================
@@ -256,7 +259,7 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + VIN DECODER)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + RESTORED VIN DECODER)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
@@ -275,31 +278,28 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
-        // 👑 1. ACTIVATE THE AUTOMATED VIN DECODER PIPELINE
-        // If a VIN is present, pass it through your NHTSA client service to fetch specifications
+        // 👑 1. EXECUTE THE BACKEND AUTOMATED VIN DECODER PIPELINE
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
             String cleanVin = vehicle.getVin().trim().toUpperCase();
-            vehicle.setVin(cleanVin);
+            System.out.println("🔌 [DECODER] Triggering NHTSA API lookup via VinDecoderService for: " + cleanVin);
 
-            try {
-                System.out.println("🔌 [DECODER] Querying NHTSA Endpoint for VIN: " + cleanVin);
+            // Retain the temporary form relations (Account Owner dropdown and License Plate field)
+            Customer assignedOwner = vehicle.getCustomer();
+            String assignedPlate = vehicle.getLicensePlate();
 
-                // Look up your autowired VIN Decoder bean (e.g., vinDecoderService or similar)
-                // Assuming your service updates the vehicle object properties inline:
-                // vinDecoderService.decode(vehicle);
+            // 👑 THE CRITICAL INTEGRATION BIND:
+            // Overwrite the local pointer with the fully populated object returned by your service!
+            vehicle = vinDecoderService.decodeVin(cleanVin);
 
-                // NOTE: If you notice fields are still blank after deployment, paste your
-                // VinDecoderService class code here so we can verify its exact parameter parsing!
-
-            } catch (Exception e) {
-                System.err.println("❌ [DECODER] NHTSA Call failed or timed out: " + e.getMessage());
-            }
+            // Re-stitch the form parameters back onto your newly compiled object architecture
+            vehicle.setCustomer(assignedOwner);
+            vehicle.setLicensePlate(assignedPlate);
         }
 
-        // 👑 2. APPLY THE MULTI-TENANT PROPERTY STAMP:
+        // 👑 2. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
         vehicle.setTenantId(activeTenant);
 
-        // Final string cleanliness filters before saving to PostgreSQL tables
+        // Clean up text properties before saving to PostgreSQL table rows
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
@@ -328,7 +328,6 @@ public class CustomerController {
         if (activeTenant == null) {
             activeTenant = "xyz-auto";
         }
-
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
         // Ensures updates only execute if the vehicle file belongs strictly to this active shop session context
         vehicleRepository.findByIdAndTenantId(id, activeTenant).ifPresent(vehicle -> {
