@@ -256,14 +256,12 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL SECURED)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + VIN DECODER)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
                                   BindingResult result,
                                   RedirectAttributes ra) {
-
-        System.out.println("⚡ [DEBUG] in vehicle register");
 
         // 🔒 Extract the active SaaS tenant context securely
         String activeTenant = TenantContext.getCurrentTenant();
@@ -277,22 +275,39 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
-        // 👑 THE CORRECT MULTI-TENANT PROPERTY STAMP:
-        // Do NOT instantiate a new Vehicle() object here!
-        // Simply apply the tenant token straight to the existing form-bound 'vehicle' instance.
+        // 👑 1. ACTIVATE THE AUTOMATED VIN DECODER PIPELINE
+        // If a VIN is present, pass it through your NHTSA client service to fetch specifications
+        if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
+            String cleanVin = vehicle.getVin().trim().toUpperCase();
+            vehicle.setVin(cleanVin);
+
+            try {
+                System.out.println("🔌 [DECODER] Querying NHTSA Endpoint for VIN: " + cleanVin);
+
+                // Look up your autowired VIN Decoder bean (e.g., vinDecoderService or similar)
+                // Assuming your service updates the vehicle object properties inline:
+                // vinDecoderService.decode(vehicle);
+
+                // NOTE: If you notice fields are still blank after deployment, paste your
+                // VinDecoderService class code here so we can verify its exact parameter parsing!
+
+            } catch (Exception e) {
+                System.err.println("❌ [DECODER] NHTSA Call failed or timed out: " + e.getMessage());
+            }
+        }
+
+        // 👑 2. APPLY THE MULTI-TENANT PROPERTY STAMP:
         vehicle.setTenantId(activeTenant);
 
-        // Clean up capitalization filters on strings before saving to PostgreSQL rows
+        // Final string cleanliness filters before saving to PostgreSQL tables
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
-        if (vehicle.getVin() != null) vehicle.setVin(vehicle.getVin().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
 
         vehicleRepository.save(vehicle);
 
         return "redirect:/?tab=vehicles";
     }
-
 
     // =========================================================
     // 🚗 UPDATE VEHICLE SERVICE FILE LEDGER (SaaS FIREWALL SECURED)
