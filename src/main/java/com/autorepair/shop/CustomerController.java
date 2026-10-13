@@ -63,33 +63,31 @@ public class CustomerController {
         if (!model.containsAttribute("newVehicle")) model.addAttribute("newVehicle", new Vehicle());
         if (!model.containsAttribute("newLineItem")) model.addAttribute("newLineItem", new LineItem());
 
-        // 🔒 TENANT-ISOLATED CUSTOMER DATA ENGINE
-        // Strictly loads dropdown and list records belonging to the current tenant
+        // 🔒 TENANT-ISOLATED CUSTOMER & VEHICLE DATA ENGINE
         List<Customer> tenantCustomers = customerRepository.findByTenantId(activeTenant);
         model.addAttribute("customers", tenantCustomers);
 
-        // 🚗 Global Fallbacks for vehicle records until column migrations are complete
-        List<Vehicle> allVehicles = vehicleRepository.findAll();
-        model.addAttribute("vehicles", allVehicles);
+        // Swapped out .findAll() to strictly load assets belonging to the logged-in tenant context [Shopmonkey auto repair app]
+        List<Vehicle> tenantVehicles = vehicleRepository.findByTenantId(activeTenant);
+        model.addAttribute("vehicles", tenantVehicles);
 
         // 👥 PANEL 1 LAYER: CUSTOMERS MANAGEMENT CHECKSETS (TENANT SECURED)
         if ("customers".equals(tab)) {
-            List<Customer> filteredCustomers;
-            if (search != null && !search.trim().isEmpty()) {
-                // Execute our custom fiewall-secure multi-column keyword query mapping
-                filteredCustomers = customerRepository.searchTenantCustomers(search.trim(), activeTenant);
-            } else {
-                filteredCustomers = tenantCustomers;
-            }
+            List<Customer> filteredCustomers = (search != null && !search.trim().isEmpty()) ?
+                    customerRepository.searchTenantCustomers(search.trim(), activeTenant) : tenantCustomers;
             model.addAttribute("customers", filteredCustomers);
             model.addAttribute("currentSearch", search);
         }
 
-        // 🚗 PANEL 2 LAYER: VEHICLES FLEET CHECKSETS (Global Mapping)
+        // 🚗 PANEL 2 LAYER: VEHICLES FLEET CHECKSETS (TENANT SECURED)
         if ("vehicles".equals(tab)) {
-            List<Vehicle> filteredVehicles = (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) ?
-                    vehicleRepository.findByLicensePlateContainingIgnoreCaseOrVinContainingIgnoreCase(
-                            vehicleSearch.trim(), vehicleSearch.trim()) : allVehicles;
+            List<Vehicle> filteredVehicles;
+            if (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) {
+                // Call our new firewall-secure license/VIN keyword query mapping
+                filteredVehicles = vehicleRepository.searchTenantVehicles(vehicleSearch.trim(), activeTenant);
+            } else {
+                filteredVehicles = tenantVehicles;
+            }
             model.addAttribute("vehicles", filteredVehicles);
             model.addAttribute("currentVehicleSearch", vehicleSearch);
         }
@@ -257,44 +255,38 @@ public class CustomerController {
         return "redirect:/?tab=customers";
     }
 
-    // --- VEHICLE ACTIONS SECTION ---
+    // --- VEHICLE ACTIONS SECTION (SaaS TENANT FIREWALL SECURED) ---
     @PostMapping("/vehicles/register")
-    public String registerCustomerVehicle(@ModelAttribute("newVehicle") Vehicle vehicle, @RequestParam("customerId") Long customerId) {
-        customerRepository.findById(customerId).ifPresent(customer -> {
-            vehicle.setCustomer(customer);
+    public String registerVehicle(@ModelAttribute("newVehicle") @Valid Vehicle vehicle, BindingResult result, RedirectAttributes ra) {
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) activeTenant = "xyz-auto";
 
-            String rawVin = vehicle.getVin() != null ? vehicle.getVin().trim().toUpperCase() : "";
-            vehicle.setVin(rawVin);
+        if (result.hasErrors()) {
+            ra.addFlashAttribute("org.springframework.validation.BindingResult.newVehicle", result);
+            ra.addFlashAttribute("newVehicle", vehicle);
+            return "redirect:/?tab=vehicles&error=true";
+        }
 
-            // ⚡ EXECUTE LIVE NHTSA API DECODER
-            decodeVinLive(vehicle, rawVin);
+        // 👑 THE SaaS FIREWALL STAMP:
+        vehicle.setTenantId(activeTenant);
 
-            vehicleRepository.save(vehicle);
-        });
+        vehicleRepository.save(vehicle);
         return "redirect:/?tab=vehicles";
     }
 
     @PostMapping("/vehicles/update/{id}")
-    public String updateVehicleProfileInline(@PathVariable("id") Long id,
-                                             @RequestParam("year") String year, // <-- 🔑 Fixed to String
-                                             @RequestParam("make") String make,
-                                             @RequestParam("model") String model,
-                                             @RequestParam("subModel") String subModel,
-                                             @RequestParam("engineSize") String engineSize,
-                                             @RequestParam("drivetrain") String drivetrain,
-                                             @RequestParam("licensePlate") String licensePlate,
-                                             @RequestParam("vin") String vin) {
-        vehicleRepository.findById(id).ifPresent(vehicle -> {
-            vehicle.setYear(year != null ? year.trim() : ""); // <-- 🔑 Clean String Assignment
-            vehicle.setMake(make != null ? make.trim().toUpperCase() : "");
-            vehicle.setModel(model != null ? model.trim().toUpperCase() : "");
-            vehicle.setSubModel(subModel != null ? subModel.trim().toUpperCase() : "");
-            vehicle.setEngineSize(engineSize != null ? engineSize.trim() : "");
-            vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim().toUpperCase() : "");
-            vehicle.setLicensePlate(licensePlate != null ? licensePlate.trim().toUpperCase() : "");
-            vehicle.setVin(vin != null ? vin.trim().toUpperCase() : "");
+    public String updateVehicle(@PathVariable("id") Long id, @RequestParam("licensePlate") String licensePlate) {
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) activeTenant = "xyz-auto";
+
+        // 👑 ROW-LEVEL SECURITY CHECK:
+        vehicleRepository.findByIdAndTenantId(id, activeTenant).ifPresent(vehicle -> {
+            if (licensePlate != null && !licensePlate.trim().isEmpty()) {
+                vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
+            }
             vehicleRepository.save(vehicle);
         });
+
         return "redirect:/?tab=vehicles";
     }
 

@@ -41,6 +41,24 @@ public class Vehicle {
     // Default Constructor
     public Vehicle() {}
 
+    // =========================================================
+    // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY (VEHICLE)
+    // =========================================================
+    @jakarta.persistence.Column(name = "tenant_id", nullable = true)
+    private String tenantId;
+
+    public String getTenantId() {
+        // Defensive checking assigns old existing null database rows to your core shop tenant automatically
+        if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
+            return "xyz-auto";
+        }
+        return this.tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId != null ? tenantId.trim() : null;
+    }
+
     // ==========================================
     // Getters and Setters
     // ==========================================
