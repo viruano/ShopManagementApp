@@ -263,6 +263,8 @@ public class CustomerController {
                                   BindingResult result,
                                   RedirectAttributes ra) {
 
+        System.out.println("⚡ [DEBUG] in vehicle register");
+
         // 🔒 Extract the active SaaS tenant context securely
         String activeTenant = TenantContext.getCurrentTenant();
         if (activeTenant == null) {
@@ -491,9 +493,6 @@ public class CustomerController {
     // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
-
-        System.out.println("⚡ [DEBUG] INVOICE PRINT ENDPOINT ACTIVATED! Target Work Order ID: " + id);
-
         java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
         if (orderOpt.isEmpty()) {
             return "redirect:/?tab=orders";
