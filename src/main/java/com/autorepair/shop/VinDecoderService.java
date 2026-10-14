@@ -23,7 +23,7 @@ public class VinDecoderService {
         }
 
         try {
-            String url = "https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/" + vin + "?format=json";
+            String url = "https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/" + vehicle.getVin().trim() + "?format=json";
             VinResponse response = restTemplate.getForObject(url, VinResponse.class);
 
             if (response != null && response.getResults() != null && !response.getResults().isEmpty()) {
