@@ -178,7 +178,7 @@ public class CustomerController {
                         if (!year.isEmpty() && !year.equalsIgnoreCase("null")) vehicle.setYear(year.trim());
                         if (!make.isEmpty() && !make.equalsIgnoreCase("null")) vehicle.setMake(make.trim().toUpperCase());
                         if (!model.isEmpty() && !model.equalsIgnoreCase("null")) vehicle.setModel(model.trim().toUpperCase());
-                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null")) vehicle.setSubModel(trim.trim().toUpperCase());
+                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null")) vehicle.setTrim(trim.trim().toUpperCase());
                         if (!engine.isEmpty() && !engine.equalsIgnoreCase("null")) vehicle.setEngineSize(engine.trim() + "L");
                         if (!drive.isEmpty() && !drive.equalsIgnoreCase("null")) vehicle.setDrivetrain(drive.trim().toUpperCase());
                     }
@@ -316,7 +316,7 @@ public class CustomerController {
                                 @RequestParam(value = "model", required = false) String model,
                                 @RequestParam(value = "vin", required = false) String vin,
                                 @RequestParam(value = "licensePlate", required = false) String licensePlate,
-                                @RequestParam(value = "subModel", required = false) String subModel,
+                                @RequestParam(value = "trim", required = false) String trim,
                                 @RequestParam(value = "engineSize", required = false) String engineSize,
                                 @RequestParam(value = "drivetrain", required = false) String drivetrain) {
 
@@ -335,7 +335,7 @@ public class CustomerController {
             if (licensePlate != null && !licensePlate.trim().isEmpty()) vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
 
             // Handle optional specifications variables cleanly
-            vehicle.setSubModel(subModel != null ? subModel.trim() : null);
+            vehicle.setTrim(trim != null ? trim.trim() : null);
             vehicle.setEngineSize(engineSize != null ? engineSize.trim().toUpperCase() : null);
             vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim().toUpperCase() : null);
 

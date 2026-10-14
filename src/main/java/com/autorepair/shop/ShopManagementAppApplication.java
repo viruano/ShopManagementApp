@@ -83,7 +83,7 @@ public class ShopManagementAppApplication {
                 demoVehicle.setYear("2018");
                 demoVehicle.setMake("AUDI");
                 demoVehicle.setModel("Q5");
-                demoVehicle.setSubModel("Premium Plus");
+                demoVehicle.setTrim("Premium Plus");
                 demoVehicle.setVin("WA1ANAFYJ9021482");
                 demoVehicle.setLicensePlate("DEMO-2026");
                 demoVehicle.setEngineSize("2.0T");

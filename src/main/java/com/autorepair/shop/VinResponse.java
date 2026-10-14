@@ -18,10 +18,10 @@ public class VinResponse {
         @JsonProperty("ModelYear") private String modelYear;
         @JsonProperty("Make") private String make;
         @JsonProperty("Model") private String model;
-        @JsonProperty("Series") private String series;
         @JsonProperty("DriveType") private String driveType;
         @JsonProperty("DisplacementL") private String displacementL;
         @JsonProperty("EngineModel") private String engineModel;
+        @JsonProperty("Trim") private String trim;
 
         // Getters and Setters
         public String getModelYear() { return modelYear; }
@@ -30,13 +30,13 @@ public class VinResponse {
         public void setMake(String make) { this.make = make; }
         public String getModel() { return model; }
         public void setModel(String model) { this.model = model; }
-        public String getSeries() { return series; }
-        public void setSeries(String series) { this.series = series; }
         public String getDriveType() { return driveType; }
         public void setDriveType(String driveType) { this.driveType = driveType; }
         public String getDisplacementL() { return displacementL; }
         public void setDisplacementL(String displacementL) { this.displacementL = displacementL; }
         public String getEngineModel() { return engineModel; }
         public void setEngineModel(String engineModel) { this.engineModel = engineModel; }
+        public String getTrim() { return this.trim; }
+        public void setTrim(String trim) { this.trim = trim; }
     }
 }

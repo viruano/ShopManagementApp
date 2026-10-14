@@ -33,7 +33,7 @@ public class VinDecoderService {
                 vehicle.setYear(data.getModelYear());
                 vehicle.setMake(data.getMake());
                 vehicle.setModel(data.getModel());
-                vehicle.setSubModel(data.getSeries());
+                vehicle.setTrim(data.getTrim());
                 vehicle.setDrivetrain(data.getDriveType());
                 vehicle.setEngineSize(data.getDisplacementL() != null ? data.getDisplacementL() + "L" : null);
                 vehicle.setEngineCode(data.getEngineModel());

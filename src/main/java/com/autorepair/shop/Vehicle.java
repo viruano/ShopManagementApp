@@ -22,7 +22,8 @@ public class Vehicle {
     private String model;
     private String licensePlate;
 
-    private String subModel;
+    // 👑 TO THIS ALIGNED FIELD NAME:
+    private String trim;
     private String engineSize;
     private String engineCode;
     private String drivetrain;
@@ -80,8 +81,8 @@ public class Vehicle {
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 
-    public String getSubModel() { return subModel; }
-    public void setSubModel(String subModel) { this.subModel = subModel; }
+    public String getTrim() {return this.trim;}
+    public void setTrim(String trim) { this.trim = trim != null ? trim.trim().toUpperCase() : null; }
 
     public String getEngineSize() { return engineSize; }
     public void setEngineSize(String engineSize) { this.engineSize = engineSize; }
