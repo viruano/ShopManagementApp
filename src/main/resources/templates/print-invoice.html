@@ -71,7 +71,7 @@
             <h3 class="font-black text-slate-400 text-[10px] uppercase tracking-wider mb-2">Vehicle Service File</h3>
             <div class="font-black text-sm text-slate-900">
                 <span th:text="${vehicle.year}">2020</span> <span th:text="${vehicle.make}">FORD</span> <span th:text="${vehicle.model}">F-150</span>
-                <span th:if="${vehicle.subModel != null}" class="text-xs text-indigo-600 font-bold" th:text="' [' + ${vehicle.subModel} + ']'"></span>
+                <span th:if="${vehicle.trim != null}" class="text-xs text-indigo-600 font-bold" th:text="' [' + ${vehicle.trim} + ']'"></span>
             </div>
             <div class="font-mono text-slate-600">VIN: <span class="font-bold text-slate-800" th:text="${vehicle.vin}"></span></div>
             <div class="font-medium text-slate-500" th:text="'License Plate: ' + ${vehicle.licensePlate}"></div>
