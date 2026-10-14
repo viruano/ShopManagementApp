@@ -14,6 +14,12 @@ public class WorkOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // =========================================================
+    // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY (ORDERS)
+    // =========================================================
+    @Column(name = "tenant_id", nullable = true)
+    private String tenantId;
+
     private String invoiceNumber; // Auto-generated e.g., WO-1001
     private LocalDateTime dateOpened;
     private LocalDateTime dateClosed;
@@ -37,6 +43,21 @@ public class WorkOrder {
 
     public WorkOrder() {
         this.dateOpened = LocalDateTime.now();
+    }
+
+    // =========================================================
+    // 🏢 SaaS MULTI-TENANT ISOLATION ACCESS METHODS
+    // =========================================================
+    public String getTenantId() {
+        // Defensive checking assigns old existing null database rows to your core shop tenant automatically
+        if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
+            return "xyz-auto";
+        }
+        return this.tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId != null ? tenantId.trim() : null;
     }
 
     // Calculates the absolute total wholesale parts cost outlays tied to this single repair ticket
@@ -74,7 +95,7 @@ public class WorkOrder {
         BigDecimal partsTotal = getPartsSubtotal();
         BigDecimal laborTotal = getLaborSubtotal();
 
-        // 🔒 SAFETY TOGGLE ENGINE: Automatically strips sales tax if the profile is flagged as a B2B Fleet Account
+        // 🔒 SAFETY TOGGLE ENGINE: Automatically strips sales tax if the profile is flagged as a B2B Fleet Account [Shopmonkey auto repair app]
         BigDecimal taxRate = new BigDecimal("0.06"); // Standard 6% base tax rule sample
         if (this.vehicle != null && this.vehicle.getCustomer() != null && this.vehicle.getCustomer().isTaxExempt()) {
             taxRate = BigDecimal.ZERO;
@@ -93,7 +114,7 @@ public class WorkOrder {
     // =========================================================
 
     /**
-     * Aggregates total net profit dollars across all part and material items on the ticket.
+     * Aggregates total net profit dollars across all part and material items on the ticket [Shopmonkey auto repair app].
      */
     public BigDecimal getGrandProfitDollars() {
         if (this.lineItems == null || this.lineItems.isEmpty()) {

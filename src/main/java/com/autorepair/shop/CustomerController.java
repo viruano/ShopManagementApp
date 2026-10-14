@@ -95,20 +95,23 @@ public class CustomerController {
             model.addAttribute("currentVehicleSearch", vehicleSearch);
         }
 
-        // 📋 PANEL 3 LAYER: INVOICING WORK ORDERS ARCHITECTURE (Global Mapping)
+        // 📋 PANEL 3 LAYER: INVOICING WORK ORDERS ARCHITECTURE (TENANT ISOLATED)
         List<WorkOrder> visibleOrders;
         boolean showAll = model.containsAttribute("showAllOrders") && (boolean) model.getAttribute("showAllOrders");
         model.addAttribute("showAllOrders", showAll);
 
         if ("orders".equals(tab) && search != null && !search.trim().isEmpty()) {
-            visibleOrders = workOrderRepository.searchOrders(search.trim());
+            // Updated to execute your newly firewalled keyword matching query method
+            visibleOrders = workOrderRepository.searchTenantOrders(search.trim(), activeTenant);
             model.addAttribute("currentSearch", search);
         } else if (showAll) {
-            visibleOrders = workOrderRepository.findAll();
+            visibleOrders = workOrderRepository.findByTenantId(activeTenant);
         } else {
-            visibleOrders = workOrderRepository.findByStatus(WorkOrderStatus.OPENED);
+            // Restricts active dashboard rows strictly to the current tenant workspace
+            visibleOrders = workOrderRepository.findByStatusAndTenantId(WorkOrderStatus.OPENED, activeTenant);
         }
         model.addAttribute("workOrders", visibleOrders);
+
 
         // Isolate totals and line rows if a specific invoice is selected
         if (focusedWorkOrderId != null) {
