@@ -259,7 +259,7 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + INLINE VIN DECODER)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + BI-DIRECTIONAL FIX)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
@@ -278,26 +278,35 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
+        // 👑 SAFELY CAPTURE ACCOUNT OWNER ID BEFORE ANY BACKGROUND INLINE ACTIONS:
+        Long targetCustomerId = null;
+        if (vehicle.getCustomer() != null) {
+            targetCustomerId = vehicle.getCustomer().getId();
+        }
+
         // 👑 1. EXECUTE INLINE DECODER HYDRATION
-        // Modifies the year, make, and model variables directly on the existing object mesh
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
             System.out.println("🔌 [DECODER] Running inline asset hydration for VIN: " + vehicle.getVin());
             vinDecoderService.hydrateVehicleSpecs(vehicle);
         }
 
-        // 👑 2. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
+        // 👑 2. FORCE RE-STITCH OF THE REGISTERED ACCOUNT OWNER ROW (PREVENTS NULL FOREIGN KEYS)
+        if (targetCustomerId != null) {
+            java.util.Optional<Customer> managedCustomer = customerRepository.findById(targetCustomerId);
+            if (managedCustomer.isPresent()) {
+                vehicle.setCustomer(managedCustomer.get());
+                System.out.println("✅ [SaaS RE-STITCH] Bound vehicle explicitly to managed Customer ID: " + targetCustomerId);
+            }
+        }
+
+        // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
         vehicle.setTenantId(activeTenant);
 
-        // Final string cleanliness filters before saving to PostgreSQL tables
+        // Clean up text filters before saving to your PostgreSQL data tables
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
         if (vehicle.getVin() != null) vehicle.setVin(vehicle.getVin().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
-
-        // 👑 3. RE-FETCH MANAGED CUSTOMER RELATION TO ENSURE FOREIGN KEY PERSISTENCE
-        if (vehicle.getCustomer() != null && vehicle.getCustomer().getId() != null) {
-            customerRepository.findById(vehicle.getCustomer().getId()).ifPresent(vehicle::setCustomer);
-        }
 
         vehicleRepository.save(vehicle);
         return "redirect:/?tab=vehicles";
