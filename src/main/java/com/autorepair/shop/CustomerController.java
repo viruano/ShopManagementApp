@@ -259,11 +259,12 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + BI-DIRECTIONAL FIX)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + BALANCED VIN DECODER)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
                                   BindingResult result,
+                                  @RequestParam(value = "customerId", required = false) Long customerId, // 👑 CAPTURES EXPLICIT FORM PARAMETER
                                   RedirectAttributes ra) {
 
         // 🔒 Extract the active SaaS tenant context securely
@@ -278,25 +279,18 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
-        // 👑 SAFELY CAPTURE ACCOUNT OWNER ID BEFORE ANY BACKGROUND INLINE ACTIONS:
-        Long targetCustomerId = null;
-        if (vehicle.getCustomer() != null) {
-            targetCustomerId = vehicle.getCustomer().getId();
-        }
-
         // 👑 1. EXECUTE INLINE DECODER HYDRATION
+        // Safely updates the year, make, and model variables directly on the existing object mesh
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
             System.out.println("🔌 [DECODER] Running inline asset hydration for VIN: " + vehicle.getVin());
             vinDecoderService.hydrateVehicleSpecs(vehicle);
         }
 
-        // 👑 2. FORCE RE-STITCH OF THE REGISTERED ACCOUNT OWNER ROW (PREVENTS NULL FOREIGN KEYS)
-        if (targetCustomerId != null) {
-            java.util.Optional<Customer> managedCustomer = customerRepository.findById(targetCustomerId);
-            if (managedCustomer.isPresent()) {
-                vehicle.setCustomer(managedCustomer.get());
-                System.out.println("✅ [SaaS RE-STITCH] Bound vehicle explicitly to managed Customer ID: " + targetCustomerId);
-            }
+        // 👑 2. SECURE THE RELATIONAL ACCOUNT OWNER GRAPH (FIXES UNASSIGNED NULLS)
+        // Explicitly binds the vehicle to the managed Customer row to force-write the customer_id column
+        if (customerId != null) {
+            customerRepository.findById(customerId).ifPresent(vehicle::setCustomer);
+            System.out.println("✅ [SaaS SAVE] Vehicle successfully linked to Customer ID: " + customerId);
         }
 
         // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK

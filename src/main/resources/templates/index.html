@@ -256,11 +256,15 @@
                     <button onclick="toggleVehicleRegistrationForm()" class="text-slate-400 hover:text-slate-600 font-black text-sm">✕ Close</button>
                 </div>
                 <form id="vehicleIntakeForm" th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
+                    <!-- Customer Dropdown Association Field (REPLAMENT FIX) -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Assign Profile Owner *</label>
-                        <select name="customerId" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 font-semibold">
-                            <option value="" disabled selected>-- Select Customer --</option>
-                            <option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.firstName + ' ' + cust.lastName + ' (' + cust.customerNumber + ')'}"></option>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-0.5">Assign Account Owner:</label>
+                        <!-- 👑 FIXED: Removed th:field and substituted a plain, rock-solid name token -->
+                        <select name="customerId" required class="w-full px-2 py-1.5 border rounded text-xs bg-white text-slate-800 font-bold focus:outline-none">
+                            <option value="" disabled selected>-- Choose Account --</option>
+                            <option th:each="c : ${customers}"
+                                    th:value="${c.id}"
+                                    th:text="${c.firstName + ' ' + c.lastName}">John Doe</option>
                         </select>
                     </div>
 
