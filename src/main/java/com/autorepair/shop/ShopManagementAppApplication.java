@@ -62,10 +62,7 @@ public class ShopManagementAppApplication {
 
                 // 1. Create Mock Customer Profile
                 Customer demoCustomer = new Customer();
-
-                // 👑 THE CRITICAL DATA INTEGRITY SAFEGUARD FIX:
-                demoCustomer.setCustomerNumber("CUST-DEMO-991"); // Fulfills the SQL NOT-NULL constraint!
-
+                demoCustomer.setCustomerNumber("CUST-DEMO-991");
                 demoCustomer.setFirstName("Sarah");
                 demoCustomer.setLastName("Jenkins");
                 demoCustomer.setPhone("(443) 555-8821");
@@ -75,7 +72,7 @@ public class ShopManagementAppApplication {
                 demoCustomer.setState("MD");
                 demoCustomer.setZip("21401");
                 demoCustomer.setTaxExempt(false);
-                demoCustomer.setTenantId("main-st-demo");
+                demoCustomer.setTenantId("main-st-demo"); // 🔒 Customer is stamped correctly
                 demoCustomer = customerRepository.save(demoCustomer);
 
                 // 2. Create Mock Vehicle Service File
@@ -83,28 +80,31 @@ public class ShopManagementAppApplication {
                 demoVehicle.setYear("2018");
                 demoVehicle.setMake("AUDI");
                 demoVehicle.setModel("Q5");
-                demoVehicle.setTrim("Premium Plus");
+                demoVehicle.setTrim("Premium Plus"); // Keep or remove based on your class properties
+                demoVehicle.setTrim("PREMIUM PLUS");      // 👑 STAMP YOUR NEW CORRECTION VALUE
                 demoVehicle.setVin("WA1ANAFYJ9021482");
                 demoVehicle.setLicensePlate("DEMO-2026");
                 demoVehicle.setEngineSize("2.0T");
                 demoVehicle.setDrivetrain("AWD");
                 demoVehicle.setCustomer(demoCustomer);
-                // If your Vehicle entity already has tenantId column, uncomment the line below:
-                // demoVehicle.setTenantId("main-st-demo");
+
+                // 👑 THE CRITICAL SAAS FIREWALL SEEDER STAMP (VEHICLE):
+                demoVehicle.setTenantId("main-st-demo"); // 🔒 Forces the tenant_id column to populate!
                 vehicleRepository.save(demoVehicle);
 
                 // 3. Create Mock Work Order Worksheet
                 WorkOrder demoOrder = new WorkOrder();
                 demoOrder.setInvoiceNumber("WO-DEMO-01");
-                demoOrder.setStatus(WorkOrderStatus.OPENED); // Leaves it active so they can see input cards
+                demoOrder.setStatus(WorkOrderStatus.OPENED);
                 demoOrder.setOdometerIn(64210);
                 demoOrder.setOdometerOut(64212);
                 demoOrder.setVehicle(demoVehicle);
                 demoOrder.setAmountPaid(java.math.BigDecimal.ZERO);
-                // If your WorkOrder entity already has tenantId column, uncomment the line below:
-                // demoOrder.setTenantId("main-st-demo");
 
-                // 4. Populate Itemized Line Rows directly into the Work Order array ledger
+                // 👑 THE CRITICAL SAAS FIREWALL SEEDER STAMP (WORK ORDER):
+                demoOrder.setTenantId("main-st-demo");   // 🔒 Forces the tenant_id column to populate!
+
+                // 4. Populate Itemized Line Rows
                 LineItem laborRow = new LineItem();
                 laborRow.setItemType(LineItemType.LABOR);
                 laborRow.setDescription("Synthetic Engine Oil & Filter Service (Includes Inspection)");
