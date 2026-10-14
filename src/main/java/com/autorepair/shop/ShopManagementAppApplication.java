@@ -23,6 +23,20 @@ public class ShopManagementAppApplication {
             org.springframework.data.jpa.repository.JpaRepository<Vehicle, Long> vehicleRepository,
             org.springframework.data.jpa.repository.JpaRepository<WorkOrder, Long> workOrderRepository) {
         return args -> {
+
+
+            // 🚨 THE CRITICAL DATABASE TRUNCATION LAYER:
+            // This clears out all your historical data logs completely across all environments!
+            System.out.println("⚠️ [TRUNCATE] Executing full platform dataset wipe down across all tables...");
+
+            // Delete records in reverse order of relationships to prevent foreign key constraint breaks
+            workOrderRepository.deleteAll();
+            vehicleRepository.deleteAll();
+            customerRepository.deleteAll();
+
+            System.out.println("🧼 [TRUNCATE] Success! All database rows have been truncated clean.");
+
+
             System.out.println("🔄 [MIGRATION] Checking for historical customer records missing SaaS tenant tokens...");
 
             // Phase A: Heal any old production rows missing a tenant ID
