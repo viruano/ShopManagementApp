@@ -179,11 +179,16 @@ public class CustomerController {
                         String drive = vehicleData.path("DriveType").asText("");
 
                         if (!year.isEmpty() && !year.equalsIgnoreCase("null")) vehicle.setYear(year.trim());
-                        if (!make.isEmpty() && !make.equalsIgnoreCase("null")) vehicle.setMake(make.trim().toUpperCase());
-                        if (!model.isEmpty() && !model.equalsIgnoreCase("null")) vehicle.setModel(model.trim().toUpperCase());
-                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null")) vehicle.setTrim(trim.trim().toUpperCase());
-                        if (!engine.isEmpty() && !engine.equalsIgnoreCase("null")) vehicle.setEngineSize(engine.trim() + "L");
-                        if (!drive.isEmpty() && !drive.equalsIgnoreCase("null")) vehicle.setDrivetrain(drive.trim().toUpperCase());
+                        if (!make.isEmpty() && !make.equalsIgnoreCase("null"))
+                            vehicle.setMake(make.trim().toUpperCase());
+                        if (!model.isEmpty() && !model.equalsIgnoreCase("null"))
+                            vehicle.setModel(model.trim().toUpperCase());
+                        if (!trim.isEmpty() && !trim.equalsIgnoreCase("null"))
+                            vehicle.setTrim(trim.trim().toUpperCase());
+                        if (!engine.isEmpty() && !engine.equalsIgnoreCase("null"))
+                            vehicle.setEngineSize(engine.trim() + "L");
+                        if (!drive.isEmpty() && !drive.equalsIgnoreCase("null"))
+                            vehicle.setDrivetrain(drive.trim().toUpperCase());
                     }
                 }
             }
@@ -335,7 +340,8 @@ public class CustomerController {
             if (make != null && !make.trim().isEmpty()) vehicle.setMake(make.trim().toUpperCase());
             if (model != null && !model.trim().isEmpty()) vehicle.setModel(model.trim().toUpperCase());
             if (vin != null && !vin.trim().isEmpty()) vehicle.setVin(vin.trim().toUpperCase());
-            if (licensePlate != null && !licensePlate.trim().isEmpty()) vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
+            if (licensePlate != null && !licensePlate.trim().isEmpty())
+                vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
 
             // Handle optional specifications variables cleanly
             vehicle.setTrim(trim != null ? trim.trim() : null);
@@ -365,6 +371,37 @@ public class CustomerController {
         redirectAttributes.addFlashAttribute("showAllOrders", showAll);
         return "redirect:/?tab=orders";
     }
+    // =========================================================
+    // 📋 WORK ORDER INTAKE INTERFACE: SaaS Tenant Safe Binding
+    // =========================================================
+    @PostMapping("/orders/create") // 🚨 Match this string signature to your exact local form action route!
+    public String createWorkOrder(@ModelAttribute("newWorkOrder") WorkOrder workOrder,
+                                  @RequestParam("vehicleId") Long vehicleId) {
+
+        // 🔒 1. EXTRACT THE SEAMLESS ACTIVE LOGGED-IN SHOP WORKSPACE IDENTITY:
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) {
+            activeTenant = "xyz-auto"; // Safe engineering fallback check
+        }
+
+        // 👑 2. APPLY THE CRITICAL SaaS SECURED FIREWALL STAMP:
+        // Force-bind the invoice record row strictly to the active garage account
+        workOrder.setTenantId(activeTenant);
+
+        // 🚗 3. Stitch your existing vehicle relationship mapping securely
+        if (vehicleId != null) {
+            vehicleRepository.findByIdAndTenantId(vehicleId, activeTenant).ifPresent(workOrder::setVehicle);
+        }
+
+        // Generate professional incremental invoice sequence markers if empty
+        if (workOrder.getInvoiceNumber() == null || workOrder.getInvoiceNumber().trim().isEmpty()) {
+            workOrder.setInvoiceNumber("WO-" + (System.currentTimeMillis() % 100000));
+        }
+
+        workOrderRepository.save(workOrder);
+        return "redirect:/?tab=orders";
+    }
+
 
     @PostMapping("/orders/update-status/{id}")
     public String updateOrderStatusMatrix(@PathVariable("id") Long id,
@@ -502,14 +539,23 @@ public class CustomerController {
     @Value("${shop.config.live.phone:(410) 555-0199}")
     private String shopPhone;
 
-    // =========================================================
-    // 🖨️ CUSTOM INVOICE PDF EXPORT LAYOUT ROUTER
-    // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
-        java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findById(id);
+
+        String activeTenant = TenantContext.getCurrentTenant();
+        if (activeTenant == null) {
+            activeTenant = "xyz-auto";
+        }
+
+        System.out.println("⚡ [DEBUG] INVOICE PRINT ENDPOINT ACTIVATED! Target Work Order ID: " + id);
+
+        // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+        // Swapped findById for findByIdAndTenantId to lock down document viewing securely!
+        java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findByIdAndTenantId(id, activeTenant);
+
         if (orderOpt.isEmpty()) {
-            return "redirect:/?tab=orders";
+            System.err.println("❌ Printer Security Error: Work Order ID " + id + " does not belong to tenant: " + activeTenant);
+            return "redirect:/?tab=orders"; // Safe fallback redirect
         }
 
         WorkOrder order = orderOpt.get();
@@ -524,12 +570,10 @@ public class CustomerController {
         model.addAttribute("amountPaid", order.getAmountPaid());
         model.addAttribute("balanceDue", order.getRemainingBalance());
 
-        // 👑 PASS YOUR EXACT ENVIRONMENT METRICS TO THE VIEW LAYER:
         model.addAttribute("shopName", shopName);
         model.addAttribute("shopAddress", shopAddress);
         model.addAttribute("shopPhone", shopPhone);
 
         return "print-invoice";
     }
-
 }
