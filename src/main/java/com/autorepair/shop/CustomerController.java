@@ -259,7 +259,7 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + VIN DECODER FIX)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + INLINE VIN DECODER)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
@@ -278,42 +278,28 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
-        // 👑 TRACK THE ASSIGNED CUSTOMER ID DIRECTLY FROM THE FORM-BOUND OBJECT SHELL:
-        // This stops parameter name conflicts permanently by reading Spring's built-in binding graph.
-        Long targetCustomerId = null;
-        if (vehicle.getCustomer() != null) {
-            targetCustomerId = vehicle.getCustomer().getId();
-        }
-
-        String assignedPlate = vehicle.getLicensePlate();
-
-        // 👑 1. EXECUTE THE BACKEND AUTOMATED VIN DECODER PIPELINE
+        // 👑 1. EXECUTE INLINE DECODER HYDRATION
+        // Modifies the year, make, and model variables directly on the existing object mesh
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
-            String cleanVin = vehicle.getVin().trim().toUpperCase();
-            System.out.println("🔌 [DECODER] Triggering NHTSA API lookup via VinDecoderService for: " + cleanVin);
-
-            // Overwrite the local reference with the fully populated object returned by your service
-            vehicle = vinDecoderService.decodeVin(cleanVin);
-            vehicle.setLicensePlate(assignedPlate);
+            System.out.println("🔌 [DECODER] Running inline asset hydration for VIN: " + vehicle.getVin());
+            vinDecoderService.hydrateVehicleSpecs(vehicle);
         }
 
-        // 👑 2. RE-STITCH THE MANAGED CUSTOMER RELATIONSHIP WITHOUT DATA LOSS
-        if (targetCustomerId != null) {
-            customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
-        } else {
-            vehicle.setCustomer(null);
-        }
-
-        // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
+        // 👑 2. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
         vehicle.setTenantId(activeTenant);
 
         // Final string cleanliness filters before saving to PostgreSQL tables
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
+        if (vehicle.getVin() != null) vehicle.setVin(vehicle.getVin().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
 
-        vehicleRepository.save(vehicle);
+        // 👑 3. RE-FETCH MANAGED CUSTOMER RELATION TO ENSURE FOREIGN KEY PERSISTENCE
+        if (vehicle.getCustomer() != null && vehicle.getCustomer().getId() != null) {
+            customerRepository.findById(vehicle.getCustomer().getId()).ifPresent(vehicle::setCustomer);
+        }
 
+        vehicleRepository.save(vehicle);
         return "redirect:/?tab=vehicles";
     }
 

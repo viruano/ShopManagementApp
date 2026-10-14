@@ -12,19 +12,24 @@ public class VinDecoderService {
         this.restTemplate = new RestTemplate();
     }
 
-    public Vehicle decodeVin(String vin) {
-        Vehicle vehicle = new Vehicle();
-        vehicle.setVin(vin);
+    /**
+     * 👑 INLINE ENTIY HYDRATOR
+     * Accepts the form-bound vehicle instance and populates its specs directly
+     * without breaking existing database relationship graphs or dropping customer IDs.
+     */
+    public void hydrateVehicleSpecs(Vehicle vehicle) {
+        if (vehicle == null || vehicle.getVin() == null || vehicle.getVin().trim().isEmpty()) {
+            return;
+        }
 
         try {
-            // Your exact, optimized flat-format endpoint link!
             String url = "https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/" + vin + "?format=json";
             VinResponse response = restTemplate.getForObject(url, VinResponse.class);
 
             if (response != null && response.getResults() != null && !response.getResults().isEmpty()) {
                 VinResponse.VehicleData data = response.getResults().get(0);
 
-                // Instantly bind the values without any tedious row parsing loops
+                // Inject the decoded specs directly onto the un-broken form reference
                 vehicle.setYear(data.getModelYear());
                 vehicle.setMake(data.getMake());
                 vehicle.setModel(data.getModel());
@@ -34,8 +39,7 @@ public class VinDecoderService {
                 vehicle.setEngineCode(data.getEngineModel());
             }
         } catch (Exception e) {
-            System.err.println("NHTSA Flat API Error: " + e.getMessage());
+            System.err.println("❌ NHTSA Flat API Error: " + e.getMessage());
         }
-        return vehicle;
     }
 }
