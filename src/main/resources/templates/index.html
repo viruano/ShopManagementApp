@@ -303,7 +303,7 @@
                     <input type="hidden" name="year" value="">
                     <input type="hidden" name="make" value="">
                     <input type="hidden" name="model" value="">
-                    <input type="hidden" name="subModel" value="">
+                    <input type="hidden" name="trim" value="">
                     <input type="hidden" name="engineSize" value="">
                     <input type="hidden" name="drivetrain" value="">
                     <input type="hidden" name="licensePlate" value="TEMP">
@@ -344,7 +344,7 @@
                                             <input type="text" name="year" th:value="${vh.year}" required class="w-16 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none text-slate-800 font-bold">
                                             <input type="text" name="make" th:value="${vh.make}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
                                             <input type="text" name="model" th:value="${vh.model}" required class="w-28 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
-                                            <input type="text" name="subModel" th:value="${vh.subModel}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
+                                            <input type="text" name="trim" th:value="${vh.trim}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
                                         </div>
                                         <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
                                             <div class="flex flex-wrap items-center gap-2">
@@ -368,7 +368,7 @@
                             <th:block th:if="${editVehicleId == null || editVehicleId != vh.id}">
                                 <td class="px-4 py-3 font-semibold text-gray-900">
                                     <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
-                                    <div class="text-xs text-indigo-600 font-medium" th:if="${vh.subModel}" th:text="${vh.subModel}">Trim</div>
+                                    <div class="text-xs text-indigo-600 font-medium" th:if="${vh.trim}" th:text="${vh.trim}">Trim</div>
                                 </td>
                                 <td class="px-4 py-3 text-xs text-gray-600">
                                     <div th:text="${vh.engineSize}">V6</div>
