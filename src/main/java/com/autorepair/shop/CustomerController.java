@@ -290,7 +290,6 @@ public class CustomerController {
         // 👑 1. EXECUTE INLINE DECODER HYDRATION
         // Safely updates the year, make, and model variables directly on the existing object mesh
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
-            System.out.println("🔌 [DECODER] Running inline asset hydration for VIN: " + vehicle.getVin());
             vinDecoderService.hydrateVehicleSpecs(vehicle);
         }
 
@@ -298,7 +297,6 @@ public class CustomerController {
         // Explicitly binds the vehicle to the managed Customer row to force-write the customer_id column
         if (customerId != null) {
             customerRepository.findById(customerId).ifPresent(vehicle::setCustomer);
-            System.out.println("✅ [SaaS SAVE] Vehicle successfully linked to Customer ID: " + customerId);
         }
 
         // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
@@ -430,7 +428,6 @@ public class CustomerController {
             }
 
             workOrderRepository.save(order);
-            System.out.println("✅ [SaaS SECURITY] Work Order status updated securely under Tenant: " + activeTenant);
         });
 
         return "redirect:/?tab=orders&focusedWorkOrderId=" + id;
@@ -562,8 +559,6 @@ public class CustomerController {
         if (activeTenant == null) {
             activeTenant = "xyz-auto";
         }
-
-        System.out.println("⚡ [DEBUG] INVOICE PRINT ENDPOINT ACTIVATED! Target Work Order ID: " + id);
 
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
         // Swapped findById for findByIdAndTenantId to lock down document viewing securely!
