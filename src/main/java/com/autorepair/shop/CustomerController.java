@@ -259,12 +259,11 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + RESTORED VIN DECODER)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + VIN DECODER FIX)
     // =========================================================
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
                                   BindingResult result,
-                                  @RequestParam(value = "customer", required = false) Long targetCustomerId, // 👑 DIRECT FOREIGN KEY PARAMETER CAPTURE
                                   RedirectAttributes ra) {
 
         // 🔒 Extract the active SaaS tenant context securely
@@ -279,34 +278,36 @@ public class CustomerController {
             return "redirect:/?tab=vehicles&error=true";
         }
 
+        // 👑 TRACK THE ASSIGNED CUSTOMER ID DIRECTLY FROM THE FORM-BOUND OBJECT SHELL:
+        // This stops parameter name conflicts permanently by reading Spring's built-in binding graph.
+        Long targetCustomerId = null;
+        if (vehicle.getCustomer() != null) {
+            targetCustomerId = vehicle.getCustomer().getId();
+        }
+
+        String assignedPlate = vehicle.getLicensePlate();
+
         // 👑 1. EXECUTE THE BACKEND AUTOMATED VIN DECODER PIPELINE
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
             String cleanVin = vehicle.getVin().trim().toUpperCase();
             System.out.println("🔌 [DECODER] Triggering NHTSA API lookup via VinDecoderService for: " + cleanVin);
 
-            // Retain the temporary form attributes before overwriting the reference pointer
-            String assignedPlate = vehicle.getLicensePlate();
-
-            // Overwrite the local pointer with the object returned by your service
+            // Overwrite the local reference with the fully populated object returned by your service
             vehicle = vinDecoderService.decodeVin(cleanVin);
-
-            // 👑 THE CRITICAL RELATION RE-STITCH BIND:
-            // Fetch the actual managed record row straight from the DB using our direct request param ID
-            if (targetCustomerId != null) {
-                customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
-            }
             vehicle.setLicensePlate(assignedPlate);
-        } else {
-            // Fallback for manual data entry if the VIN field is completely empty
-            if (targetCustomerId != null) {
-                customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
-            }
         }
 
-        // 👑 2. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
+        // 👑 2. RE-STITCH THE MANAGED CUSTOMER RELATIONSHIP WITHOUT DATA LOSS
+        if (targetCustomerId != null) {
+            customerRepository.findById(targetCustomerId).ifPresent(vehicle::setCustomer);
+        } else {
+            vehicle.setCustomer(null);
+        }
+
+        // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
         vehicle.setTenantId(activeTenant);
 
-        // Clean up text properties before saving to PostgreSQL table rows
+        // Final string cleanliness filters before saving to PostgreSQL tables
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
