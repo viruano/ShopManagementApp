@@ -132,7 +132,7 @@ public class CustomerController {
                 model.addAttribute("focusedWorkOrderId", focusedWorkOrderId);
                 model.addAttribute("lineItems", order.getLineItems());
 
-                // Aggregate financial totals live for this specific ticket scope
+                // Aggregate financial totals live for this specific ticket scope [Shopmonkey auto repair app]
                 model.addAttribute("totalParts", order.getPartsSubtotal());
                 model.addAttribute("totalLabor", order.getLaborSubtotal());
                 model.addAttribute("totalRevenue", order.getTotalDue());
@@ -149,6 +149,27 @@ public class CustomerController {
             model.addAttribute("amountPaid", BigDecimal.ZERO);
             model.addAttribute("remainingBalance", globalRev);
         }
+
+        // =========================================================
+        // 📊 SaaS FINANCIAL ACCUMULATOR ENGINE MATRICES
+        // =========================================================
+        // Automatically tallies financial totals strictly for the current shop session context
+        BigDecimal liveTenantRevenue = visibleOrders.stream()
+                .map(WorkOrder::getTotalDue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal liveTenantPaymentsCollected = visibleOrders.stream()
+                .map(WorkOrder::getAmountPaid)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal liveTenantReceivables = visibleOrders.stream()
+                .map(WorkOrder::getRemainingBalance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Bind the precise aggregated variables straight to your template tokens
+        model.addAttribute("liveTenantRevenue", liveTenantRevenue);
+        model.addAttribute("liveTenantPaymentsCollected", liveTenantPaymentsCollected);
+        model.addAttribute("liveTenantReceivables", liveTenantReceivables);
 
         // Mock Labor Matrix Catalog data mapping
         model.addAttribute("laborCatalog", List.of(

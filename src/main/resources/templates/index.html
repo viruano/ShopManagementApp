@@ -400,7 +400,7 @@
     </div> <!-- This closes section-vehicles panel perfectly -->
 
     <!-- ========================================================= -->
-    <!-- TAB SECTION 3: WORK ORDERS CONSOLE                        -->
+    <!-- TAB 3: WORK ORDERS CONSOLE                        -->
     <!-- ========================================================= -->
     <div id="section-orders" class="space-y-8 hidden">
 
@@ -571,6 +571,7 @@
         </div>
 
         <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS (TOGGLEABLE) -->
+        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS (TOGGLEABLE) -->
         <div th:if="${focusedWorkOrder == null}" class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Financial Desk:</span>
@@ -582,25 +583,33 @@
         </div>
 
         <div id="shopAnalyticsMetricsDrawer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 hidden transition-all duration-300">
+            <!-- Card 1: Total Sales Booked (SaaS SECURED) -->
             <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
                 <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Sales Booked</p>
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
+
+            <!-- Card 2: Total Payments Collected (SaaS SECURED) -->
             <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
                 <div class="p-3 bg-amber-100 rounded-full text-amber-600 text-xl">📥</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Payments Collected</p>
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(amountPaid, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantPaymentsCollected, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
+
+            <!-- Card 3: Total Receivables / Unpaid Balances (SaaS SECURED) -->
             <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
                 <div class="p-3 bg-emerald-100 rounded-full text-emerald-600 text-xl">📈</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Receivables</p>
-                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(remainingBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
+                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantReceivables, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
         </div>
@@ -731,6 +740,7 @@
                     </button>
                 </form>
             </div>
+
             <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <!-- Left Column Form Panel: Dedicated Stacking Intake Core (Takes 1/3 Width) -->
