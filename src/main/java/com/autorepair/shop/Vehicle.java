@@ -15,14 +15,14 @@ public class Vehicle {
     @Column(unique = true, nullable = false)
     private String vin;
 
+    // 👑 UPDATED PROPERTY TYPE FROM String TO int NATIVELY
     @Column(name = "vehicle_year")
-    private String year;
+    private int year;
 
     private String make;
     private String model;
     private String licensePlate;
 
-    // 👑 TO THIS ALIGNED FIELD NAME:
     private String trim;
     private String engineSize;
     private String engineCode;
@@ -36,9 +36,10 @@ public class Vehicle {
     private Integer odometerIn;
     private Integer odometerOut;
 
-    //  THE CORRECTED OPERATIONAL REPAIR ORDERS HISTORY LINK:
+    // THE CORRECTED OPERATIONAL REPAIR ORDERS HISTORY LINK:
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkOrder> workOrders = new ArrayList<>();
+
     // Default Constructor
     public Vehicle() {}
 
@@ -69,8 +70,9 @@ public class Vehicle {
     public String getVin() { return vin; }
     public void setVin(String vin) { this.vin = vin != null ? vin.toUpperCase() : null; }
 
-    public String getYear() { return year; }
-    public void setYear(String year) { this.year = year; }
+    // 👑 UPDATED GETTER/SETTER TO INT TYPE MATCHES
+    public int getYear() { return year; }
+    public void setYear(int year) { this.year = year; }
 
     public String getMake() { return make; }
     public void setMake(String make) { this.make = make; }
@@ -81,7 +83,7 @@ public class Vehicle {
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 
-    public String getTrim() {return this.trim;}
+    public String getTrim() { return this.trim; }
     public void setTrim(String trim) { this.trim = trim != null ? trim.trim().toUpperCase() : null; }
 
     public String getEngineSize() { return engineSize; }
@@ -102,7 +104,6 @@ public class Vehicle {
     public Integer getOdometerOut() { return odometerOut; }
     public void setOdometerOut(Integer odometerOut) { this.odometerOut = odometerOut; }
 
-    // Add the standard Getters and Setters for this new collection
     public List<WorkOrder> getWorkOrders() { return workOrders; }
     public void setWorkOrders(List<WorkOrder> workOrders) { this.workOrders = workOrders; }
 }

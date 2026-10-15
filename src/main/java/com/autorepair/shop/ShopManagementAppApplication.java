@@ -77,7 +77,7 @@ public class ShopManagementAppApplication {
 
                 // 2. Create Mock Vehicle Service File
                 Vehicle demoVehicle = new Vehicle();
-                demoVehicle.setYear("2018");
+                demoVehicle.setYear(2018);
                 demoVehicle.setMake("AUDI");
                 demoVehicle.setModel("Q5");
                 demoVehicle.setTrim("Premium Plus"); // Keep or remove based on your class properties

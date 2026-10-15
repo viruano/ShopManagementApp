@@ -29,11 +29,25 @@ public class VinDecoderService {
             if (response != null && response.getResults() != null && !response.getResults().isEmpty()) {
                 VinResponse.VehicleData data = response.getResults().get(0);
 
-                // Inject the decoded specs directly onto the un-broken form reference
-                vehicle.setYear(data.getModelYear());
+                // 👑 THE CRITICAL DATA-TYPE CONVERSION FIX:
+                // Safely checks if the string year exists, parses it to an int, and protects against conversion loops
+                if (data.getModelYear() != null && !data.getModelYear().trim().isEmpty()) {
+                    try {
+                        vehicle.setYear(Integer.parseInt(data.getModelYear().trim()));
+                    } catch (NumberFormatException e) {
+                        vehicle.setYear(2020); // Safe baseline fallback if the API returns an invalid character format
+                    }
+                }
+
                 vehicle.setMake(data.getMake());
                 vehicle.setModel(data.getModel());
-                vehicle.setTrim(data.getTrim());
+
+                if (data.getTrim() != null) {
+                    vehicle.setTrim(data.getTrim().trim().toUpperCase());
+                } else {
+                    vehicle.setTrim(null);
+                }
+
                 vehicle.setDrivetrain(data.getDriveType());
                 vehicle.setEngineSize(data.getDisplacementL() != null ? data.getDisplacementL() + "L" : null);
                 vehicle.setEngineCode(data.getEngineModel());

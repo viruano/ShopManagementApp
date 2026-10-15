@@ -34,6 +34,27 @@ public class CustomerController {
     @Autowired
     private VinDecoderService vinDecoderService;
 
+    // 🚚 CORRECTED DYNAMIC SHOP INSTANCE VARIABLES
+    // Pulls directly from your exact property keys in application.properties
+    @Value("${shop.config.live.name:XYZ Auto Services LLC}")
+    private String shopName;
+
+    @Value("${shop.config.live.address:27 Hicks Av, Annapolis, MD 21401}")
+    private String shopAddress;
+
+    @Value("${shop.config.live.phone:(410) 555-0199}")
+    private String shopPhone;
+
+    // =========================================================
+    // 👑 GLOBAL MULTI-TENANT CONTEXT INTERCEPTOR
+    // =========================================================
+    @ModelAttribute("activeTenant")
+    public String populateRequestActiveTenantContext() {
+        String tenant = TenantContext.getCurrentTenant();
+        // If the context thread is empty for any reason, safely default to your live shop core
+        return (tenant != null && !tenant.trim().isEmpty()) ? tenant : "xyz-auto";
+    }
+
     // =========================================================
     // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
     // =========================================================
@@ -46,14 +67,8 @@ public class CustomerController {
             @RequestParam(value = "editItemId", required = false) Long editItemId,
             @RequestParam(value = "editCustomerId", required = false) Long editCustomerId,
             @RequestParam(value = "editVehicleId", required = false) Long editVehicleId,
+            @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
             Model model) {
-
-        // 🔒 SaaS MULTI-TENANT IDENTITY CHECK
-        // Extract the unique logged-in shop identifier from the active request thread
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto"; // Safe fallback developer tracker token
-        }
 
         // Retain the active browser panel selection tab state across redirects
         model.addAttribute("activeTab", tab);
@@ -70,7 +85,6 @@ public class CustomerController {
         List<Customer> tenantCustomers = customerRepository.findByTenantId(activeTenant);
         model.addAttribute("customers", tenantCustomers);
 
-        // Swapped out .findAll() to strictly load assets belonging to the logged-in tenant context [Shopmonkey auto repair app]
         List<Vehicle> tenantVehicles = vehicleRepository.findByTenantId(activeTenant);
         model.addAttribute("vehicles", tenantVehicles);
 
@@ -86,7 +100,6 @@ public class CustomerController {
         if ("vehicles".equals(tab)) {
             List<Vehicle> filteredVehicles;
             if (vehicleSearch != null && !vehicleSearch.trim().isEmpty()) {
-                // Call our new firewall-secure license/VIN keyword query mapping
                 filteredVehicles = vehicleRepository.searchTenantVehicles(vehicleSearch.trim(), activeTenant);
             } else {
                 filteredVehicles = tenantVehicles;
@@ -101,21 +114,20 @@ public class CustomerController {
         model.addAttribute("showAllOrders", showAll);
 
         if ("orders".equals(tab) && search != null && !search.trim().isEmpty()) {
-            // Updated to execute your newly firewalled keyword matching query method
             visibleOrders = workOrderRepository.searchTenantOrders(search.trim(), activeTenant);
             model.addAttribute("currentSearch", search);
         } else if (showAll) {
             visibleOrders = workOrderRepository.findByTenantId(activeTenant);
         } else {
-            // Restricts active dashboard rows strictly to the current tenant workspace
             visibleOrders = workOrderRepository.findByStatusAndTenantId(WorkOrderStatus.OPENED, activeTenant);
         }
         model.addAttribute("workOrders", visibleOrders);
 
-
         // Isolate totals and line rows if a specific invoice is selected
         if (focusedWorkOrderId != null) {
-            workOrderRepository.findById(focusedWorkOrderId).ifPresent(order -> {
+            // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+            // Swapped out findById to ensure an explicit multi-tenant firewall cross-check
+            workOrderRepository.findByIdAndTenantId(focusedWorkOrderId, activeTenant).ifPresent(order -> {
                 model.addAttribute("focusedWorkOrder", order);
                 model.addAttribute("focusedWorkOrderId", focusedWorkOrderId);
                 model.addAttribute("lineItems", order.getLineItems());
@@ -171,14 +183,23 @@ public class CustomerController {
                     if (results.isArray() && results.size() > 0) {
                         com.fasterxml.jackson.databind.JsonNode vehicleData = results.get(0);
 
-                        String year = vehicleData.path("ModelYear").asText("");
+                        String yearStr = vehicleData.path("ModelYear").asText("");
                         String make = vehicleData.path("Make").asText("");
                         String model = vehicleData.path("Model").asText("");
                         String trim = vehicleData.path("Trim").asText("");
                         String engine = vehicleData.path("DisplacementL").asText("");
                         String drive = vehicleData.path("DriveType").asText("");
 
-                        if (!year.isEmpty() && !year.equalsIgnoreCase("null")) vehicle.setYear(year.trim());
+                        // 👑 THE CRITICAL INT UNBOXING FIX:
+                        // Converts the text string year token cleanly to a primitive int for your entity model
+                        if (!yearStr.isEmpty() && !yearStr.equalsIgnoreCase("null")) {
+                            try {
+                                vehicle.setYear(Integer.parseInt(yearStr.trim()));
+                            } catch (NumberFormatException nfe) {
+                                vehicle.setYear(2020); // Defensive baseline default fallback
+                            }
+                        }
+
                         if (!make.isEmpty() && !make.equalsIgnoreCase("null"))
                             vehicle.setMake(make.trim().toUpperCase());
                         if (!model.isEmpty() && !model.equalsIgnoreCase("null"))
@@ -194,21 +215,17 @@ public class CustomerController {
             }
         } catch (Exception e) {
             System.err.println("NHTSA Network Parser Timeout fallback log: " + e.getMessage());
-            vehicle.setYear("2020");
+            vehicle.setYear(2020); // 👑 Aligned to int literal type matching requirements
             vehicle.setMake("UNKNOWN");
             vehicle.setModel("CHASSIS UNMAPPED");
         }
     }
-
     // --- CUSTOMER ACTIONS SECTION (SaaS TENANT FIREWALL SECURED) ---
     @PostMapping("/customers/register")
-    public String registerCustomer(@ModelAttribute("newCustomer") @Valid Customer customer, BindingResult result, RedirectAttributes ra) {
-        // 🔒 Extract the active request thread's tenant workspace ID automatically
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto"; // Safe fallback developer tracker token
-        }
-
+    public String registerCustomer(@ModelAttribute("newCustomer") @Valid Customer customer,
+                                   @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
+                                   BindingResult result,
+                                   RedirectAttributes ra) {
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.newCustomer", result);
             ra.addFlashAttribute("newCustomer", customer);
@@ -223,12 +240,12 @@ public class CustomerController {
         customerRepository.save(customer);
         return "redirect:/?tab=customers";
     }
-
     // =========================================================
     // 👥 UPDATE CLIENT INDEX PROFILE LEDGER RECORD (SaaS SECURED)
     // =========================================================
     @PostMapping("/customers/update/{id}")
     public String updateCustomer(@PathVariable("id") Long id,
+                                 @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                  @RequestParam("firstName") String firstName,
                                  @RequestParam("lastName") String lastName,
                                  @RequestParam("phone") String phone,
@@ -239,14 +256,8 @@ public class CustomerController {
                                  @RequestParam("zip") String zip,
                                  @RequestParam(value = "taxExempt", required = false, defaultValue = "false") boolean taxExempt) {
 
-        // 🔒 Extract the active request thread's tenant workspace ID automatically
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto";
-        }
-
         // 👑 ROW-LEVEL SECURITY CHECK:
-        // Swapped out findById to ensure updates only execute if the row belongs to this active tenant
+        // Now compiles perfectly and restricts updates strictly to the active shop session
         customerRepository.findByIdAndTenantId(id, activeTenant).ifPresent(customer -> {
             if (firstName != null && !firstName.trim().isEmpty()) customer.setFirstName(firstName.trim());
             customer.setLastName(lastName != null ? lastName.trim() : "");
@@ -272,14 +283,9 @@ public class CustomerController {
     @PostMapping("/vehicles/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
                                   BindingResult result,
-                                  @RequestParam(value = "customerId", required = false) Long customerId, // 👑 CAPTURES EXPLICIT FORM PARAMETER
+                                  @RequestParam(value = "customerId", required = false) Long customerId,
+                                  @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                   RedirectAttributes ra) {
-
-        // 🔒 Extract the active SaaS tenant context securely
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto";
-        }
 
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.newVehicle", result);
@@ -296,10 +302,11 @@ public class CustomerController {
         // 👑 2. SECURE THE RELATIONAL ACCOUNT OWNER GRAPH (FIXES UNASSIGNED NULLS)
         // Explicitly binds the vehicle to the managed Customer row to force-write the customer_id column
         if (customerId != null) {
-            customerRepository.findById(customerId).ifPresent(vehicle::setCustomer);
+            customerRepository.findByIdAndTenantId(customerId, activeTenant).ifPresent(vehicle::setCustomer);
         }
 
         // 👑 3. APPLY THE SaaS MULTI-TENANT ROW PROTECTION LOCK
+        // Compiles perfectly using the injected global parameter!
         vehicle.setTenantId(activeTenant);
 
         // Clean up text filters before saving to your PostgreSQL data tables
@@ -317,6 +324,7 @@ public class CustomerController {
     // =========================================================
     @PostMapping("/vehicles/update/{id}")
     public String updateVehicle(@PathVariable("id") Long id,
+                                @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                 @RequestParam(value = "year", required = false) Integer year,
                                 @RequestParam(value = "make", required = false) String make,
                                 @RequestParam(value = "model", required = false) String model,
@@ -326,23 +334,21 @@ public class CustomerController {
                                 @RequestParam(value = "engineSize", required = false) String engineSize,
                                 @RequestParam(value = "drivetrain", required = false) String drivetrain) {
 
-        // 🔒 Extract the active request thread's tenant workspace ID automatically
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto";
-        }
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
-        // Ensures updates only execute if the vehicle file belongs strictly to this active shop session context
+        // Now compiles perfectly and secures the vehicle file updates strictly within tenant rows
         vehicleRepository.findByIdAndTenantId(id, activeTenant).ifPresent(vehicle -> {
-            if (year != null && year > 0) vehicle.setYear(year.toString());
+            if (year != null && year.intValue() > 0) {
+                vehicle.setYear(year.intValue());
+            }
             if (make != null && !make.trim().isEmpty()) vehicle.setMake(make.trim().toUpperCase());
             if (model != null && !model.trim().isEmpty()) vehicle.setModel(model.trim().toUpperCase());
             if (vin != null && !vin.trim().isEmpty()) vehicle.setVin(vin.trim().toUpperCase());
-            if (licensePlate != null && !licensePlate.trim().isEmpty())
+            if (licensePlate != null && !licensePlate.trim().isEmpty()) {
                 vehicle.setLicensePlate(licensePlate.trim().toUpperCase());
+            }
 
             // Handle optional specifications variables cleanly
-            vehicle.setTrim(trim != null ? trim.trim() : null);
+            vehicle.setTrim(trim != null ? trim.trim().toUpperCase() : null);
             vehicle.setEngineSize(engineSize != null ? engineSize.trim().toUpperCase() : null);
             vehicle.setDrivetrain(drivetrain != null ? drivetrain.trim().toUpperCase() : null);
 
@@ -352,15 +358,24 @@ public class CustomerController {
         return "redirect:/?tab=vehicles";
     }
 
+    // =========================================================
+    // 🚗 PROCESS VEHICLE ODOMETER METRIC UPDATES (SaaS SECURED)
+    // =========================================================
     @PostMapping("/vehicles/update-odometer")
     public String processOdometerLogs(@RequestParam("workOrderId") Long workOrderId,
+                                      @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                       @RequestParam(value = "odometerIn", required = false) Integer odoIn,
                                       @RequestParam(value = "odometerOut", required = false) Integer odoOut) {
-        workOrderRepository.findById(workOrderId).ifPresent(order -> {
+
+        // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+        // Confines odometer write-actions strictly to rows belonging to the active workspace thread
+        workOrderRepository.findByIdAndTenantId(workOrderId, activeTenant).ifPresent(order -> {
             if (odoIn != null) order.setOdometerIn(odoIn);
             if (odoOut != null) order.setOdometerOut(odoOut);
             workOrderRepository.save(order);
+            System.out.println("✅ [SaaS RECONCILE] Odometer metrics updated securely under tenant context.");
         });
+
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
@@ -369,21 +384,17 @@ public class CustomerController {
         redirectAttributes.addFlashAttribute("showAllOrders", showAll);
         return "redirect:/?tab=orders";
     }
+
     // =========================================================
     // 📋 WORK ORDER INTAKE INTERFACE: SaaS Tenant Safe Binding
     // =========================================================
-    @PostMapping("/orders/create") // 🚨 Match this string signature to your exact local form action route!
+    @PostMapping("/orders/create")
     public String createWorkOrder(@ModelAttribute("newWorkOrder") WorkOrder workOrder,
+                                  @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                   @RequestParam("vehicleId") Long vehicleId) {
 
-        // 🔒 1. EXTRACT THE SEAMLESS ACTIVE LOGGED-IN SHOP WORKSPACE IDENTITY:
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto"; // Safe engineering fallback check
-        }
-
         // 👑 2. APPLY THE CRITICAL SaaS SECURED FIREWALL STAMP:
-        // Force-bind the invoice record row strictly to the active garage account
+        // Compiles perfectly using the injected global parameter!
         workOrder.setTenantId(activeTenant);
 
         // 🚗 3. Stitch your existing vehicle relationship mapping securely
@@ -400,24 +411,18 @@ public class CustomerController {
         return "redirect:/?tab=orders";
     }
 
-
     // =========================================================
     // 📋 UPDATE REPAIR SHEET METRICS MATRIX (SaaS SECURED)
     // =========================================================
     @PostMapping("/orders/update-status/{id}")
     public String updateOrderStatusMatrix(@PathVariable("id") Long id,
+                                          @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                           @RequestParam("status") WorkOrderStatus status,
                                           @RequestParam("paymentStatus") PaymentStatus paymentStatus,
                                           @RequestParam("amountPaid") BigDecimal amountPaid) {
 
-        // 🔒 SaaS MULTI-TENANT ISOLATION LOOKUP
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto"; // Safe fallback developer tracker token
-        }
-
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
-        // Swapped findById for findByIdAndTenantId to ensure updates only execute if the invoice belongs to this active tenant
+        // Now compiles perfectly using the injected global parameter!
         workOrderRepository.findByIdAndTenantId(id, activeTenant).ifPresent(order -> {
             order.setStatus(status);
             order.setPaymentStatus(paymentStatus);
@@ -428,6 +433,7 @@ public class CustomerController {
             }
 
             workOrderRepository.save(order);
+            System.out.println("✅ [SaaS SECURITY] Work Order status updated securely under Tenant: " + activeTenant);
         });
 
         return "redirect:/?tab=orders&focusedWorkOrderId=" + id;
@@ -438,15 +444,23 @@ public class CustomerController {
     // =========================================================
     @PostMapping("/work-orders/create")
     public String createNewWorkOrderFromTab(@RequestParam("vehicleId") Long vehicleId,
+                                            @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                             RedirectAttributes redirectAttributes) {
-        Vehicle vehicleProfile = vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid vehicle ID mapping link: " + vehicleId));
+
+        // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+        // Restricts vehicle lookups strictly to the active workspace session context
+        Vehicle vehicleProfile = vehicleRepository.findByIdAndTenantId(vehicleId, activeTenant)
+                .orElseThrow(() -> new IllegalArgumentException("Security Exception: Invalid vehicle workspace mapping context: " + vehicleId));
 
         WorkOrder newWorkOrder = new WorkOrder();
         newWorkOrder.setVehicle(vehicleProfile);
         newWorkOrder.setStatus(WorkOrderStatus.OPENED);
         newWorkOrder.setPaymentStatus(PaymentStatus.UNPAID);
         newWorkOrder.setAmountPaid(BigDecimal.ZERO);
+
+        // 👑 THE SaaS FIREWALL STAMP:
+        // Binds the newly created invoice row directly to the logged-in user's shop tenant
+        newWorkOrder.setTenantId(activeTenant);
 
         String generatedInvoiceTrackingToken = "WO-" + (System.currentTimeMillis() % 100000);
         newWorkOrder.setInvoiceNumber(generatedInvoiceTrackingToken);
@@ -466,11 +480,12 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 📦 REVISED DIRECT-PROCUREMENT INTAKE ENGINE
-    // =========================================================a
+    // 📦 REVISED DIRECT-PROCUREMENT INTAKE ENGINE (SaaS SECURED)
+    // =========================================================
     @PostMapping("/work-orders/add-item")
     public String addDirectPurchaseLineItemToWorkOrder(
             @RequestParam("workOrderId") Long workOrderId,
+            @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
             @RequestParam("itemType") String itemType,
             @RequestParam("description") String description,
             @RequestParam("quantity") BigDecimal quantity,
@@ -480,8 +495,10 @@ public class CustomerController {
             @RequestParam(value = "wholesaleCost", required = false) BigDecimal wholesaleCost,
             RedirectAttributes redirectAttributes) {
 
-        WorkOrder workOrderRecord = workOrderRepository.findById(workOrderId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid work order reference ID: " + workOrderId));
+        // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
+        // Swapped out findById to ensure parts can only be added to invoices belonging strictly to this active shop
+        WorkOrder workOrderRecord = workOrderRepository.findByIdAndTenantId(workOrderId, activeTenant)
+                .orElseThrow(() -> new IllegalArgumentException("Security Exception: Invalid work order workspace reference mapping context: " + workOrderId));
 
         // 🔒 SAFETY LOCK ENGINE CORE BLOCK: Prevents database pollution on finalized tickets
         if (workOrderRecord.getStatus() != WorkOrderStatus.OPENED) {
@@ -507,66 +524,43 @@ public class CustomerController {
             newLineItem.setVendor(vendor != null ? vendor.trim().toUpperCase() : "STOCK");
             newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
         } else if ("MISC".equalsIgnoreCase(itemType)) {
-            // Miscellaneous packages behave like a part with no trackable SKU overhead
             newLineItem.setItemType(LineItemType.PART);
             newLineItem.setPartNumber("MISC-MAT");
             newLineItem.setVendor(vendor != null && !vendor.trim().isEmpty() ? vendor.trim().toUpperCase() : "SHOP");
             newLineItem.setWholesaleCost(wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO);
         }
 
-        // Inside your addDirectPurchaseLineItemToWorkOrder method...
         BigDecimal finalizedRetailPrice = retailPrice;
 
-        if (LineItemType.PART.name().equals(itemType)) {
-            newLineItem.setPartNumber(partNumber);
-            newLineItem.setVendor(vendor);
+        if (LineItemType.PART.name().equalsIgnoreCase(itemType) || "MISC".equalsIgnoreCase(itemType)) {
             BigDecimal cleanCost = wholesaleCost != null ? wholesaleCost : BigDecimal.ZERO;
-            newLineItem.setWholesaleCost(cleanCost);
 
             // 👑 AUTO-MATRIX ACTIVATION CHECK:
+            // Applies your automated sliding matrix if the advisor leaves the retail price blank [Shopmonkey auto repair app]
             if (finalizedRetailPrice == null || finalizedRetailPrice.compareTo(BigDecimal.ZERO) == 0) {
                 finalizedRetailPrice = WorkOrder.calculateMatrixRetailPrice(cleanCost);
             }
-        } else {
-            newLineItem.setPartNumber(null);
-            newLineItem.setVendor(null);
-            newLineItem.setWholesaleCost(BigDecimal.ZERO);
         }
 
         newLineItem.setRetailPrice(finalizedRetailPrice);
-
         lineItemRepository.save(newLineItem);
 
         redirectAttributes.addFlashAttribute("successMessage", "Item successfully added to invoice worksheet ledger!");
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
-    // 🚚 CORRECTED DYNAMIC SHOP INSTANCE VARIABLES
-    // Pulls directly from your exact property keys in application.properties
-    @Value("${shop.config.live.name:XYZ Auto Services LLC}")
-    private String shopName;
-
-    @Value("${shop.config.live.address:27 Hicks Av, Annapolis, MD 21401}")
-    private String shopAddress;
-
-    @Value("${shop.config.live.phone:(410) 555-0199}")
-    private String shopPhone;
-
     @GetMapping("/orders/{id}/print")
-    public String renderPrintableInvoiceSheet(@PathVariable("id") Long id, Model model) {
-
-        String activeTenant = TenantContext.getCurrentTenant();
-        if (activeTenant == null) {
-            activeTenant = "xyz-auto";
-        }
+    public String renderPrintableInvoiceSheet(@PathVariable("id") Long id,
+                                              @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY!
+                                              Model model) {
 
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
-        // Swapped findById for findByIdAndTenantId to lock down document viewing securely!
+        // Now compiles perfectly and secures document viewing securely!
         java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findByIdAndTenantId(id, activeTenant);
 
         if (orderOpt.isEmpty()) {
             System.err.println("❌ Printer Security Error: Work Order ID " + id + " does not belong to tenant: " + activeTenant);
-            return "redirect:/?tab=orders"; // Safe fallback redirect
+            return "redirect:/?tab=orders";
         }
 
         WorkOrder order = orderOpt.get();
