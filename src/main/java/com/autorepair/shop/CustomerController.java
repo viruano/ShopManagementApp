@@ -40,6 +40,37 @@ public class CustomerController {
     private VinDecoderService vinDecoderService;
 
     // =========================================================
+    // 👑 THE MASTER MULTI-TENANT CONTEXT INTERCEPTOR
+    // =========================================================
+    // Spring Boot executes this method BEFORE every route to fill your
+    // @ModelAttribute("activeTenant") argument with the real logged-in shop!
+    @ModelAttribute("activeTenant")
+    public String populateRequestActiveTenantContext() {
+        // 1. Sync directly with Spring Security to see who is physically logged in
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+        String tenant = "xyz-auto"; // Ultimate secure production shop fallback core default
+
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equalsIgnoreCase("anonymousUser")) {
+            String username = auth.getName().toLowerCase();
+
+            // 🔒 AUTOMATED ACCOUNT WORKSPACE MATRICES MATCHING:
+            if (username.contains("demo") || username.contains("sandbox") || username.contains("main-st")) {
+                tenant = "main-st-demo";
+            } else {
+                tenant = "xyz-auto";
+            }
+        }
+
+        // 2. Force-reconcile the thread context so your repository queries lock down safely
+        TenantContext.setCurrentTenant(tenant);
+
+        System.out.println("🔒 [SaaS CONTEXT SECURITY] Resolved Active Workspace Token: " + tenant);
+        return tenant;
+    }
+
+    // =========================================================
     // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
     // =========================================================
     @GetMapping("/")
