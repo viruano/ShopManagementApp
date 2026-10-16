@@ -12,16 +12,34 @@
 <!-- MASTER NAVIGATION BAR -->
 <nav class="bg-indigo-600 text-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
         <!-- SYSTEM BRAND CONTAINER -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-4">
             <div class="bg-indigo-700 text-white p-2 rounded-lg font-black tracking-tighter text-lg shadow">⚙️</div>
             <div>
                 <h1 class="text-base font-black tracking-tight leading-none">Automotive Services Management System</h1>
                 <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mt-0.5">Workshop Control Console</p>
             </div>
+
+            <!-- 👑 AUTOMATED SaaS WORKSPACE IDENTITY BADGE SELECTOR PANEL -->
+            <!-- Shifted slightly right to provide premium horizontal layout margins [Shopmonkey auto repair app] -->
+            <div class="ml-4 flex items-center space-x-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-lg shadow-md shrink-0 select-none">
+                <span class="inline-block w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-500"
+                      th:classappend="${activeTenant == 'main-st-demo' ? 'bg-amber-400' : 'bg-emerald-500'}"></span>
+
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Active Tenant:</span>
+
+                <!-- Displays the dynamic context token inside a clean, high-visibility label -->
+                <span class="text-xs font-black font-mono px-2 py-0.5 rounded text-white bg-indigo-50/10 border border-white/10 uppercase tracking-tight"
+                      th:text="${activeTenant}">XYZ-AUTO</span>
+            </div>
         </div>
-        <form th:action="@{/logout}" method="POST">
-            <button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded font-bold transition duration-150">Sign Out</button>
+
+        <!-- AUTHENTICATION CONTROL ACTION MENU -->
+        <form th:action="@{/logout}" method="POST" class="m-0">
+            <button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded font-bold transition duration-150 uppercase tracking-wider shadow-sm">
+                Sign Out
+            </button>
         </form>
     </div>
 </nav>
