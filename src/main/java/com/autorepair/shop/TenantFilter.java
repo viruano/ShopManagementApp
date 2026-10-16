@@ -1,7 +1,7 @@
 package com.autorepair.shop;
 
 import jakarta.servlet.*;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -10,34 +10,44 @@ import java.io.IOException;
 @Component
 public class TenantFilter implements Filter {
 
-    // Inject your live dashboard user parameters directly into your switcher logic
-    @Value("${DEMO_SHOP_LIVE_USERNAME:demo}")
-    private String targetDemoUser;
-
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String tenantToken = null;
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String loggedInUsername = authentication.getName();
+        // 🛡️ APPROACH A: CHECK FOR DYNAMIC INCOMING SUBDOMAIN / HEADER SIGNALS
+        if (httpRequest.getHeader("X-Tenant-ID") != null) {
+            tenantToken = httpRequest.getHeader("X-Tenant-ID").trim();
+        }
 
-            // 👑 FLEXIBLE SaaS WORKSPACE DETERMINISTIC ENGINE:
-            // Intelligently cross-references your live dashboard parameter variable names
-            if (targetDemoUser.trim().equalsIgnoreCase(loggedInUsername)) {
-                TenantContext.setCurrentTenant("main-st-demo");
+        // 👑 APPROACH B: THE SAAS USER AUTOMATED PRINCIPAL RESOLVER GATES
+        // If no header token exists, look at who is physically signed into Spring Security!
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equalsIgnoreCase("anonymousUser")) {
+            String username = auth.getName().toLowerCase();
+
+            // 🔒 AUTOMATED ACCOUNT WORKSPACE MATRICES MATCHING:
+            if (username.contains("demo") || username.contains("main-st")) {
+                tenantToken = "main-st-demo";
             } else {
-                TenantContext.setCurrentTenant("xyz-auto");
+                tenantToken = "xyz-auto"; // Primary production shop context default anchor
             }
-        } else {
-            TenantContext.setCurrentTenant("xyz-auto");
+        }
+
+        // Fallback default catch block to guarantee layout rendering stability
+        if (tenantToken == null || tenantToken.trim().isEmpty()) {
+            tenantToken = "xyz-auto";
         }
 
         try {
+            // Bind the identified string safely right onto the thread memory frame context
+            TenantContext.setCurrentTenant(tenantToken);
             chain.doFilter(request, response);
         } finally {
-            TenantContext.clear(); // 🧼 Prevent multi-thread memory leakage cascades
+            // Always sweep memory scopes clear to prevent thread pooling memory leak pollution
+            TenantContext.clear();
         }
     }
 }
