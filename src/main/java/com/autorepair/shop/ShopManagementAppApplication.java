@@ -70,8 +70,11 @@ public class ShopManagementAppApplication {
             // 👑 PHASE B: AUTO-SEED THE MAIN STREET DEMO GARAGE WORKSPACE
             List<Customer> existingDemoClients = customerRepository.findByTenantId("main-st-demo");
 
-            if (existingDemoClients.isEmpty()) {
-                System.out.println("🚚 [SEEDER] Main Street Demo Garage workspace is empty. Generating premium sample dataset...");
+            // 👑 FIXED SEEDER SECURITY LAYER:
+            // Checks if your customer database table is completely empty rather than searching for specific rows.
+            // This forces your premium Main Street Demo Garage dataset to inject perfectly after a truncation pass!
+            if (customerRepository.count() == 0) {
+                System.out.println("🚚 [SEEDER] Database tables are clean. Generating premium sample dataset...");
 
                 // 1. Create Mock Customer Profile
                 Customer demoCustomer = new Customer();
@@ -139,13 +142,13 @@ public class ShopManagementAppApplication {
                 partRow2.setQuantity(new BigDecimal("1.0"));
                 partRow2.setWholesaleCost(new BigDecimal("6.20"));
                 partRow2.setRetailPrice(new BigDecimal("18.60"));
-                partRow2.setWorkOrder(demoOrder);
 
                 // Bind rows into the ticket reference collection safely
                 demoOrder.setLineItems(List.of(laborRow, partRow1, partRow2));
                 workOrderRepository.save(demoOrder);
                 System.out.println("✅ [SaaS SEEDER] Demo Workspace dataset initialized successfully!");
-            }
+            } // 👑 Safe matching closing brace block
+
         };
     }
 }
