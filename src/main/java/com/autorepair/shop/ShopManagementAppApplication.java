@@ -142,6 +142,7 @@ public class ShopManagementAppApplication {
                 partRow2.setQuantity(new BigDecimal("1.0"));
                 partRow2.setWholesaleCost(new BigDecimal("6.20"));
                 partRow2.setRetailPrice(new BigDecimal("18.60"));
+                partRow2.setWorkOrder(demoOrder);
 
                 // Bind rows into the ticket reference collection safely
                 demoOrder.setLineItems(List.of(laborRow, partRow1, partRow2));
