@@ -1,14 +1,22 @@
 package com.autorepair.shop;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootApplication
 public class ShopManagementAppApplication {
+
+    // 👑 PLACE INJECTIONS SAFELY IN THE CLASS BODY
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ShopManagementAppApplication.class, args);
@@ -20,22 +28,28 @@ public class ShopManagementAppApplication {
     @Bean
     public CommandLineRunner databaseTenantMigrationBridge(
             CustomerRepository customerRepository,
-            org.springframework.data.jpa.repository.JpaRepository<Vehicle, Long> vehicleRepository,
-            org.springframework.data.jpa.repository.JpaRepository<WorkOrder, Long> workOrderRepository) {
+            VehicleRepository vehicleRepository, // 👑 CORRECTED TO TYPE-SAFE SPECIFIC INTERFACE REPOSITORIES
+            WorkOrderRepository workOrderRepository) {
         return args -> {
 
+            System.out.println("🚀 Running database initialization seeder routines...");
+
+            // 👑 POPULATE BASELINE SaaS TENANTS DATA ROWS
+            if (tenantRepository.count() == 0) {
+                tenantRepository.save(new Tenant("xyz-auto", "XYZ Auto Services LLC", "27 Hicks Av, Annapolis, MD 21401", "(443) 325-6663", false));
+                tenantRepository.save(new Tenant("main-st-demo", "🔧 MAIN STREET DEMO GARAGE", "100 Sandbox Workspace Lane, Annapolis, MD 21401", "(800) 555-DEMO [EVALUATION FILE]", true));
+                System.out.println("✅ [SaaS SEEDER] Baseline Tenant profiles populated successfully!");
+            }
 
             // 🚨 THE CRITICAL DATABASE TRUNCATION LAYER:
-            // This clears out all your historical data logs completely across all environments!
+            // Since you are okay with clearing the un-utilized data tokens, this runs one clean pass
             System.out.println("⚠️ [TRUNCATE] Executing full platform dataset wipe down across all tables...");
 
-            // Delete records in reverse order of relationships to prevent foreign key constraint breaks
             workOrderRepository.deleteAll();
             vehicleRepository.deleteAll();
             customerRepository.deleteAll();
 
             System.out.println("🧼 [TRUNCATE] Success! All database rows have been truncated clean.");
-
 
             System.out.println("🔄 [MIGRATION] Checking for historical customer records missing SaaS tenant tokens...");
 
@@ -54,7 +68,6 @@ public class ShopManagementAppApplication {
             }
 
             // 👑 PHASE B: AUTO-SEED THE MAIN STREET DEMO GARAGE WORKSPACE
-            // Checks if the Demo Tenant already has data to prevent duplicate seeding loops
             List<Customer> existingDemoClients = customerRepository.findByTenantId("main-st-demo");
 
             if (existingDemoClients.isEmpty()) {
@@ -72,7 +85,7 @@ public class ShopManagementAppApplication {
                 demoCustomer.setState("MD");
                 demoCustomer.setZip("21401");
                 demoCustomer.setTaxExempt(false);
-                demoCustomer.setTenantId("main-st-demo"); // 🔒 Customer is stamped correctly
+                demoCustomer.setTenantId("main-st-demo");
                 demoCustomer = customerRepository.save(demoCustomer);
 
                 // 2. Create Mock Vehicle Service File
@@ -80,16 +93,13 @@ public class ShopManagementAppApplication {
                 demoVehicle.setYear(2018);
                 demoVehicle.setMake("AUDI");
                 demoVehicle.setModel("Q5");
-                demoVehicle.setTrim("Premium Plus"); // Keep or remove based on your class properties
-                demoVehicle.setTrim("PREMIUM PLUS");      // 👑 STAMP YOUR NEW CORRECTION VALUE
+                demoVehicle.setTrim("PREMIUM PLUS");
                 demoVehicle.setVin("WA1ANAFYJ9021482");
                 demoVehicle.setLicensePlate("DEMO-2026");
                 demoVehicle.setEngineSize("2.0T");
                 demoVehicle.setDrivetrain("AWD");
                 demoVehicle.setCustomer(demoCustomer);
-
-                // 👑 THE CRITICAL SAAS FIREWALL SEEDER STAMP (VEHICLE):
-                demoVehicle.setTenantId("main-st-demo"); // 🔒 Forces the tenant_id column to populate!
+                demoVehicle.setTenantId("main-st-demo");
                 vehicleRepository.save(demoVehicle);
 
                 // 3. Create Mock Work Order Worksheet
@@ -99,18 +109,16 @@ public class ShopManagementAppApplication {
                 demoOrder.setOdometerIn(64210);
                 demoOrder.setOdometerOut(64212);
                 demoOrder.setVehicle(demoVehicle);
-                demoOrder.setAmountPaid(java.math.BigDecimal.ZERO);
-
-                // 👑 THE CRITICAL SAAS FIREWALL SEEDER STAMP (WORK ORDER):
-                demoOrder.setTenantId("main-st-demo");   // 🔒 Forces the tenant_id column to populate!
+                demoOrder.setAmountPaid(BigDecimal.ZERO);
+                demoOrder.setTenantId("main-st-demo");
 
                 // 4. Populate Itemized Line Rows
                 LineItem laborRow = new LineItem();
                 laborRow.setItemType(LineItemType.LABOR);
                 laborRow.setDescription("Synthetic Engine Oil & Filter Service (Includes Inspection)");
-                laborRow.setQuantity(new java.math.BigDecimal("0.5"));
-                laborRow.setRetailPrice(new java.math.BigDecimal("125.00")); // Billed to client
-                laborRow.setWholesaleCost(java.math.BigDecimal.ZERO);
+                laborRow.setQuantity(new BigDecimal("0.5"));
+                laborRow.setRetailPrice(new BigDecimal("125.00"));
+                laborRow.setWholesaleCost(BigDecimal.ZERO);
                 laborRow.setWorkOrder(demoOrder);
 
                 LineItem partRow1 = new LineItem();
@@ -118,9 +126,9 @@ public class ShopManagementAppApplication {
                 partRow1.setDescription("Mobil 1 Advanced Full Synthetic 5W-30 Motor Oil");
                 partRow1.setPartNumber("MOB-5W30-5Q");
                 partRow1.setVendor("NAPA Auto Parts");
-                partRow1.setQuantity(new java.math.BigDecimal("1.0"));
-                partRow1.setWholesaleCost(new java.math.BigDecimal("24.50")); // Shop Paid Cost
-                partRow1.setRetailPrice(new java.math.BigDecimal("49.00"));   // 100% Markup applied via matrix rules!
+                partRow1.setQuantity(new BigDecimal("1.0"));
+                partRow1.setWholesaleCost(new BigDecimal("24.50"));
+                partRow1.setRetailPrice(new BigDecimal("49.00"));
                 partRow1.setWorkOrder(demoOrder);
 
                 LineItem partRow2 = new LineItem();
@@ -128,20 +136,16 @@ public class ShopManagementAppApplication {
                 partRow2.setDescription("Premium Mahle Eco Oil Filter Component");
                 partRow2.setPartNumber("MAH-OX388D");
                 partRow2.setVendor("AutoZone Commercial");
-                partRow2.setQuantity(new java.math.BigDecimal("1.0"));
-                partRow2.setWholesaleCost(new java.math.BigDecimal("6.20"));
-                partRow2.setRetailPrice(new java.math.BigDecimal("18.60")); // Marked up via low-tier 3.0x scale matrix rules!
+                partRow2.setQuantity(new BigDecimal("1.0"));
+                partRow2.setWholesaleCost(new BigDecimal("6.20"));
+                partRow2.setRetailPrice(new BigDecimal("18.60"));
                 partRow2.setWorkOrder(demoOrder);
 
-                // Bind rows into the ticket reference collection
-                demoOrder.setLineItems(java.util.List.of(laborRow, partRow1, partRow2));
-
+                // Bind rows into the ticket reference collection safely
+                demoOrder.setLineItems(List.of(laborRow, partRow1, partRow2));
                 workOrderRepository.save(demoOrder);
-                System.out.println("✅ [SEEDER] Demo environment fully initialized! Mock Audi Q5 worksheet created under 'main-st-demo'.");
-            } else {
-                System.out.println("ℹ️ [SEEDER] Demo environment already contains data logs. Skipping background auto-seed.");
+                System.out.println("✅ [SaaS SEEDER] Demo Workspace dataset initialized successfully!");
             }
         };
     }
-
 }

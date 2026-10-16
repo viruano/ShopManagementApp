@@ -19,6 +19,11 @@ import java.util.UUID;
 @Controller
 public class CustomerController {
 
+    // =========================================================
+    // 🗄️ AUTOMATED DEPENDENCY INJECTION PORT DECK
+    // =========================================================
+    @Autowired
+    private TenantRepository tenantRepository;
     @Autowired
     private CustomerRepository customerRepository;
 
@@ -33,27 +38,6 @@ public class CustomerController {
 
     @Autowired
     private VinDecoderService vinDecoderService;
-
-    // 🚚 CORRECTED DYNAMIC SHOP INSTANCE VARIABLES
-    // Pulls directly from your exact property keys in application.properties
-    @Value("${shop.config.live.name:XYZ Auto Services LLC}")
-    private String shopName;
-
-    @Value("${shop.config.live.address:27 Hicks Av, Annapolis, MD 21401}")
-    private String shopAddress;
-
-    @Value("${shop.config.live.phone:(410) 555-0199}")
-    private String shopPhone;
-
-    // =========================================================
-    // 👑 GLOBAL MULTI-TENANT CONTEXT INTERCEPTOR
-    // =========================================================
-    @ModelAttribute("activeTenant")
-    public String populateRequestActiveTenantContext() {
-        String tenant = TenantContext.getCurrentTenant();
-        // If the context thread is empty for any reason, safely default to your live shop core
-        return (tenant != null && !tenant.trim().isEmpty()) ? tenant : "xyz-auto";
-    }
 
     // =========================================================
     // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
@@ -570,13 +554,18 @@ public class CustomerController {
         return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
+    // =========================================================
+    // 🖨️ DYNAMIC SaaS PRINT RECEIPT ROUTE CONTROLLER (SECURED)
+    // =========================================================
     @GetMapping("/orders/{id}/print")
     public String renderPrintableInvoiceSheet(@PathVariable("id") Long id,
-                                              @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY!
+                                              @ModelAttribute("activeTenant") String activeTenant, // 👑 Injected via global interceptor
                                               Model model) {
 
+        System.out.println("⚡ [PRINTER ENGINE] Initializing invoice generation loop for ticket ID: " + id);
+
         // 👑 ROW-LEVEL SECURITY INTERCEPTOR:
-        // Now compiles perfectly and secures document viewing securely!
+        // Confines printable receipt scanning strictly to the active workspace
         java.util.Optional<WorkOrder> orderOpt = workOrderRepository.findByIdAndTenantId(id, activeTenant);
 
         if (orderOpt.isEmpty()) {
@@ -590,16 +579,26 @@ public class CustomerController {
         model.addAttribute("customer", order.getVehicle().getCustomer());
         model.addAttribute("lineItems", order.getLineItems());
 
+        // Aggregate financial totals live for this specific ticket view window scope [Shopmonkey auto repair app]
         model.addAttribute("partsSubtotal", order.getPartsSubtotal());
         model.addAttribute("laborSubtotal", order.getLaborSubtotal());
         model.addAttribute("grandTotal", order.getTotalDue());
         model.addAttribute("amountPaid", order.getAmountPaid());
         model.addAttribute("balanceDue", order.getRemainingBalance());
 
-        model.addAttribute("shopName", shopName);
-        model.addAttribute("shopAddress", shopAddress);
-        model.addAttribute("shopPhone", shopPhone);
+        // =========================================================
+        // 👑 DYNAMIC SaaS DATABASE WORKSPACE BRANDING INJECTOR
+        // =========================================================
+        // Pulls invoice shop branding data straight from the database dynamically
+        Tenant tenantProfile = tenantRepository.findById(activeTenant)
+                .orElse(new Tenant(activeTenant, "XYZ Auto Services LLC", "27 Hicks Av, Annapolis, MD 21401", "(443) 325-6663", false));
+
+        model.addAttribute("shopName", tenantProfile.getShopName());
+        model.addAttribute("shopAddress", tenantProfile.getAddress());
+        model.addAttribute("shopPhone", tenantProfile.getPhone());
+        model.addAttribute("isDemoMode", tenantProfile.isDemoMode());
 
         return "print-invoice";
-    }
+    } // 👑 CORRECTED: Formally closes the public String method block cleanly!
+
 }
