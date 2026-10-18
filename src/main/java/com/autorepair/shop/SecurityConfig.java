@@ -51,10 +51,14 @@ public class SecurityConfig {
                 // 🚀 MAP CUSTOM LOGIN FRAMEWORK LAYER
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard", true) // 🚀 Sends authenticated users straight to the shop board
+                        .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll())
+                // 🚪 FIXED LOGOUT REDIRECT LOOP: Forces a clean path to break browser loops!
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                )
                 .addFilterAfter(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
