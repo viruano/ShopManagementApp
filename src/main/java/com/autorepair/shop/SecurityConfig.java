@@ -42,14 +42,17 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid shop form entries
                 .authorizeHttpRequests(auth -> auth
-                        // 👑 WHITELIST CONTEXT PORTS:
-                        // Added "/" and "/portfolio" to allow public client browsing with zero login screens required!
+                        // 👑 WHITELIST CONTEXT PORTS: Unlocked public endpoints
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/orders/*/print").permitAll()
                         .requestMatchers("/", "/portfolio").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(Customizer.withDefaults())
+                // 🚀 FIXED LOG-IN ROUTER ROOT: Steers authenticated users directly to /dashboard
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/dashboard", true)
+                        .permitAll()
+                )
                 .logout(logout -> logout.permitAll())
                 .addFilterAfter(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 

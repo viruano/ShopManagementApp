@@ -84,9 +84,18 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🌐 MASTER CORE ROUTER: MANAGES WORKSPACE STATE ENGINE
+    // 🌐 SYSTEM FRONT DOOR GATEKEEPER
     // =========================================================
     @GetMapping("/")
+    public String crossDomainTrafficInterceptor() {
+        // Forces all naked root web traffic straight over to your portfolio layout
+        return "redirect:/portfolio";
+    }
+
+    // =========================================================
+    // 📊 THE INTERNAL WORKSPACE CONTROL CONSOLE
+    // =========================================================
+    @GetMapping("/dashboard") // 👑 PATH CHANGED HERE TO PREVENT OVERWRITES!
     public String viewDashboard(
             @RequestParam(value = "tab", required = false, defaultValue = "customers") String tab,
             @RequestParam(value = "search", required = false) String search,
