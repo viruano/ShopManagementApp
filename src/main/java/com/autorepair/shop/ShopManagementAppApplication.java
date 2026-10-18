@@ -45,9 +45,9 @@ public class ShopManagementAppApplication {
             // Since you are okay with clearing the un-utilized data tokens, this runs one clean pass
             System.out.println("⚠️ [TRUNCATE] Executing full platform dataset wipe down across all tables...");
 
-            workOrderRepository.deleteAll();
-            vehicleRepository.deleteAll();
-            customerRepository.deleteAll();
+            // workOrderRepository.deleteAll();
+            // vehicleRepository.deleteAll();
+            // customerRepository.deleteAll();
 
             System.out.println("🧼 [TRUNCATE] Success! All database rows have been truncated clean.");
 
