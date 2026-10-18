@@ -84,11 +84,19 @@ public class CustomerController {
     }
 
     // =========================================================
-    // 🌐 SYSTEM FRONT DOOR GATEKEEPER
+    // 🌐 MASTER MULTI-DOMAIN ARCHITECTURE ROADMAP TRAFFIC ROUTER
     // =========================================================
     @GetMapping("/")
-    public String crossDomainTrafficInterceptor() {
-        // Forces all naked root web traffic straight over to your portfolio layout
+    public String crossDomainTrafficInterceptor(@RequestHeader("Host") String host) {
+        System.out.println("📡 [TRAFFIC ENGINE] Incoming request host: " + host);
+
+        // Formally flags your specialized shop domain variations:
+        if (host.toLowerCase().startsWith("shopapp.") || host.contains("shopmanagementapp-production")) {
+            System.out.println("🚗 Steering shop manager straight to the login portal...");
+            return "redirect:/dashboard";
+        }
+
+        // Default fall-through: serve your premium consulting portfolio deck
         return "redirect:/portfolio";
     }
 
