@@ -42,11 +42,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid shop form entries
                 .authorizeHttpRequests(auth -> auth
-                        // 👑 WHITELIST CONTEXT PORTS: Added edit tracking maps to prevent login redirects!
+                        // 👑 MASTER PRODUCTION WHITELIST PERIMETER:
+                        // Opened up top-level endpoints and their sub-paths (/**) to prevent data save redirects!
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/orders/*/print").permitAll()
                         .requestMatchers("/", "/portfolio", "/login").permitAll()
-                        .requestMatchers("/workorders/**", "/customers/**", "/vehicles/**").permitAll() // 👈 Add your core endpoint prefixes here if editing uses sub-paths
+                        .requestMatchers("/dashboard/**", "/workorders/**", "/customers/**", "/vehicles/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 🚀 MAP CUSTOM LOGIN FRAMEWORK LAYER
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )
+                // 🚪 FIXED LOGOUT REDIRECT LOOP
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
