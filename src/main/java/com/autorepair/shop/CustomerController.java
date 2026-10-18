@@ -101,6 +101,15 @@ public class CustomerController {
     }
 
     // =========================================================
+    // 🔑 SECURE ENDPOINT CONTROLLER FOR APPLICANT LOGIN GATE
+    // =========================================================
+    @GetMapping("/login")
+    public String showCustomLoginGateView() {
+        System.out.println("🔒 [SECURITY ENGINE] Compiling branded B2B evaluation login canvas...");
+        return "login"; // 👑 Formally compiles and serves templates/login.html cleanly!
+    }
+
+    // =========================================================
     // 📊 THE INTERNAL WORKSPACE CONTROL CONSOLE
     // =========================================================
     @GetMapping("/dashboard") // 👑 PATH CHANGED HERE TO PREVENT OVERWRITES!
