@@ -90,10 +90,10 @@ public class CustomerController {
     public String crossDomainTrafficInterceptor(@RequestHeader("Host") String host) {
         System.out.println("📡 [TRAFFIC ENGINE] Incoming request host: " + host);
 
-        // Formally flags your specialized shop domain variations:
+        // If the user arrives via your dedicated shop app subdomain path:
         if (host.toLowerCase().startsWith("shopapp.") || host.contains("shopmanagementapp-production")) {
-            System.out.println("🚗 Steering shop manager straight to the login portal...");
-            return "redirect:/dashboard";
+            System.out.println("🚗 Serving the Automotive App Custom Login Template...");
+            return "login"; // 👑 Renders templates/login.html directly with NO redirect loops!
         }
 
         // Default fall-through: serve your premium consulting portfolio deck

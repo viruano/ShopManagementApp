@@ -42,7 +42,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid shop form entries
                 .authorizeHttpRequests(auth -> auth
-                        // 👑 WHITELIST CONTEXT PORTS: Added "/login" to allow public view layers [2]
+                        // 👑 WHITELIST CONTEXT PORTS: Unlocked public endpoints
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/orders/*/print").permitAll()
                         .requestMatchers("/", "/portfolio", "/login").permitAll()
@@ -50,8 +50,8 @@ public class SecurityConfig {
                 )
                 // 🚀 MAP CUSTOM LOGIN FRAMEWORK LAYER
                 .formLogin(form -> form
-                        .loginPage("/login") // 👑 Hooks your custom templates/login.html page [2]
-                        .defaultSuccessUrl("/dashboard", true)
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/dashboard", true) // 🚀 Sends authenticated users straight to the shop board
                         .permitAll()
                 )
                 .logout(logout -> logout.permitAll())
