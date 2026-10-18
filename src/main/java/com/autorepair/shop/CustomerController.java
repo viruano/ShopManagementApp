@@ -40,6 +40,19 @@ public class CustomerController {
     private VinDecoderService vinDecoderService;
 
     // =========================================================
+    // 🌐 SaaS MULTI-DOMAIN ARCHITECTURE TRAFFIC ROUTER
+    // =========================================================
+    @GetMapping("/portfolio")
+    public String renderConsultingPortfolioDeck(Model model) {
+        System.out.println("☁️ [TRAFFIC ENGINE] Serving Orion Data Architecture corporate portfolio layout...");
+
+        // Formally passes your active tenant profile keys down to seal template requirements
+        model.addAttribute("activeTenant", "orion-core");
+        return "portfolio"; // Compiles and renders portfolio.html seamlessly!
+    }
+
+
+    // =========================================================
     // 👑 THE MASTER MULTI-TENANT CONTEXT INTERCEPTOR
     // =========================================================
     // Spring Boot executes this method BEFORE every route to fill your
