@@ -451,7 +451,9 @@ public class CustomerController {
             System.out.println("✅ [SaaS RECONCILE] Odometer metrics updated securely under tenant context.");
         });
 
-        return "redirect:/?tab=orders&focusedWorkOrderId=" + workOrderId;
+        // 👑 PRODUCTION ROUTE ALIGNMENT:
+        // Changed redirect from root to /dashboard so your advisors stay safely inside their active workshop session!
+        return "redirect:/dashboard?tab=orders&focusedWorkOrderId=" + workOrderId;
     }
 
     @GetMapping("/orders/toggle-view")
@@ -468,13 +470,30 @@ public class CustomerController {
                                   @ModelAttribute("activeTenant") String activeTenant, // 👑 INJECTED AUTOMATICALLY VIA GLOBAL INTERCEPTOR!
                                   @RequestParam("vehicleId") Long vehicleId) {
 
-        // 👑 2. APPLY THE CRITICAL SaaS SECURED FIREWALL STAMP:
-        // Compiles perfectly using the injected global parameter!
+        // 👑 APPLY THE CRITICAL SaaS SECURED FIREWALL STAMP:
         workOrder.setTenantId(activeTenant);
 
-        // 🚗 3. Stitch your existing vehicle relationship mapping securely
+        // 🚗 Stitch your vehicle relationship mapping securely
         if (vehicleId != null) {
-            vehicleRepository.findByIdAndTenantId(vehicleId, activeTenant).ifPresent(workOrder::setVehicle);
+            vehicleRepository.findByIdAndTenantId(vehicleId, activeTenant).ifPresent(existingVehicle -> {
+                // 🤝 OWNERSHIP TRANSFER ENGINE:
+                // Check if the car's existing database owner matches the new target work order customer id
+                if (workOrder.getCustomer() != null &&
+                        !existingVehicle.getCustomer().getId().equals(workOrder.getCustomer().getId())) {
+
+                    System.out.println("🔄 [OWNERSHIP TRANSFER] VIN detected under a different account. Cloning car row for new buyer...");
+
+                    // Call your deep copy constructor to build an independent historical node for the new buyer
+                    Vehicle transferredVehicle = new Vehicle(existingVehicle, workOrder.getCustomer());
+                    vehicleRepository.save(transferredVehicle);
+
+                    // Attach the clean cloned car row instance to this new repair order ticket
+                    workOrder.setVehicle(transferredVehicle);
+                } else {
+                    // Default behavior: Car belongs to the same customer, link normally
+                    workOrder.setVehicle(existingVehicle);
+                }
+            });
         }
 
         // Generate professional incremental invoice sequence markers if empty
@@ -483,7 +502,10 @@ public class CustomerController {
         }
 
         workOrderRepository.save(workOrder);
-        return "redirect:/?tab=orders";
+
+        // 👑 PRODUCTION ROUTE ALIGNMENT:
+        // Changed redirect from root to /dashboard so your advisors stay safely inside their active workshop session!
+        return "redirect:/dashboard?tab=orders";
     }
 
     // =========================================================
@@ -511,8 +533,8 @@ public class CustomerController {
             System.out.println("✅ [SaaS SECURITY] Work Order status updated securely under Tenant: " + activeTenant);
         });
 
-        //return "redirect:/?tab=orders&focusedWorkOrderId=" + id;
-        return "redirect:/dashboard?tab=orders&focusedWorkOrderId" + id+"&success=true";
+        return "redirect:/?tab=orders&focusedWorkOrderId=" + id + "&success=true";
+
     }
 
     // =========================================================

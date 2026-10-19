@@ -52,6 +52,30 @@ public class Vehicle {
     public Vehicle() {}
 
     // =========================================================
+    // 🖨️ DEEP COPY CONSTRUCTOR FOR OWNERSHIP TRANSFERS
+    // =========================================================
+    public Vehicle(Vehicle original, Customer newOwner) {
+        // Leave the 'id' field null so Hibernate automatically generates a new database row
+        this.vin = original.getVin();
+        this.year = original.getYear();
+        this.make = original.getMake();
+        this.model = original.getModel();
+        this.licensePlate = original.getLicensePlate();
+        this.trim = original.getTrim();
+        this.engineSize = original.getEngineSize();
+        this.engineCode = original.getEngineCode();
+        this.drivetrain = original.getDrivetrain();
+        this.tenantId = original.getTenantId();
+
+        // 🤝 Assign the vehicle directly to the new buyer
+        this.customer = newOwner;
+
+        // Initialize clean odometer metrics for the new owner's track
+        this.odometerIn = original.getOdometerIn();
+        this.odometerOut = 0;
+    }
+
+    // =========================================================
     // 🏢 SaaS MULTI-TENANT ISOLATION COLUMN PROPERTY (VEHICLE)
     // =========================================================
     @jakarta.persistence.Column(name = "tenant_id", nullable = true)
