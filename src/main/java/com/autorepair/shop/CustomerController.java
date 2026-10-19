@@ -476,23 +476,31 @@ public class CustomerController {
         // 🚗 Stitch your vehicle relationship mapping securely
         if (vehicleId != null) {
             vehicleRepository.findByIdAndTenantId(vehicleId, activeTenant).ifPresent(existingVehicle -> {
-                // 🤝 OWNERSHIP TRANSFER ENGINE:
-                // Check if the car's existing database owner matches the new target work order customer id
-                if (workOrder.getCustomer() != null &&
-                        !existingVehicle.getCustomer().getId().equals(workOrder.getCustomer().getId())) {
+                // 🤝 TRAVERSE RELATIONSHIP MAPS SAFELY:
+                // Locate the target customer record attached to this vehicle instance
+                Customer existingVehicleOwner = existingVehicle.getCustomer();
 
-                    System.out.println("🔄 [OWNERSHIP TRANSFER] VIN detected under a different account. Cloning car row for new buyer...");
+                // Fetch the new target customer record who is creating this new work order ticket
+                // (Note: Update 'workOrder.getVehicle().getCustomer()' or use your customer parameters context)
+                if (existingVehicleOwner != null && workOrder.getVehicle() != null && workOrder.getVehicle().getCustomer() != null) {
+                    Long newOwnerId = workOrder.getVehicle().getCustomer().getId();
 
-                    // Call your deep copy constructor to build an independent historical node for the new buyer
-                    Vehicle transferredVehicle = new Vehicle(existingVehicle, workOrder.getCustomer());
-                    vehicleRepository.save(transferredVehicle);
+                    // 🔄 OWNERSHIP TRANSFER DETECTED: If the car's existing owner ID doesn't match the new buyer's ID
+                    if (!existingVehicleOwner.getId().equals(newOwnerId)) {
+                        System.out.println("🔄 [OWNERSHIP TRANSFER] VIN detected under a different account. Cloning car row for new buyer...");
 
-                    // Attach the clean cloned car row instance to this new repair order ticket
-                    workOrder.setVehicle(transferredVehicle);
-                } else {
-                    // Default behavior: Car belongs to the same customer, link normally
-                    workOrder.setVehicle(existingVehicle);
+                        // Call your deep copy constructor to build an independent historical node for the new buyer
+                        Vehicle transferredVehicle = new Vehicle(existingVehicle, workOrder.getVehicle().getCustomer());
+                        vehicleRepository.save(transferredVehicle);
+
+                        // Attach the clean cloned car row instance to this new repair order ticket
+                        workOrder.setVehicle(transferredVehicle);
+                        return;
+                    }
                 }
+
+                // Default behavior: Car belongs to the same customer, link normally
+                workOrder.setVehicle(existingVehicle);
             });
         }
 
