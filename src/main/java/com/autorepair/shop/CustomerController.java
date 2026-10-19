@@ -313,8 +313,7 @@ public class CustomerController {
         customer.setCustomerNumber("CUST-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase());
 
         customerRepository.save(customer);
-        // return "redirect:/?tab=customers";
-        return "redirect:/dashboard?tab=customers&success=true";
+        return "redirect:/?tab=customers";
     }
     // =========================================================
     // 👥 UPDATE CLIENT INDEX PROFILE LEDGER RECORD (SaaS SECURED)
@@ -350,8 +349,7 @@ public class CustomerController {
             customerRepository.save(customer);
         });
 
-        // return "redirect:/?tab=customers";
-        return "redirect:/dashboard?tab=customers&success=true";
+        return "redirect:/?tab=customers";
     }
 
     // =========================================================
@@ -393,8 +391,7 @@ public class CustomerController {
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
 
         vehicleRepository.save(vehicle);
-        // return "redirect:/?tab=vehicles";
-        return "redirect:/dashboard?tab=vehicles&success=true";
+        return "redirect:/?tab=vehicles";
     }
 
     // =========================================================
@@ -433,8 +430,7 @@ public class CustomerController {
             vehicleRepository.save(vehicle);
         });
 
-        // return "redirect:/?tab=vehicles";
-        return "redirect:/dashboard?tab=vehicles&success=true";
+        return "redirect:/?tab=vehicles";
     }
 
     // =========================================================
@@ -461,8 +457,7 @@ public class CustomerController {
     @GetMapping("/orders/toggle-view")
     public String toggleOrdersViewMode(@RequestParam("showAll") boolean showAll, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("showAllOrders", showAll);
-        // return "redirect:/?tab=orders";
-        return "redirect:/dashboard?tab=tab=orders&success=true";
+        return "redirect:/?tab=orders";
     }
 
     // =========================================================
@@ -488,8 +483,7 @@ public class CustomerController {
         }
 
         workOrderRepository.save(workOrder);
-       // return "redirect:/?tab=orders";
-        return "redirect:/dashboard?tab=tab=orders&success=true";
+        return "redirect:/?tab=orders";
     }
 
     // =========================================================
@@ -550,8 +544,7 @@ public class CustomerController {
         workOrderRepository.save(newWorkOrder);
 
         redirectAttributes.addFlashAttribute("successMessage", "New Work Order successfully generated on the floor!");
-        // return "redirect:/?tab=orders";
-        return "redirect:/dashboard?tab=orders&success=true";
+        return "redirect:/?tab=orders";
     }
 
     // =========================================================
@@ -677,8 +670,7 @@ public class CustomerController {
         model.addAttribute("shopPhone", tenantProfile.getPhone());
         model.addAttribute("isDemoMode", tenantProfile.isDemoMode());
 
-        // return "print-invoice";
-        return "redirect:/dashboard?tab=print-invoice&success=true";
+        return "print-invoice";
     } // 👑 CORRECTED: Formally closes the public String method block cleanly!
 
 }
