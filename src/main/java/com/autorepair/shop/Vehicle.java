@@ -5,14 +5,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "vehicles")
+@Table(
+        name = "vehicles",
+        uniqueConstraints = {
+                // 👑 COMPOSITE TENANT UNIQUE PERIMETER:
+                // Allows the exact same VIN to exist concurrently across different shop environments!
+                @UniqueConstraint(columnNames = {"vin", "tenant_id"})
+        }
+)
 public class Vehicle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    // 👑 FIXED: Removed 'unique = true' so uniqueness is bounded strictly to the table metadata pairs
+    @Column(nullable = false)
     private String vin;
 
     // 👑 UPDATED PROPERTY TYPE FROM String TO int NATIVELY
