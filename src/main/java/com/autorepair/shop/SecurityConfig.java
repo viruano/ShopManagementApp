@@ -43,17 +43,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // 🔓 Disables CSRF to permit rapid shop form entries
                 .authorizeHttpRequests(auth -> auth
                         // 👑 MASTER PRODUCTION WHITELIST PERIMETER:
-                        // Opened up top-level endpoints and their sub-paths (/**) to prevent data save redirects!
+                        // Public assets and marketing showcase endpoints remain open
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/portfolio", "/login").permitAll()
                         .requestMatchers("/orders/*/print").permitAll()
-                        .requestMatchers("/", "/portfolio", "/login").permitAll()
-                        .requestMatchers("/dashboard/**", "/workorders/**", "/customers/**", "/vehicles/**").permitAll()
+
+                        // 🔒 SECURED WORKSHOP OPERATIONAL DATA PERIMETER:
+                        // Root and dashboard sub-paths now strictly require authentication
+                        // to safeguard row-level multi-tenant isolation contexts.
+                        .requestMatchers("/", "/dashboard/**", "/workorders/**", "/customers/**", "/vehicles/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // 🚀 MAP CUSTOM LOGIN FRAMEWORK LAYER
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        // 🔧 CRITICAL FIX: Changed 'true' to 'false' so Spring Security natively
+                        // redirects users back to their intended deep-link (like customer edit parameter states)
+                        // instead of aggressively wiping out tokens and forcing a dashboard home drop.
+                        .defaultSuccessUrl("/dashboard", false)
                         .permitAll()
                 )
                 // 🚪 FIXED LOGOUT REDIRECT LOOP
@@ -61,6 +68,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
+                // 🛡 MULTI-TENANT CONTEXT ANCHOR
                 .addFilterAfter(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

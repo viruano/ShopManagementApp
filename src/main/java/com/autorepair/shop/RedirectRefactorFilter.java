@@ -34,8 +34,16 @@ public class RedirectRefactorFilter implements Filter {
                 if ((host != null && (host.startsWith("shopapp.") || host.contains("shopmanagementapp-production")))
                         && (location.equals("/") || location.startsWith("/?"))) {
 
-                    // Rewrite the redirect destination URL natively to preserve the session dashboard state!
-                    String secureDashboardLocation = location.replace("/", "/dashboard");
+                    String secureDashboardLocation;
+                    if (location.equals("/")) {
+                        secureDashboardLocation = "/dashboard";
+                    } else {
+                        // 🔧 SAFE PATH PARSING:
+                        // Isolates the precise query token string (e.g., "?tab=customers&editCustomerId=74")
+                        // and explicitly appends it to /dashboard without breaking sub-path naming mappings.
+                        secureDashboardLocation = "/dashboard" + location.substring(1);
+                    }
+
                     System.out.println("⚡ [REDIRECT REFACTOR] Intercepted loop! Rewriting " + location + " ➔ " + secureDashboardLocation);
                     super.sendRedirect(secureDashboardLocation);
                     return;
