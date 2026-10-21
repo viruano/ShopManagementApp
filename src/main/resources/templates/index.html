@@ -72,7 +72,7 @@
                     <input type="text" name="search" th:value="${currentSearch}"
                            placeholder="Search by Account, Phone, First or Last Name..."
                            class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800">
-                    <a th:if="${currentSearch != null}" th:href="@{/'customers')}"
+                    <a th:if="${currentSearch != null}" th:href="@{/dashboard(tab='customers')}"
                        class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
                 </div>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150 whitespace-nowrap">
@@ -195,7 +195,7 @@
                                             <!-- Action Triggers -->
                                             <div class="flex items-center space-x-1.5 pl-4">
                                                 <button type="submit" th:form="'customerUpdateForm-' + ${customer.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save</button>
-                                                <a th:href="@{/'customers')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
+                                                <a th:href="@{/dashboard(tab='customers')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
                                             </div>
                                         </div>
                                     </form>
@@ -221,7 +221,7 @@
                                     <span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span>
                                 </td>
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a th:href="@{/dashboard(tab='customers', editCustomerId=${customer.id})}"
+                                    <a th:href="@{/dashboard(tab=dashboard(tab='customers', editCustomerId=${customer.id})}"
                                        class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
                                         ✏️ Edit
                                     </a>
@@ -250,7 +250,7 @@
                     <input type="text" name="vehicleSearch" th:value="${currentVehicleSearch}"
                            placeholder="Search workshop fleet by License Plate or VIN Number..."
                            class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800">
-                    <a th:if="${currentVehicleSearch != null}" th:href="@{/'vehicles')}"
+                    <a th:if="${currentVehicleSearch != null}" th:href="@{/dashboard(tab='vehicles')}"
                        class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm font-bold">✕</a>
                 </div>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition duration-150 whitespace-nowrap">
@@ -375,7 +375,7 @@
                                             </div>
                                             <div class="flex items-center space-x-1.5 pl-4">
                                                 <button type="submit" th:form="'vehicleUpdateForm-' + ${vh.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150 uppercase tracking-wide">💾 Save</button>
-                                                <a th:href="@{/'vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150 uppercase tracking-wide">✕ Cancel</a>
+                                                <a th:href="@{/dashboard(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150 uppercase tracking-wide">✕ Cancel</a>
                                             </div>
                                         </div>
                                     </form>
@@ -403,7 +403,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a th:href="@{/'vehicles', editVehicleId=${vh.id})}"
+                                    <a th:href="@{/dashboard(tab='vehicles', editVehicleId=${vh.id})}"
                                        class="inline-flex items-center text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1 border border-slate-200 rounded transition duration-150 uppercase tracking-wide">
                                         ✏️ Edit
                                     </a>
@@ -435,21 +435,27 @@
                 </button>
 
                 <div class="inline-flex rounded-md shadow-sm">
-                    <a th:href="@{/orders/toggle-view(showAll=false)}"
+                    <a th:href="@{/dashboard(tab='orders', showAllOrders=false)}"
                        th:class="${!showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-l-md border border-indigo-700 transition'}">
                         ⏳ Open Orders Only
                     </a>
-                    <a th:href="@{/orders/toggle-view(showAll=true)}"
+                    <a th:href="@{/dashboard(tab='orders', showAllOrders=true)}"
                        th:class="${showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-700 transition'}">
                         📁 View Full History
                     </a>
+
                 </div>
 
                 <form th:action="@{/}" method="GET" class="flex items-center gap-2">
                     <input type="hidden" name="tab" value="orders">
                     <input type="text" name="search" th:value="${currentSearch}" placeholder="Search WO#, Plate, Name..." class="px-3 py-1.5 border border-indigo-700 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400">
                     <button type="submit" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded border border-indigo-600">Search</button>
-                    <a th:if="${currentSearch != null}" th:href="@{/'orders')}" class="text-indigo-200 hover:text-white text-xs font-black">✕</a>
+                    <a th:if="${currentSearch != null}"
+                       th:href="@{/dashboard(tab='orders')}"
+                       class="text-indigo-200 hover:text-white text-xs font-black">
+                        ✕
+                    </a>
+
                 </form>
             </div>
         </div>
@@ -668,7 +674,8 @@
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
                             <!-- 👑 INDEPENDENT VIEWPORT ROUTER LINK: Prevents customer tab redirection locks -->
-                            <a th:href="@{/work-orders/focus/{id}(id=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150 select-none">
+                            <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${order.id})}"
+                               class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150 select-none">
                                 🔍 Edit Work Order
                             </a>
                         </td>
@@ -695,8 +702,10 @@
                     </span>
                 </div>
                 <!-- 👑 UPGRADED BACK NAVIGATION LINK: Forces the view state engine to lock securely on the orders tab -->
-                <a th:href="@{/?tab=orders}" class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition select-none">
-                    ⬅️ Back to Master Index
+                <a th:href="@{/dashboard(tab='orders')}"
+                   class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition select-none">
+
+                ⬅️ Back to Master Index
                 </a>
             </div>
 
@@ -962,7 +971,12 @@
                                 <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}">1.0 × $120.00</td>
                                 <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="'$' + ${item.getLineTotal()}">$120.00</td>
                                 <td class="px-3 py-2 text-right space-x-1.5 whitespace-nowrap">
-                                    <a th:href="@{/line-items/delete(id=${item.id}, workOrderId=${focusedWorkOrder.id})}" class="text-rose-600 hover:text-rose-900 text-[10px] font-black uppercase tracking-wider transition" onclick="return confirm('Erase this line row from worksheet ledger history?')">Delete</a>
+                                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, deleteItemId=${item.id})}"
+                                       class="text-rose-600 hover:text-rose-900 text-[10px] font-black uppercase tracking-wider transition"
+                                       onclick="return confirm('Erase this line row from worksheet ledger history?')">
+                                        Delete
+                                    </a>
+
                                 </td>
                             </tr>
                             </tbody>
