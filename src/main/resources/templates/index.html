@@ -221,7 +221,7 @@
                                     <span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span>
                                 </td>
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a th:href="@{/(tab='customers', editCustomerId=${customer.id})}"
+                                    <a th:href="@{/dashboard(tab='customers', editCustomerId=${customer.id})}"
                                        class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
                                         ✏️ Edit
                                     </a>
