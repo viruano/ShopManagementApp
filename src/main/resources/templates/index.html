@@ -241,7 +241,8 @@
         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
 
             <!-- DYNAMIC VEHICLE FLEET LOOKUP SEARCH ENGINE BAR -->
-            <form th:action="@{/}" method="GET" class="flex gap-2 w-full sm:w-auto flex-1 max-w-xl">
+            <!-- 🔧 FIXED UNIFIED ROUTE: Replaced root action mapping with /dashboard to bypass filter redirects -->
+            <form th:action="@{/dashboard}" method="GET" class="flex gap-2 w-full sm:w-auto flex-1 max-w-xl">
                 <input type="hidden" name="tab" value="vehicles">
                 <div class="relative flex-1">
                     <input type="text" name="vehicleSearch" th:value="${currentVehicleSearch}"
@@ -261,158 +262,199 @@
             </button>
         </div>
 
-        <!-- TWO COLUMN FLEX GRID: EXPANDS DYNAMICALLY ON INTAKE TOGGLE -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <!-- 🛡️ STABLE SCREEN CANVAS BOUNDARY -->
+        <div class="relative">
 
-            <!-- High-Speed Minimalist Intake Form Panel - HIDDEN BY DEFAULT -->
-            <div id="vehicleRegistrationFormPane" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit hidden transition-all duration-300">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-black text-slate-900">Intake New Vehicle</h2>
-                    <button onclick="toggleVehicleRegistrationForm()" class="text-slate-400 hover:text-slate-600 font-black text-sm">✕ Close</button>
-                </div>
-                <form id="vehicleIntakeForm" th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
-                    <!-- Customer Dropdown Association Field (REPLAMENT FIX) -->
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-0.5">Assign Account Owner:</label>
-                        <!-- 👑 FIXED: Removed th:field and substituted a plain, rock-solid name token -->
-                        <select name="customerId" required class="w-full px-2 py-1.5 border rounded text-xs bg-white text-slate-800 font-bold focus:outline-none">
-                            <option value="" disabled selected>-- Choose Account --</option>
-                            <option th:each="c : ${customers}"
-                                    th:value="${c.id}"
-                                    th:text="${c.firstName + ' ' + c.lastName}">John Doe</option>
-                        </select>
+            <!-- 🟢 RE-ENGINEERED INTAKE VEHICLE OVERLAY INTERFACE -->
+            <!-- Shifted from an inline grid column to a sleek viewport-locked focused overlay window. -->
+            <div id="vehicleRegistrationFormPane" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto hidden transition-all duration-300 select-none">
+
+                <!-- 📄 THE FOCUS CANVAS PANEL BOX -->
+                <div class="w-full max-w-lg transform rounded-t-2xl sm:rounded-xl bg-white p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+
+                    <!-- Modal Header -->
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-shrink-0">
+                        <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">🚗 Intake New Vehicle</h2>
+                        <button onclick="toggleVehicleRegistrationForm()" class="text-slate-400 hover:text-slate-600 font-black text-sm p-1">✕ Close</button>
                     </div>
 
-                    <!-- 🚗 HARDWARE-ACCELERATED LIVE DRIVELANE SCANNER TERMINAL -->
-                    <div class="col-span-2 space-y-3">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
-                        <div class="flex gap-2">
-                            <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <!-- Scrollable Modal Core for Compact Mobile Screens -->
+                    <div class="overflow-y-auto pr-1 flex-1 space-y-4">
+                        <form id="vehicleIntakeForm" th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
 
-                            <!-- ⚡ DIRECT HARDWARE TRIGGER -->
-                            <button type="button" onclick="activateLiveVinVideoScanner(event)" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded text-xs shadow transition duration-150 uppercase tracking-wider">
-                                📷 Live Scan
-                            </button>
-                        </div>
+                            <!-- Customer Dropdown Association Field -->
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Assign Account Owner:</label>
+                                <select name="customerId" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    <option value="" disabled selected>-- Choose Account --</option>
+                                    <option th:each="c : ${customers}"
+                                            th:value="${c.id}"
+                                            th:text="${c.firstName + ' ' + c.lastName}">John Doe</option>
+                                </select>
+                            </div>
 
-                        <!-- 👁️ CRISP MODERN VIEWPORT OVERLAY PANEL -->
-                        <div id="vinVideoScannerHardwareContainer" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl max-w-sm mx-auto space-y-3 relative transition-all duration-300">
-                            <div class="relative w-full overflow-hidden rounded-lg bg-black aspect-video border border-slate-800">
-                                <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full h-full object-cover block"></video>
-                                <div class="absolute inset-0 border-2 border-dashed border-indigo-500/30 pointer-events-none rounded-lg flex items-center justify-center">
-                                    <div class="w-[85%] h-[2px] bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></div>
+                            <!-- 🚗 HARDWARE-ACCELERATED LIVE DRIVELANE SCANNER TERMINAL -->
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight">17-Digit Vehicle Identification Number (VIN)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" th:field="*{vin}" id="vehicleVinInputField" required placeholder="Type, paste, or scan 17-digit VIN" class="flex-1 px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition">
+
+                                    <!-- ⚡ DIRECT HARDWARE TRIGGER -->
+                                    <button type="button" onclick="activateLiveVinVideoScanner(event)" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2.5 rounded-lg text-xs shadow transition duration-150 uppercase tracking-wider whitespace-nowrap">
+                                        📷 Live Scan
+                                    </button>
+                                </div>
+
+                                <!-- 👁️ CRISP MODERN VIEWPORT OVERLAY PANEL -->
+                                <div id="vinVideoScannerHardwareContainer" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl max-w-sm mx-auto space-y-3 relative transition-all duration-300">
+                                    <div class="relative w-full overflow-hidden rounded-lg bg-black aspect-video border border-slate-800">
+                                        <video id="nativeLiveVideoCameraShutterTrack" autoplay playsinline class="w-full h-full object-cover block"></video>
+                                        <div class="absolute inset-0 border-2 border-dashed border-indigo-500/30 pointer-events-none rounded-lg flex items-center justify-center">
+                                            <div class="w-[85%] h-[2px] bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Runtime Feedback Status Ticker -->
+                                    <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-black font-mono text-center text-slate-400 py-1 bg-slate-950 border border-slate-800 rounded+">
+                                        ⚡ Hardware scanning active... Center doorjamb or card barcode in viewfinder lens.
+                                    </div>
+
+                                    <div class="flex justify-end pt-1">
+                                        <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-400 hover:text-rose-300 text-[10px] font-black uppercase tracking-wider transition">✕ Close Camera</button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Runtime Feedback Status Ticker -->
-                            <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-black font-mono text-center text-slate-400 py-1 bg-slate-950 border border-slate-800 rounded">
-                                ⚡ Hardware scanning active... Center doorjamb or card barcode in viewfinder lens.
-                            </div>
+                            <!-- Structural Hidden Default Placeholders -->
+                            <input type="hidden" name="year" value="0">
+                            <input type="hidden" name="make" value="">
+                            <input type="hidden" name="model" value="">
+                            <input type="hidden" name="trim" value="">
+                            <input type="hidden" name="engineSize" value="">
+                            <input type="hidden" name="drivetrain" value="">
+                            <input type="hidden" name="licensePlate" value="TEMP">
 
-                            <div class="flex justify-end pt-1">
-                                <button type="button" onclick="terminateLiveVinVideoScanner()" class="text-rose-400 hover:text-rose-300 text-[10px] font-black uppercase tracking-wider transition">✕ Close Camera</button>
+                            <!-- Actions Footer -->
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6 flex-shrink-0">
+                                <button type="button" onclick="toggleVehicleRegistrationForm()" class="px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-150">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="vehicleIntakeForm" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2.5 rounded-lg shadow text-sm tracking-tight transition duration-150">
+                                    ⚡ Fetch Spec & Link Vehicle
+                                </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
-
-                    <input type="hidden" name="year" value="0">
-                    <input type="hidden" name="make" value="">
-                    <input type="hidden" name="model" value="">
-                    <input type="hidden" name="trim" value="">
-                    <input type="hidden" name="engineSize" value="">
-                    <input type="hidden" name="drivetrain" value="">
-                    <input type="hidden" name="licensePlate" value="TEMP">
-
-                    <button type="submit" form="vehicleIntakeForm" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 rounded-md shadow text-sm tracking-tight transition duration-150">
-                        ⚡ Fetch Spec & Link Vehicle
-                    </button>
-                </form>
+                </div>
             </div>
 
             <!-- Active Workshop Vehicle Fleet Index Grid Panel -->
-            <div id="vehicleFleetGridTable" class="lg:col-span-3 bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
-                <h2 class="text-lg font-bold mb-4">Active Workshop Vehicle Fleet</h2>
+            <!-- 🔧 FIXED WIDTH: Replaced lg:col-span-3 with w-full for absolute layout stability -->
+            <div id="vehicleFleetGridTable" class="w-full bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
+                <h2 class="text-lg font-bold mb-4 text-slate-900">Active Workshop Vehicle Fleet</h2>
 
-                <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No matching fleet vehicles active.</div>
+                <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400 font-medium">No matching fleet vehicles active.</div>
                 <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
-                    <!-- 👑 PERFECTLY BALANCED 5-COLUMN WORKSPACE TABLE MATRIX -->
                     <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                         <tr>
-                            <th class="px-4 py-3">Vehicle details</th>
-                            <th class="px-4 py-3">Powertrain</th>
-                            <th class="px-4 py-3">License & VIN</th>
-                            <th class="px-4 py-3">Assigned Owner</th>
+                            <th class="px-4 py-3">Vehicle Specifications</th>
+                            <th class="px-4 py-3">Identification / VIN</th>
+                            <th class="px-4 py-3">Account Owner</th>
+                            <th class="px-4 py-3">Drivetrain Details</th>
                             <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 text-gray-700 font-medium">
-                        <tr th:each="vh : ${vehicles}" class="hover:bg-gray-50 align-middle">
+                        <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
 
-                            <!-- 📝 CONDITION A: THIS VEHICLE ROW IS IN EDIT MODE (TOTAL 5 COLUMNS) -->
-                            <th:block th:if="${editVehicleId != null && editVehicleId == vh.id}">
-                                <td class="px-4 py-3 text-sm font-bold text-slate-400" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}"></td>
-                                <td class="px-4 py-3 text-sm" colspan="4">
-                                    <form th:id="'vehicleUpdateForm-' + ${vh.id}" th:action="@{/vehicles/update/{id}(id=${vh.id})}" method="POST" class="space-y-2 w-full bg-slate-50 p-3 rounded border border-indigo-100 shadow-inner m-0">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Chassis:</span>
-                                            <input type="text" name="year" th:value="${vh.year}" required class="w-16 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none text-slate-800 font-bold">
-                                            <input type="text" name="make" th:value="${vh.make}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
-                                            <input type="text" name="model" th:value="${vh.model}" required class="w-28 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none text-slate-800 font-bold">
-                                            <input type="text" name="trim" th:value="${vh.trim}" placeholder="Trim" class="w-20 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
+                        <!-- 🔄 FLEET LOOP ARCHITECTURE -->
+                        <th:block th:each="vehicle : ${vehicles}">
+
+                            <tr th:switch="${editVehicleId != null && editVehicleId == vehicle.id}" class="hover:bg-gray-50 align-middle transition duration-75">
+
+                                <!-- ========================================================= -->
+                                <!-- 📝 CONDITION A: VEHICLE RECORD IS IN EDIT MODE             -->
+                                <!-- ========================================================= -->
+                                <td th:case="true" colspan="5" class="px-6 py-4 bg-indigo-50/40 border-y border-indigo-100">
+                                    <form th:action="@{/vehicles/update}" method="POST" class="space-y-4">
+                                        <input type="hidden" name="id" th:value="${vehicle.id}" />
+                                        <div class="flex items-center justify-between border-b border-indigo-100 pb-2 mb-2">
+                                            <span class="text-xs font-black text-indigo-800 uppercase tracking-widest">
+                                                ⚙️ Modifying Fleet ID: [[${vehicle.id}]]
+                                            </span>
                                         </div>
-                                        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
-                                            <div class="flex flex-wrap items-center gap-2">
-                                                <span class="text-[10px] font-black text-indigo-600 w-16 uppercase tracking-wider">Powertrain:</span>
-                                                <input type="text" name="engineSize" th:value="${vh.engineSize}" placeholder="Engine" class="w-24 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
-                                                <input type="text" name="drivetrain" th:value="${vh.drivetrain}" placeholder="Drivetrain" class="w-16 px-2 py-0.5 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none text-slate-800 font-bold">
-                                                <span class="text-gray-300">|</span>
-                                                <input type="text" name="licensePlate" th:value="${vh.licensePlate}" required class="w-24 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono font-bold text-center uppercase focus:outline-none text-slate-800">
-                                                <input type="text" name="vin" th:value="${vh.vin}" required class="w-44 px-2 py-0.5 border border-indigo-300 rounded text-xs bg-white font-mono uppercase tracking-tighter focus:outline-none text-slate-800">
-                                            </div>
-                                            <div class="flex items-center space-x-1.5 pl-4">
-                                                <button type="submit" th:form="'vehicleUpdateForm-' + ${vh.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150 uppercase tracking-wide">💾 Save</button>
-                                                <a th:href="@{/dashboard(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150 uppercase tracking-wide">✕ Cancel</a>
-                                            </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <input type="text" name="licensePlate" th:value="${vehicle.licensePlate}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold uppercase tracking-wider text-slate-800" placeholder="License Plate"/>
+                                            <input type="number" name="year" th:value="${vehicle.year}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Year"/>
+                                            <input type="text" name="make" th:value="${vehicle.make}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Make"/>
+                                            <input type="text" name="model" th:value="${vehicle.model}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Model"/>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <input type="text" name="vin" th:value="${vehicle.vin}" required class="px-3 py-1.5 text-xs font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-800" placeholder="VIN"/>
+                                            <input type="text" name="engineSize" th:value="${vehicle.engineSize}" class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Engine (e.g. 3.5L V6)"/>
+                                            <input type="text" name="drivetrain" th:value="${vehicle.drivetrain}" class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Drivetrain (e.g. AWD)"/>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-indigo-100">
+                                            <!-- 🔧 CANCEL LINK: Structured to return safely to /dashboard parameters context -->
+                                            <a th:href="@{/dashboard(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
+                                            <button type="submit" class="inline-flex items-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save updates</button>
                                         </div>
                                     </form>
                                 </td>
-                            </th:block>
 
-                            <!-- 📄 CONDITION B: STANDARD STATIC FLEET VEHICLE VIEW LAYER (TOTAL 5 COLUMNS) -->
-                            <th:block th:if="${editVehicleId == null || editVehicleId != vh.id}">
-                                <td class="px-4 py-3 font-semibold text-gray-900">
-                                    <span th:text="${vh.year + ' ' + vh.make + ' ' + vh.model}">Car</span>
-                                    <div class="text-xs text-indigo-600 font-medium" th:if="${vh.trim}" th:text="${vh.trim}">Trim</div>
+                                <!-- ========================================================= -->
+                                <!-- 📊 CONDITION B: READ-ONLY STATIC VEHICLE ROW VIEW          -->
+                                <!-- ========================================================= -->
+                                <td th:case="*">
+                                    <div class="font-bold text-slate-900">
+                                        [[${vehicle.year}]] [[${vehicle.make}]] [[${vehicle.model}]]
+                                    </div>
+                                    <span class="inline-flex items-center gap-1 font-mono text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 mt-1 uppercase tracking-wider">
+                                        🇺🇸 [[${vehicle.licensePlate}]]
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 text-xs text-gray-600">
-                                    <div th:text="${vh.engineSize}">V6</div>
-                                    <div class="text-gray-400 font-mono" th:text="${vh.drivetrain}">4WD</div>
-                                </td>
-                                <td class="px-4 py-3 text-xs">
-                                    <div class="font-bold text-gray-800" th:text="${vh.licensePlate}">7ABC12</div>
-                                    <div class="text-gray-400 uppercase font-mono tracking-tighter" th:text="${vh.vin}">VIN</div>
-                                    <!-- Quick Glance Active Odometer Snap Trackers -->
-                                    <div class="text-[10px] text-slate-400 mt-0.5" th:if="${vh.odometerIn != null || vh.odometerOut != null}">
-                                        Odo: <span class="font-bold text-slate-600" th:text="${vh.odometerIn != null ? vh.odometerIn + ' In' : '0 In'}">0 In</span> /
-                                        <span class="font-bold text-slate-600" th:text="${vh.odometerOut != null ? vh.odometerOut + ' Out' : '0 Out'}">0 Out</span>
+                                <td th:case="*">
+                                    <div class="font-mono text-xs text-gray-800 font-bold uppercase tracking-tight">
+                                        [[${vehicle.vin}]]
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 font-semibold" th:if="${vehicle.trim != null}">
+                                        Trim: [[${vehicle.trim}]]
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-indigo-600 font-semibold" th:text="${vh.customer != null ? vh.customer.firstName + ' ' + vh.customer.lastName : 'Unassigned'}">Owner</td>
-                                <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a th:href="@{/dashboard(tab='vehicles', editVehicleId=${vh.id})}"
-                                       class="inline-flex items-center text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1 border border-slate-200 rounded transition duration-150 uppercase tracking-wide">
-                                        ✏️ Edit
-                                    </a>
+                                <td th:case="*">
+
+                                    <div class="font-bold text-slate-800" th:if="${vehicle.customer != null}">
+                                        👤 [[${vehicle.customer.firstName}]] [[${vehicle.customer.lastName}]]
+                                    </div>
+                                    <div class="text-xs text-gray-400 font-normal" th:if="${vehicle.customer != null}">
+                                        Acct: [[${vehicle.customer.accountNumber}]]
+                                    </div>
+                                    <span class="text-xs text-rose-500 font-semibold" th:if="${vehicle.customer == null}">
+                                        ⚠️ Unassigned Owner
+                                    </span>
                                 </td>
-                            </th:block>
-                        </tr>
+                                <td th:case="*">
+                                    <div class="text-xs text-gray-700 font-medium">Engine: [[${vehicle.engineSize != null ? vehicle.engineSize : 'N/A'}]]</div>
+                                    <div class="text-[11px] text-gray-400 uppercase font-semibold">Drive: [[${vehicle.drivetrain != null ? vehicle.drivetrain : 'N/A'}]]</div>
+                                </td>
+                                <td th:case="*">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <!-- 🔧 FIXED EDIT LINK: Maps parameters directly to secure layout workspace -->
+                                        <a th:href="@{/dashboard(tab='vehicles', editVehicleId=${vehicle.id})}"
+                                           class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
+                                            ✏️ Edit
+                                        </a>
+                                    </div>
+                                </td>
+
+                            </tr>
+                        </th:block>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div> <!-- This closes section-vehicles panel perfectly -->
+    </div> <!-- Tab 2 Context Block End -->
 
     <!-- ========================================================= -->
     <!-- TAB 3: WORK ORDERS CONSOLE                        -->
