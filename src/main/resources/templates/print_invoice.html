@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|Invoice - ${order.invoiceNumber}|">Invoice Print</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; color: black; padding: 0; margin: 0; }
+        }
+    </style>
+</head>
+<body class="bg-white p-8 font-sans text-sm text-slate-800" onload="window.print()">
+
+<!-- Header Invoice Metadata Brand Block -->
+<div class="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900">🖨️ WORK ORDER INVOICE</h1>
+        <p class="text-xs text-slate-500 font-mono mt-1" th:text="|Tenant ID Source: ${activeTenant}|">DEMO-SHOP</p>
+    </div>
+    <div class="text-right font-mono text-xs space-y-1">
+        <div><strong class="font-sans uppercase text-[10px] text-slate-400">Invoice Number:</strong> <span class="font-black text-slate-900" th:text="${order.invoiceNumber}">WO-1001</span></div>
+        <div><strong class="font-sans uppercase text-[10px] text-slate-400">Date Logged:</strong> <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">2026-10-25</span></div>
+    </div>
+</div>
+
+<!-- Vehicle & Owner Customer Information Deck -->
+<div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+    <div>
+        <h3 class="text-xs font-black uppercase text-slate-400 mb-1">Customer / Account File:</h3>
+        <div class="font-bold text-slate-900" th:text="${order.vehicle.customer.firstName + ' ' + order.vehicle.customer.lastName}">John Doe</div>
+        <div class="text-xs text-slate-500 font-mono" th:text="${order.vehicle.customer.phone}">(555) 0199</div>
+    </div>
+    <div>
+        <h3 class="text-xs font-black uppercase text-slate-400 mb-1">Vehicle Asset Profile:</h3>
+        <div class="font-bold text-slate-900" th:text="${order.vehicle.year + ' ' + order.vehicle.make + ' ' + order.vehicle.model}">2022 Ford F-150</div>
+        <div class="text-xs text-slate-500 font-mono" th:text="|VIN: ${order.vehicle.vin} | Plate: ${order.vehicle.licensePlate}|">VIN: 1FT...</div>
+    </div>
+</div>
+
+<!-- Itemized Ledger Entry Rows Table -->
+<table class="min-w-full divide-y divide-slate-200 text-xs text-left mb-6">
+    <thead>
+    <tr class="bg-slate-100 text-slate-600 font-black uppercase tracking-wider border-b border-slate-300">
+        <th class="px-4 py-2.5">Type</th>
+        <th class="px-4 py-2.5">Description / Job Action</th>
+        <th class="px-4 py-2.5 text-center">Qty / Hours</th>
+        <th class="px-4 py-2.5 text-right">Billed Rate</th>
+        <th class="px-4 py-2.5 text-right">Total Amount</th>
+    </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-200">
+    <tr th:each="item : ${lineItems}" class="align-middle">
+        <td class="px-4 py-3 font-black text-slate-500" th:text="${item.itemType}">LABOR</td>
+        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Premium Ceramic Brake Pad Placement</td>
+        <td class="px-4 py-3 text-center font-mono" th:text="${item.quantity}">1.0</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')">$125.00</td>
+        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')">$125.00</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Grand Balance Summary Block -->
+<div class="border-t border-slate-300 pt-4 flex justify-end text-right font-mono">
+    <div class="space-y-1.5 w-full max-w-xs">
+        <div class="flex justify-between text-base font-black text-slate-900">
+            <span class="font-sans uppercase font-black text-xs text-indigo-600">Grand Total Balance Due:</span>
+            <span th:text="'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')">$0.00</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

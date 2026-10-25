@@ -723,7 +723,7 @@
                         </div>
                         <div class="flex gap-2">
                             <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-xs shadow transition duration-150">Apply Status</button>
-                            <a th:href="@{|/orders/${focusedWorkOrder.id}/print|}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">🖨️ Print</a>
+                            <a th:href="@{/orders/{id}/print(id=${focusedWorkOrder.id}, activeTenant=${activeTenant})}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">🖨️ Print</a>
                         </div>
                     </div>
                 </form>
