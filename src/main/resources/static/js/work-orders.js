@@ -62,3 +62,27 @@ function filterModalVehicleDeckRowsLive() {
         }
     }
 }
+
+// =========================================================
+// ⚡ LIVE LABOR CATALOG AUTOMATIC FIELD SYNCHRONIZER
+// =========================================================
+function syncSelectedLaborCatalogGuideMetricsToFields() {
+    const selector = document.getElementById('laborCardOperationsCatalogSelector');
+    if (!selector) return;
+
+    const selectedOption = selector.options[selector.selectedIndex];
+    if (!selectedOption || selectedOption.value === "") return;
+
+    // 1. Pull the comprehensive operation name from the data-desc attribute mapping
+    const operationName = selectedOption.getAttribute('data-desc');
+    const descriptionInput = document.getElementById('laborCardDescriptionField');
+    if (descriptionInput && operationName) {
+        descriptionInput.value = operationName;
+    }
+
+    // 2. Clear out any custom flat book hour evaluations to ready the field matrix
+    const hoursInput = document.getElementById('laborCardHoursCountField');
+    if (hoursInput) {
+        hoursInput.value = "1.00"; // Fallback to safe workspace baseline default hours unit
+    }
+}

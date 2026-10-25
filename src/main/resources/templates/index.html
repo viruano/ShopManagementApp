@@ -34,7 +34,6 @@
                       th:text="${activeTenant}">XYZ-AUTO</span>
             </div>
         </div>
-
         <!-- AUTHENTICATION CONTROL ACTION MENU -->
         <form th:action="@{/logout}" method="POST" class="m-0">
             <button type="submit" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded font-bold transition duration-150 uppercase tracking-wider shadow-sm">
@@ -52,15 +51,30 @@
 
     <!-- THREE-WAY NAVIGATION TAB MENU -->
     <div class="flex border-b border-gray-200 mb-8 space-x-4">
-        <button onclick="switchTab('customers')" id="tab-btn-customers" class="py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600 transition-all duration-150">👥 Customers</button>
-        <button onclick="switchTab('vehicles')" id="tab-btn-vehicles" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150">🚗 Vehicles</button>
-        <button onclick="switchTab('orders')" id="tab-btn-orders" class="py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150">📋 Work Orders</button>
+        <!-- 👤 CUSTOMERS TAB LINK -->
+        <a th:href="@{/dashboard(tab='customers')}" id="tab-btn-customers"
+           th:class="${activeTab == 'customers' or activeTab == null ? 'py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600 transition-all duration-150 select-none' : 'py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150 select-none'}">
+            👥 Customers
+        </a>
+
+        <!-- 🚗 VEHICLES TAB LINK -->
+        <a th:href="@{/dashboard(tab='vehicles')}" id="tab-btn-vehicles"
+           th:class="${activeTab == 'vehicles' ? 'py-2 px-4 border-b-2 font-bold text-sm border-emerald-600 text-emerald-600 transition-all duration-150 select-none' : 'py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150 select-none'}">
+            🚗 Vehicles
+        </a>
+
+        <!-- 📋 WORK ORDERS TAB LINK -->
+        <a th:href="@{/dashboard(tab='orders')}" id="tab-btn-orders"
+           th:class="${activeTab == 'orders' ? 'py-2 px-4 border-b-2 font-bold text-sm border-indigo-600 text-indigo-600 transition-all duration-150 select-none' : 'py-2 px-4 border-b-2 font-bold text-sm border-transparent text-gray-500 hover:text-gray-700 transition-all duration-150 select-none'}">
+            📋 Work Orders
+        </a>
     </div>
 
     <!-- ========================================================= -->
     <!-- TAB 1: CUSTOMERS PANEL (ASMS OPERATIONAL CORE)            -->
     <!-- ========================================================= -->
-    <div id="section-customers" class="space-y-6">
+    <div id="section-customers"
+         th:class="${activeTab == 'customers' or activeTab == null ? 'space-y-6' : 'space-y-6 hidden'}">
 
         <!-- TOP CONTROL BAR: SEARCH AND REGISTRATION TOGGLE PANEL -->
         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -95,6 +109,7 @@
                 </div>
                 <div class="overflow-y-auto pr-1 flex-1">
                     <form id="customerRegistrationForm" th:action="@{/customers/register}" th:object="${newCustomer}" method="POST" class="space-y-4">
+                        <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-500 mb-1">First Name</label>
@@ -135,6 +150,59 @@
             </div>
         </div>
 
+        <!-- 📝 LAYER OVERLAYS: LIVE SECURED CUSTOMER PROFILE EDIT TERMINAL (PASTED HERE CLEANLY) -->
+        <div th:if="${editCustomerId != null}" id="customerEditModalPane" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto transition-all duration-300">
+            <div class="w-full max-w-lg transform rounded-t-2xl sm:rounded-xl bg-white p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col text-slate-800">
+
+                <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+                    <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">📝 Modify Client File</h2>
+                    <a th:href="@{/dashboard(tab='customers')}" class="text-slate-400 hover:text-slate-600 font-black text-sm p-1">✕ Close</a>
+                </div>
+
+                <div class="overflow-y-auto pr-1 flex-1" th:each="cust : ${customers}" th:if="${cust.id == editCustomerId}">
+                    <form th:action="@{/customers/update/{id}(id=${cust.id})}" method="POST" class="space-y-4">
+                        <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">First Name</label>
+                                <input type="text" name="firstName" th:value="${cust.firstName}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Last Name</label>
+                                <input type="text" name="lastName" th:value="${cust.lastName}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Phone Number</label>
+                            <input type="text" name="phone" th:value="${cust.phone}" class="phone-mask w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Email Address</label>
+                            <input type="email" name="email" th:value="${cust.email}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Street Address</label>
+                            <input type="text" name="street" th:value="${cust.street}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div><input type="text" name="city" th:value="${cust.city}" placeholder="City" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500"></div>
+                            <div><input type="text" name="state" th:value="${cust.state}" placeholder="ST" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500"></div>
+                            <div><input type="text" name="zip" th:value="${cust.zip}" placeholder="Zip" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500"></div>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-slate-50 p-2.5 rounded border border-slate-200 select-none">
+                            <input type="checkbox" name="taxExempt" th:checked="${cust.taxExempt}" id="editTaxExempt" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            <label for="editTaxExempt" class="text-[11px] font-black uppercase text-slate-700 cursor-pointer">🚚 Commercial Fleet Account (Tax-Exempt)</label>
+                        </div>
+                        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+                            <a th:href="@{/dashboard(tab='customers')}" class="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">Cancel</a>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-md shadow text-sm transition duration-150">💾 Save Modifications</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- TWO COLUMN FLEX GRID: RENDER FULL STABLE SIZE -->
         <div class="w-full">
             <div id="clientIndexGridTable" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
@@ -143,99 +211,72 @@
                 <div th:if="${#lists.isEmpty(customers)}" class="text-center py-12 text-gray-400">No matching workspace records found.</div>
                 <div th:if="${!#lists.isEmpty(customers)}" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+                        <thead class="bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3">Account Number</th>
-                            <th class="px-4 py-3">Client Name</th>
-                            <th class="px-4 py-3">Contact Details</th>
-                            <th class="px-4 py-3">Location</th>
-                            <th class="px-4 py-3 text-right">Actions</th>
+                            <!-- 🔢 ACCOUNT KEY -->
+                            <th scope="col" class="px-6 py-3.5 text-left font-black">Account #</th>
+
+                            <!-- 👤 PRIMARY CLIENT -->
+                            <th scope="col" class="px-6 py-3.5 text-left font-black">Client Name</th>
+
+                            <!-- 📞 COMMUNICATIONS MATRIX -->
+                            <th scope="col" class="px-6 py-3.5 text-left font-black">Contact Details</th>
+
+                            <!-- 📍 SERVICE REGION -->
+                            <th scope="col" class="px-6 py-3.5 text-left font-black">Location</th>
+
+                            <!-- 🏷️ FLEET INDICATOR -->
+                            <th scope="col" class="px-6 py-3.5 text-center font-black">Classification</th>
+
+                            <!-- ⚙️ WORKSPACE OPERATORS -->
+                            <th scope="col" class="px-6 py-3.5 text-right font-black">Actions</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
-                        <tr th:each="customer : ${customers}" class="hover:bg-gray-50 align-middle">
+                        <tbody class="divide-y divide-gray-200 bg-white text-sm text-slate-700">
+                        <tr th:each="c : ${customers}" class="hover:bg-slate-50/80 transition-colors duration-150">
 
-                            <!-- ========================================================= -->
-                            <!-- 📝 CONDITION A: THIS CLIENT PROFILE IS IN EDIT MODE       -->
-                            <!-- ========================================================= -->
-                            <th:block th:if="${editCustomerId != null && editCustomerId == customer.id}">
-                                <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
-                                <td class="px-4 py-3 text-sm" colspan="4">
-                                    <form th:id="'customerUpdateForm-' + ${customer.id}" th:action="@{/customers/update/{id}(id=${customer.id})}" method="POST" class="space-y-3 w-full bg-slate-50/50 p-2 rounded border border-indigo-100">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span class="text-xs font-bold text-indigo-600 w-16 uppercase">Identity:</span>
-                                            <input type="text" name="firstName" th:value="${customer.firstName}" required placeholder="First Name" class="w-28 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
-                                            <input type="text" name="lastName" th:value="${customer.lastName}" placeholder="Last Name" class="w-28 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-semibold focus:outline-none">
-                                            <span class="text-gray-300">|</span>
-                                            <input type="text" name="phone" th:value="${customer.phone}" required placeholder="Phone" class="phone-mask w-32 px-2 py-1 border border-indigo-300 rounded text-xs bg-white font-mono focus:outline-none">
-                                            <input type="text" name="email" th:value="${customer.email}" placeholder="Email Address" class="w-48 px-2 py-1 border border-indigo-300 rounded text-xs bg-white focus:outline-none">
-                                        </div>
+                            <!-- 1. Account Number -->
+                            <td class="px-6 py-4 font-mono text-xs font-bold text-slate-600" th:text="${c.customerNumber}">CUST-A101</td>
 
-                                        <!-- Row 2: Location and Accounting Execution Controls -->
-                                        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60 pt-2">
-                                            <div class="flex flex-wrap items-center gap-2">
-                                                <span class="text-xs font-bold text-indigo-600 w-16 uppercase">Address:</span>
-                                                <input type="text" name="street" th:value="${customer.street}" placeholder="123 Main St" class="w-44 px-2 py-1 border border-indigo-200 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
-                                                <input type="text" name="city" th:value="${customer.city}" placeholder="City" class="w-24 px-2 py-1 border border-indigo-200 rounded text-xs bg-white focus:outline-none text-slate-800 font-bold">
-                                                <input type="text" name="state" th:value="${customer.state}" placeholder="ST" class="w-12 px-2 py-1 border border-indigo-200 rounded text-xs bg-white text-center focus:outline-none text-slate-800 font-bold">
-                                                <input type="text" name="zip" th:value="${customer.zip}" placeholder="Zip" class="w-16 px-2 py-1 border border-indigo-200 rounded text-xs bg-white font-mono focus:outline-none text-slate-800 font-bold">
+                            <!-- 2. Client Name -->
+                            <td class="px-6 py-4 font-semibold text-slate-900" th:text="${c.firstName + ' ' + c.lastName}">John Doe</td>
 
-                                                <!-- 🚚 INLINE LIVE UPGRADE TAX EXEMPT SWITCH -->
-                                                <span class="text-gray-300">|</span>
-                                                <label class="inline-flex items-center space-x-1.5 cursor-pointer text-[10px] font-black uppercase text-slate-600 select-none">
-                                                    <input type="checkbox" name="taxExempt" th:checked="${customer.taxExempt}" value="true" class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                                                    <span>Tax Exempt</span>
-                                                </label>
-                                            </div>
+                            <!-- 3. Contact Details -->
+                            <td class="px-6 py-4 space-y-0.5">
+                                <div class="font-medium text-slate-800" th:text="${c.phone}">(443) 555-0199</div>
+                                <div class="text-xs text-indigo-600 hover:text-indigo-900 font-bold transition">
+                                    <a th:href="@{mailto:{email}(email=${c.email})}" th:text="${c.email}">john.doe@email.com</a>
+                                </div>
 
-                                            <!-- Action Triggers -->
-                                            <div class="flex items-center space-x-1.5 pl-4">
-                                                <button type="submit" th:form="'customerUpdateForm-' + ${customer.id}" class="inline-flex items-center text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save</button>
-                                                <a th:href="@{/dashboard(tab='customers')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </td>
-                            </th:block>
 
-                            <!-- 📄 CONDITION B: STANDARD STATIC CLIENT CARD PROFILE VIEW -->
-                            <th:block th:if="${editCustomerId == null || editCustomerId != customer.id}">
-                                <td class="px-4 py-3 text-indigo-600 font-bold" th:text="${customer.customerNumber}"></td>
-                                <td class="px-4 py-3 font-semibold text-gray-900">
-                                    <span th:text="${customer.firstName + ' ' + customer.lastName}">Client Name</span>
-                                    <!-- 🚚 FLEET EXEMPT INDICATOR BADGE -->
-                                    <span th:if="${customer.taxExempt}"
-                                          class="ml-1.5 inline-block bg-slate-900 border border-slate-950 text-amber-400 font-black text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm select-none">
-                                        🚚 FLEET EXEMPT
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div th:text="${customer.phone}"></div>
-                                    <div class="text-xs text-gray-400 font-normal" th:text="${customer.email}"></div>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-gray-500">
-                                    <span th:text="${customer.city}"></span>, <span th:text="${customer.state}"></span>
-                                </td>
-                                <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <!-- 🔧 FIXED SYNTAX: Clean parameter syntax to avoid nested template parsing errors -->
-                                    <a th:href="@{/dashboard(tab='customers', editCustomerId=${customer.id})}"
-                                       class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
-                                        ✏️ Edit
-                                    </a>
-                                </td>
-                            </th:block>
+                            <!-- 4. Location -->
+                            <td class="px-6 py-4 text-xs font-medium text-slate-500" th:text="${c.city + ', ' + c.state}">Annapolis, MD</td>
+
+                            <!-- 5. Fleet Classification Badge -->
+                            <td class="px-6 py-4 text-center">
+                                <span th:if="${c.taxExempt}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Fleet</span>
+                                <span th:unless="${c.taxExempt}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase bg-slate-50 text-slate-500 border border-slate-200">Retail</span>
+                            </td>
+
+                            <!-- 6. Actions Panel Button Deck -->
+                            <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                <!-- 🟢 FIXED LITERAL SUBSTITUTION PARSING: Prevents page compile drops -->
+                                <button th:onclick="'openCustomerEditModal(' + ${c.id} + ')'" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase transition">Edit</button>
+                                <a th:href="@{/dashboard(tab='orders', customerId=${c.id})}" class="text-emerald-600 hover:text-emerald-900 font-bold text-xs uppercase transition">New Order</a>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div> <!-- Closes section-customers panel natively -->
+    </div> <!-- Closes #section-customers cleanly -->
 
     <!-- ========================================================= -->
     <!-- TAB 2: VEHICLES PANEL (FLEET METRICS CONTROL)            -->
     <!-- ========================================================= -->
-    <div id="section-vehicles" class="space-y-6 hidden">
+    <div id="section-vehicles"
+         th:class="${activeTab == 'vehicles' ? 'space-y-6' : 'space-y-6 hidden'}">
 
         <!-- TOP CONTROL BAR: FLEET LOOKUP AND INTAKE TOGGLE PANEL -->
         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -281,7 +322,7 @@
                     <!-- Scrollable Modal Core for Compact Mobile Screens -->
                     <div class="overflow-y-auto pr-1 flex-1 space-y-4">
                         <form id="vehicleIntakeForm" th:action="@{/vehicles/register}" th:object="${newVehicle}" method="POST" class="space-y-4">
-
+                            <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                             <!-- Customer Dropdown Association Field -->
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Assign Account Owner:</label>
@@ -315,7 +356,8 @@
                                     </div>
 
                                     <!-- Runtime Feedback Status Ticker -->
-                                    <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-black font-mono text-center text-slate-400 py-1 bg-slate-950 border border-slate-800 rounded+">
+                                    <!-- 🟢 FIXED MALFORMED UTILITY TAILWIND CLASS: Replaced rounded+ with rounded-md -->
+                                    <div id="liveOcrProcessingFeedbackTicker" class="text-[10px] font-black font-mono text-center text-slate-400 py-1 bg-slate-950 border border-slate-800 rounded-md">
                                         ⚡ Hardware scanning active... Center doorjamb or card barcode in viewfinder lens.
                                     </div>
 
@@ -348,120 +390,143 @@
                 </div>
             </div>
 
-            <!-- Active Workshop Vehicle Fleet Index Grid Panel -->
-            <!-- 🔧 FIXED WIDTH: Replaced lg:col-span-3 with w-full for absolute layout stability -->
-            <div id="vehicleFleetGridTable" class="w-full bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
-                <h2 class="text-lg font-bold mb-4 text-slate-900">Active Workshop Vehicle Fleet</h2>
+            <!-- 📝 LAYER OVERLAYS: LIVE SECURED VEHICLE PROFILE EDIT TERMINAL -->
+            <div th:if="${editVehicleId != null}" id="vehicleEditModalPane" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto transition-all duration-300">
+                <div class="w-full max-w-lg transform rounded-t-2xl sm:rounded-xl bg-white p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col text-slate-800">
 
-                <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400 font-medium">No matching fleet vehicles active.</div>
-                <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                        <tr>
-                            <th class="px-4 py-3">Vehicle Specifications</th>
-                            <th class="px-4 py-3">Identification / VIN</th>
-                            <th class="px-4 py-3">Account Owner</th>
-                            <th class="px-4 py-3">Drivetrain Details</th>
-                            <th class="px-4 py-3 text-right">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 font-medium text-gray-700">
+                    <!-- Modal Header -->
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-shrink-0">
+                        <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">📝 Modify Vehicle Specs</h2>
+                        <a th:href="@{/dashboard(tab='vehicles')}" class="text-slate-400 hover:text-slate-600 font-black text-sm p-1">✕ Close</a>
+                    </div>
 
-                        <!-- 🔄 FLEET LOOP ARCHITECTURE -->
-                        <th:block th:each="vehicle : ${vehicles}">
+                    <!-- Scrollable Core Loop Matrix -->
+                    <div class="overflow-y-auto pr-1 flex-1" th:each="veh : ${vehicles}" th:if="${veh.id == editVehicleId}">
+                        <!-- 👑 SECURED REPAIR ROUTE: Targets your dynamic, multi-tenant update endpoint -->
+                        <form th:action="@{/vehicles/update/{id}(id=${veh.id})}" method="POST" class="space-y-4">
+                            <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
 
-                            <tr th:switch="${editVehicleId != null && editVehicleId == vehicle.id}" class="hover:bg-gray-50 align-middle transition duration-75">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-tight mb-1">17-Digit Vehicle Identification Number (VIN)</label>
+                                <input type="text" name="vin" th:value="${veh.vin}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono font-bold uppercase bg-slate-50 text-slate-800">
+                            </div>
 
-                                <!-- ========================================================= -->
-                                <!-- 📝 CONDITION A: VEHICLE RECORD IS IN EDIT MODE             -->
-                                <!-- ========================================================= -->
-                                <td th:case="true" colspan="5" class="px-6 py-4 bg-indigo-50/40 border-y border-indigo-100">
-                                    <form th:action="@{/vehicles/update}" method="POST" class="space-y-4">
-                                        <input type="hidden" name="id" th:value="${vehicle.id}" />
-                                        <div class="flex items-center justify-between border-b border-indigo-100 pb-2 mb-2">
-                                            <span class="text-xs font-black text-indigo-800 uppercase tracking-widest">
-                                                ⚙️ Modifying Fleet ID: [[${vehicle.id}]]
-                                            </span>
-                                        </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                            <input type="text" name="licensePlate" th:value="${vehicle.licensePlate}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold uppercase tracking-wider text-slate-800" placeholder="License Plate"/>
-                                            <input type="number" name="year" th:value="${vehicle.year}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Year"/>
-                                            <input type="text" name="make" th:value="${vehicle.make}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Make"/>
-                                            <input type="text" name="model" th:value="${vehicle.model}" required class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Model"/>
-                                        </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <input type="text" name="vin" th:value="${vehicle.vin}" required class="px-3 py-1.5 text-xs font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-800" placeholder="VIN"/>
-                                            <input type="text" name="engineSize" th:value="${vehicle.engineSize}" class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Engine (e.g. 3.5L V6)"/>
-                                            <input type="text" name="drivetrain" th:value="${vehicle.drivetrain}" class="px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" placeholder="Drivetrain (e.g. AWD)"/>
-                                        </div>
-                                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-indigo-100">
-                                            <!-- 🔧 CANCEL LINK: Structured to return safely to /dashboard parameters context -->
-                                            <a th:href="@{/dashboard(tab='vehicles')}" class="inline-flex items-center text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 border border-gray-300 rounded transition duration-150">✕ Cancel</a>
-                                            <button type="submit" class="inline-flex items-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded shadow transition duration-150">💾 Save updates</button>
-                                        </div>
-                                    </form>
-                                </td>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">License Plate</label>
+                                    <input type="text" name="licensePlate" th:value="${veh.licensePlate}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono font-bold uppercase">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Model Year</label>
+                                    <input type="number" name="year" th:value="${veh.year}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono font-bold">
+                                </div>
+                            </div>
 
-                                <!-- ========================================================= -->
-                                <!-- 📊 CONDITION B: READ-ONLY STATIC VEHICLE ROW VIEW          -->
-                                <!-- ========================================================= -->
-                                <td th:case="*">
-                                    <div class="font-bold text-slate-900">
-                                        [[${vehicle.year}]] [[${vehicle.make}]] [[${vehicle.model}]]
-                                    </div>
-                                    <span class="inline-flex items-center gap-1 font-mono text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 mt-1 uppercase tracking-wider">
-                                        🇺🇸 [[${vehicle.licensePlate}]]
-                                    </span>
-                                </td>
-                                <td th:case="*">
-                                    <div class="font-mono text-xs text-gray-800 font-bold uppercase tracking-tight">
-                                        [[${vehicle.vin}]]
-                                    </div>
-                                    <div class="text-[10px] text-gray-400 font-semibold" th:if="${vehicle.trim != null}">
-                                        Trim: [[${vehicle.trim}]]
-                                    </div>
-                                </td>
-                                <td th:case="*">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Make / Brand</label>
+                                    <input type="text" name="make" th:value="${veh.make}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-bold uppercase">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Model Name</label>
+                                    <input type="text" name="model" th:value="${veh.model}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-bold uppercase">
+                                </div>
+                            </div>
 
-                                    <div class="font-bold text-slate-800" th:if="${vehicle.customer != null}">
-                                        👤 [[${vehicle.customer.firstName}]] [[${vehicle.customer.lastName}]]
-                                    </div>
-                                    <div class="text-xs text-gray-400 font-normal" th:if="${vehicle.customer != null}">
-                                        Acct: [[${vehicle.customer.accountNumber}]]
-                                    </div>
-                                    <span class="text-xs text-rose-500 font-semibold" th:if="${vehicle.customer == null}">
-                                        ⚠️ Unassigned Owner
-                                    </span>
-                                </td>
-                                <td th:case="*">
-                                    <div class="text-xs text-gray-700 font-medium">Engine: [[${vehicle.engineSize != null ? vehicle.engineSize : 'N/A'}]]</div>
-                                    <div class="text-[11px] text-gray-400 uppercase font-semibold">Drive: [[${vehicle.drivetrain != null ? vehicle.drivetrain : 'N/A'}]]</div>
-                                </td>
-                                <td th:case="*">
-                                    <div class="flex items-center justify-end gap-1.5">
-                                        <!-- 🔧 FIXED EDIT LINK: Maps parameters directly to secure layout workspace -->
-                                        <a th:href="@{/dashboard(tab='vehicles', editVehicleId=${vehicle.id})}"
-                                           class="inline-flex items-center text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 border border-indigo-200 rounded transition duration-150">
-                                            ✏️ Edit
-                                        </a>
-                                    </div>
-                                </td>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="col-span-1">
+                                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Trim Level:</label>
+                                    <input type="text" name="trim" th:value="${veh.trim}" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs font-bold uppercase">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Engine Size:</label>
+                                    <input type="text" name="engineSize" th:value="${veh.engineSize}" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs font-mono font-bold uppercase">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Drivetrain:</label>
+                                    <input type="text" name="drivetrain" th:value="${veh.drivetrain}" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs font-bold uppercase">
+                                </div>
+                            </div>
 
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
+                            <!-- Actions Footer -->
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6 flex-shrink-0">
+                                <a th:href="@{/dashboard(tab='vehicles')}" class="px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-150">Cancel</a>
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2.5 rounded-lg shadow text-sm tracking-tight transition duration-150">💾 Save Vehicle Specs</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div> <!-- Tab 2 Context Block End -->
+
+            <!-- TWO COLUMN FLEX GRID: RENDER FULL STABLE SIZE -->
+            <div class="w-full">
+                <div id="fleetIndexGridTable" class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
+                    <h2 class="text-lg font-bold mb-4">Active Workshop Fleet Index</h2>
+
+                    <div th:if="${#lists.isEmpty(vehicles)}" class="text-center py-12 text-gray-400">No matching fleet profiles found in this workspace.</div>
+                    <div th:if="${!#lists.isEmpty(vehicles)}" class="overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                            <thead class="bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th scope="col" class="px-6 py-3.5 text-left font-black">Vehicle Asset Specs</th>
+                                <th scope="col" class="px-6 py-3.5 text-left font-black">Identification Numbers</th>
+                                <th scope="col" class="px-6 py-3.5 text-left font-black">Account Owner</th>
+                                <th scope="col" class="px-6 py-3.5 text-center font-black">Configuration</th>
+                                <th scope="col" class="px-6 py-3.5 text-right font-black">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white text-sm text-slate-700">
+                            <tr th:each="v : ${vehicles}" class="hover:bg-slate-50/80 transition-colors duration-150">
+
+                                <!-- 1. Vehicle Asset Specs (Year Make Model Stacked) -->
+                                <td class="px-6 py-4 space-y-0.5">
+                                    <div class="font-bold text-slate-900" th:text="${v.year + ' ' + v.make + ' ' + v.model}">2020 FORD F-150</div>
+                                    <div class="text-xs text-slate-400 font-medium" th:text="${v.trim != null ? v.trim : 'XL Base Chassis'}">XLT SuperCrew</div>
+                                </td>
+
+                                <!-- 2. Identification Numbers -->
+                                <td class="px-6 py-4 space-y-0.5">
+                                    <div class="font-mono text-xs font-bold text-slate-700" th:text="'VIN: ' + ${v.vin}">VIN: 1FTFW1EF0LFAF0000</div>
+                                    <div class="inline-flex items-center text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono" th:text="'PLATE: ' + ${v.licensePlate}">PLATE: TEMP-9999</div>
+                                </td>
+
+                                <!-- 3. Account Owner -->
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-slate-800" th:text="${v.customer != null ? v.customer.firstName + ' ' + v.customer.lastName : 'Unassigned Walk-In'}">John Doe</div>
+                                    <div class="text-xs text-slate-400 font-mono" th:text="${v.customer != null ? v.customer.customerNumber : 'CUST-N/A'}">CUST-A101</div>
+                                </td>
+
+                                <!-- 4. Engine & Drivetrain Specifications -->
+                                <td class="px-6 py-4 text-center space-y-1">
+                                    <span th:if="${v.engineSize != null && !v.engineSize.isEmpty()}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase bg-indigo-50 text-indigo-700 border border-indigo-100" th:text="${v.engineSize}">3.5L</span>
+                                    <span th:if="${v.drivetrain != null && !v.drivetrain.isEmpty()}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase bg-slate-50 text-slate-600 border border-slate-200" th:text="${v.drivetrain}">4WD</span>
+                                </td>
+
+                                <!-- 5. Fleet Actions Control Deck -->
+                                <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                    <!-- 🟢 FIXED LITERAL SUBSTITUTION PARSING: Prevents page compile drops -->
+                                    <button th:onclick="'openVehicleEditModal(' + ${v.id} + ')'" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase transition">Edit Specs</button>
+                                    <form th:action="@{/work-orders/create}" method="POST" class="inline-block">
+                                        <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
+                                        <input type="hidden" name="vehicleId" th:value="${v.id}" />
+                                        <button type="submit" class="text-emerald-600 hover:text-emerald-900 font-bold text-xs uppercase transition">⚡ Create WO</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- Closes .relative wrapper cleanly -->
+    </div> <!-- Closes #section-vehicles panel natively -->
 
     <!-- ========================================================= -->
-    <!-- TAB 3: WORK ORDERS CONSOLE                        -->
+    <!-- TAB 3: WORK ORDERS CONSOLE                                -->
     <!-- ========================================================= -->
-    <div id="section-orders" class="space-y-8 hidden">
+    <div id="section-orders" th:class="${activeTab == 'orders' ? 'space-y-8' : 'space-y-8 hidden'}">
 
-        <!-- INVOICE CONTROL CONTROL CENTER BAR: VIEW INTERCHANGES AND LOOKUPS -->
+        <!-- INVOICE CONTROL CENTER BAR: VIEW INTERCHANGES AND LOOKUPS -->
         <div class="bg-indigo-900 p-4 rounded-lg border border-indigo-950 text-white flex flex-col md:flex-row justify-between items-center gap-4 shadow-md">
             <div>
                 <h3 class="text-sm font-black tracking-wider text-indigo-200 uppercase">📋 Master Shop Invoice Ledger Control</h3>
@@ -482,158 +547,16 @@
                        th:class="${showAllOrders ? 'bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-600' : 'bg-indigo-800 text-indigo-300 hover:text-white text-xs font-bold px-3 py-2 rounded-r-md border border-indigo-700 transition'}">
                         📁 View Full History
                     </a>
-
                 </div>
 
-                <form th:action="@{/}" method="GET" class="flex items-center gap-2">
+                <form th:action="@{/dashboard}" method="GET" class="flex items-center gap-2">
                     <input type="hidden" name="tab" value="orders">
                     <input type="text" name="search" th:value="${currentSearch}" placeholder="Search WO#, Plate, Name..." class="px-3 py-1.5 border border-indigo-700 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400">
                     <button type="submit" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded border border-indigo-600">Search</button>
-                    <a th:if="${currentSearch != null}"
-                       th:href="@{/dashboard(tab='orders')}"
-                       class="text-indigo-200 hover:text-white text-xs font-black">
-                        ✕
-                    </a>
-
+                    <a th:if="${currentSearch != null}" th:href="@{/dashboard(tab='orders')}" class="text-indigo-200 hover:text-white text-xs font-black">✕</a>
                 </form>
             </div>
         </div>
-
-        <!-- 📋 CHOOSE VEHICLE WORK ORDER INTAKE MODAL WINDOW OVERLAY -->
-        <div id="newWorkOrderIntakeModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
-            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 text-slate-800">
-
-                <!-- Header -->
-                <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
-                    <div>
-                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Initialize Repair Order</h3>
-                        <p class="text-[10px] text-slate-400">Search and select a vehicle profile to generate the invoice tracker template.</p>
-                    </div>
-                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="text-slate-400 hover:text-white transition text-sm">✕</button>
-                </div>
-
-                <!-- 🔍 HIGH-SPEED IN-MODAL SEARCH BAR FILTER LAYER -->
-                <div class="p-3 bg-slate-100 border-b border-slate-200">
-                    <div class="relative">
-                        <input type="text" id="modalVehicleLookupSearchField" onkeyup="filterModalVehicleDeckRowsLive()" placeholder="Search Name, Plate, Model, or VIN..." class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
-                    </div>
-                </div>
-
-                <!-- Scrollable Vehicle Selection Deck -->
-                <div id="modalVehicleSelectionScrollingDeck" class="p-4 max-h-[320px] overflow-y-auto space-y-2 bg-slate-50 text-left">
-                    <label class="block text-[11px] font-black uppercase text-slate-600 tracking-tight mb-1">Select Active Shop Vehicle Profile:</label>
-
-                    <div th:each="v : ${vehicles}"
-                         th:data-search="${#strings.toUpperCase(v.year + ' ' + v.make + ' ' + v.model + ' ' + v.vin + ' ' + (v.licensePlate != null ? v.licensePlate : '') + ' ' + (v.customer != null ? v.customer.firstName + ' ' + v.customer.lastName : ''))}"
-                         class="modal-vehicle-searchable-row bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
-
-                        <div class="space-y-0.5">
-                            <div class="text-xs font-black text-slate-800 uppercase tracking-tight">
-                                <span th:text="${v.year}">2020</span> <span th:text="${v.make}">Ford</span> <span th:text="${v.model}">Mustang</span>
-                            </div>
-                            <div class="text-[10px] font-bold text-slate-500 font-mono tracking-wide">
-                                VIN: <span class="text-indigo-600 font-bold" th:text="${v.vin}">1FA6P...</span>
-                                <span th:if="${v.licensePlate != null}" th:text="' | Plate: ' + ${v.licensePlate}"></span>
-                            </div>
-                            <div th:if="${v.customer != null}" class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                                Owner: <span class="text-slate-600" th:text="${v.customer.firstName + ' ' + v.customer.lastName}">John Doe</span>
-                            </div>
-                        </div>
-
-                        <form th:action="@{/work-orders/create}" method="POST" class="m-0">
-                            <input type="hidden" name="vehicleId" th:value="${v.id}">
-                            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-black text-[10px] uppercase tracking-wider px-3 py-2 rounded shadow transition group-hover:bg-indigo-600">
-                                ⚡ Create
-                            </button>
-                        </form>
-                    </div>
-
-                    <div id="modalSearchEmptyStateRowCard" class="hidden text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
-                        ❌ No matching vehicle profiles found.
-                    </div>
-
-                    <div th:if="${#lists.isEmpty(vehicles)}" class="text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">
-                        ❌ No active vehicle profiles detected on the floor.
-                    </div>
-                </div>
-
-                <!-- Footer (Safely Encapsulated and Closed) -->
-                <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
-                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</button>
-                </div>
-            </div>
-        </div>
-        <!-- 📋 ADD NEW LINE ITEM INVOICE MODAL FORM -->
-        <div id="addLineItemModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-all text-slate-800">
-
-                <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
-                    <div>
-                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Add Billable Line Item</h3>
-                        <p class="text-[10px] text-slate-400">Log an individual direct-purchase part or labor row onto this ticket.</p>
-                    </div>
-                    <button type="button" onclick="closeLineItemModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
-                </div>
-
-                <form th:action="@{/work-orders/add-item}" method="POST" class="p-4 space-y-4 m-0">
-                    <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder != null ? focusedWorkOrder.id : ''}">
-
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Item Billing Type:</label>
-                        <select name="itemType" id="formItemType" onchange="toggleLineItemFormFieldsBasedOnType()" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="PART">📦 Direct Purchase Part / Component</option>
-                            <option value="LABOR">🔧 Service Labor / Book Hours</option>
-                        </select>
-                    </div>
-
-                    <div id="partsProcurementFormFieldsSubGroup" class="grid grid-cols-2 gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="col-span-1">
-                            <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
-                            <input type="text" name="partNumber" id="formPartNumber" placeholder="e.g. FIL-1356" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div class="col-span-1">
-                            <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Vendor:</label>
-                            <input type="text" name="vendor" id="formVendor" placeholder="e.g. NAPA, AutoZone" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost:</label>
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-1.5 text-xs text-slate-400 font-bold">$</span>
-                                <input type="number" step="0.01" name="wholesaleCost" id="formWholesaleCost" value="0.00" class="w-full pl-6 pr-3 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Billing Description Name:</label>
-                        <input type="text" name="description" id="formDescription" required placeholder="e.g. Premium Front Ceramic Brake Pads" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label id="formQuantityFieldTitleLabel" class="block text-[10px] font-black uppercase text-slate-600 mb-1">Part Qty Count:</label>
-                            <input type="number" step="0.01" name="quantity" id="formQuantity" value="1.00" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Retail Price (Billed to Client):</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-2 text-xs text-slate-400 font-bold">$</span>
-                                <input type="number" step="0.01" name="retailPrice" id="formRetailPrice" value="0.00" required class="w-full pl-6 pr-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form Trigger Button Menu -->
-                    <div class="bg-slate-50 -mx-4 -mb-4 p-3 border-t border-slate-200 flex justify-end space-x-2">
-                        <button type="button" onclick="closeLineItemModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</button>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-1.5 rounded text-xs shadow transition uppercase tracking-wider">Add to Invoice</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS (TOGGLEABLE) -->
         <!-- REAL-TIME FINANCIAL METRICS SUMMARY DASHBOARD CARDS (TOGGLEABLE) -->
         <div th:if="${focusedWorkOrder == null}" class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
@@ -651,8 +574,7 @@
                 <div class="p-3 bg-indigo-100 rounded-full text-indigo-600 text-xl">💰</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Sales Booked</p>
-                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantRevenue != null ? liveTenantRevenue : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
 
@@ -661,18 +583,15 @@
                 <div class="p-3 bg-amber-100 rounded-full text-amber-600 text-xl">📥</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Payments Collected</p>
-                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
-                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantPaymentsCollected, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 class="text-2xl font-black text-gray-900 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantPaymentsCollected != null ? liveTenantPaymentsCollected : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
-
             <!-- Card 3: Total Receivables / Unpaid Balances (SaaS SECURED) -->
             <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
                 <div class="p-3 bg-emerald-100 rounded-full text-emerald-600 text-xl">📈</div>
                 <div>
                     <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Total Receivables</p>
-                    <!-- 👑 UPDATED TO DYNAMIC SAAS ACCUMULATOR -->
-                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantReceivables, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 class="text-2xl font-black text-emerald-600 font-mono" th:text="${'$' + #numbers.formatDecimal(liveTenantReceivables != null ? liveTenantReceivables : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
                 </div>
             </div>
         </div>
@@ -706,15 +625,13 @@
                             <div>Out: <span class="font-bold text-slate-800" th:text="${order.odometerOut != null ? order.odometerOut + ' mi' : '0 mi'}"></span></div>
                         </td>
                         <td class="px-4 py-3 text-xs">
-                            <span th:text="${order.status}" th:class="${order.status == T(com.autorepair.shop.WorkOrderStatus).OPENED ? 'bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold' : (order.status == T(com.autorepair.shop.WorkOrderStatus).COMPLETED ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold' : 'bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-bold')}"></span>
+                            <span th:text="${order.status}" th:class="${#strings.toString(order.status) == 'OPENED' ? 'bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold' : (#strings.toString(order.status) == 'COMPLETED' ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold' : 'bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-bold')}"></span>
                         </td>
                         <td class="px-4 py-3 text-xs">
-                            <span th:text="${order.paymentStatus}" th:class="${order.paymentStatus == T(com.autorepair.shop.PaymentStatus).FULLY_PAID ? 'bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold' : (order.paymentStatus == T(com.autorepair.shop.PaymentStatus).PARTIALLY_PAID ? 'bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold' : 'bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold')}"></span>
+                            <span th:text="${order.paymentStatus}" th:class="${#strings.toString(order.paymentStatus) == 'PAID' ? 'bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold' : 'bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold'}"></span>
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <!-- 👑 INDEPENDENT VIEWPORT ROUTER LINK: Prevents customer tab redirection locks -->
-                            <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${order.id})}"
-                               class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150 select-none">
+                            <a th:href="@{/dashboard(tab=orders, focusedWorkOrderId=${order.id})}" class="inline-flex items-center text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow transition duration-150 select-none">
                                 🔍 Edit Work Order
                             </a>
                         </td>
@@ -722,36 +639,68 @@
                     </tbody>
                 </table>
             </div>
+        </div> <!-- Closes Master Invoice Index Card -->
+
+        <!-- 📋 CHOOSE VEHICLE WORK ORDER INTAKE MODAL WINDOW OVERLAY -->
+        <div id="newWorkOrderIntakeModalWindow" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 text-slate-800">
+                <div class="bg-slate-950 p-4 text-white flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">Initialize Repair Order</h3>
+                        <p class="text-[10px] text-slate-400">Search and select a vehicle profile to generate the invoice tracker template.</p>
+                    </div>
+                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="text-slate-400 hover:text-white transition text-sm">✕</button>
+                </div>
+                <div class="p-3 bg-slate-100 border-b border-slate-200">
+                    <div class="relative">
+                        <input type="text" id="modalVehicleLookupSearchField" onkeyup="filterModalVehicleDeckRowsLive()" placeholder="Search Name, Plate, Model, or VIN..." class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
+                    </div>
+                </div>
+                <div id="modalVehicleSelectionScrollingDeck" class="p-4 max-h-[320px] overflow-y-auto space-y-2 bg-slate-50 text-left">
+                    <label class="block text-[11px] font-black uppercase text-slate-600 tracking-tight mb-1">Select Active Shop Vehicle Profile:</label>
+                    <div th:each="v : ${vehicles}" th:data-search="${#strings.toUpperCase(v.year + ' ' + v.make + ' ' + v.model + ' ' + v.vin + ' ' + (v.licensePlate != null ? v.licensePlate : '') + ' ' + (v.customer != null ? v.customer.firstName + ' ' + v.customer.lastName : ''))}" class="modal-vehicle-searchable-row bg-white p-3 border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow transition duration-150 flex justify-between items-center group">
+                        <div class="space-y-0.5">
+                            <div class="text-xs font-black text-slate-800 uppercase tracking-tight">
+                                <span th:text="${v.year}">2020</span> <span th:text="${v.make}">Ford</span> <span th:text="${v.model}">Mustang</span>
+                            </div>
+                            <div class="text-[10px] font-bold text-slate-500 font-mono tracking-wide">
+                                VIN: <span class="text-indigo-600 font-bold" th:text="${v.vin}">1FA6P...</span>
+                                <span th:if="${v.licensePlate != null}" th:text="' | Plate: ' + ${v.licensePlate}"></span>
+                            </div>
+                            <div th:if="${v.customer != null}" class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                Owner: <span class="text-slate-600" th:text="${v.customer.firstName + ' ' + v.customer.lastName}">John Doe</span>
+                            </div>
+                        </div>
+                        <form th:action="@{/orders/create}" method="POST" class="m-0">
+                            <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
+                            <input type="hidden" name="vehicleId" th:value="${v.id}">
+                            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-black text-[10px] uppercase tracking-wider px-3 py-2 rounded shadow transition group-hover:bg-indigo-600">⚡ Create</button>
+                        </form>
+                    </div>
+                    <div id="modalSearchEmptyStateRowCard" class="hidden text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">❌ No matching vehicle profiles found.</div>
+                    <div th:if="${#lists.isEmpty(vehicles)}" class="text-center p-6 text-slate-400 text-xs font-medium bg-white border border-slate-200 border-dashed rounded-lg">❌ No active vehicle profiles detected on the floor.</div>
+                </div>
+                <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
+                    <button type="button" onclick="closeNewWorkOrderIntakeModal()" class="px-4 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">Cancel</button>
+                </div>
+            </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- ⚡ SUB-WORKSPACE: SINGLE SELECTED WORK ORDER WORKSHEET     -->
-        <!-- ========================================================= -->
+        <!-- ⚡ ACTIVE SELECTED WORK ORDER WORKSHEET LAYER -->
         <div th:if="${focusedWorkOrder != null}" class="space-y-6">
-
-            <!-- BACK NAVIGATION ACTIONS ENGINE BAR -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-inner gap-2">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Active Workspace:</span>
                     <span class="text-xs font-mono font-black bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" th:text="${focusedWorkOrder.invoiceNumber}">WO-1001</span>
-                    <!-- 🚗 INLINE VEHICLE & CUSTOMER DATA SNAPSHOT -->
-                    <span class="text-xs text-slate-500 font-medium border-l border-slate-300 pl-2"
-                          th:text="${focusedWorkOrder.vehicle.year + ' ' + focusedWorkOrder.vehicle.make + ' ' + focusedWorkOrder.vehicle.model + ' ➔ ' + focusedWorkOrder.vehicle.customer.firstName + ' ' + focusedWorkOrder.vehicle.customer.lastName}">
-                        2022 Ford F-150 ➔ John Doe
-                    </span>
+                    <span class="text-xs text-slate-500 font-medium border-l border-slate-300 pl-2" th:text="${focusedWorkOrder.vehicle.year + ' ' + focusedWorkOrder.vehicle.make + ' ' + focusedWorkOrder.vehicle.model + ' ➔ ' + focusedWorkOrder.vehicle.customer.firstName + ' ' + focusedWorkOrder.vehicle.customer.lastName}">2022 Ford F-150 ➔ John Doe</span>
                 </div>
-                <!-- 👑 UPGRADED BACK NAVIGATION LINK: Forces the view state engine to lock securely on the orders tab -->
-                <a th:href="@{/dashboard(tab='orders')}"
-                   class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition select-none">
-
-                ⬅️ Back to Master Index
-                </a>
+                <a th:href="@{/dashboard(tab='orders')}" class="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-md px-3 py-1.5 text-xs shadow-sm transition select-none">⬅️ Back to Master Index</a>
             </div>
 
-            <!-- ORDER MANAGEMENT INTERFACE TERMINAL PANEL -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-100 p-6 rounded-lg border border-slate-200">
-                <!-- Lifecycle Status Update Form -->
                 <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrder.id})}" method="POST" class="space-y-4">
+                    <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                     <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">💼 Invoice Lifecycle Management</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -773,24 +722,15 @@
                             <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
                         </div>
                         <div class="flex gap-2">
-                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-xs shadow transition duration-150">
-                                Apply Status
-                            </button>
-                            <!-- 👑 TO THIS CORRECT PATH EXTENSION PATTERN: -->
-                            <a th:href="@{|/orders/${focusedWorkOrder.id}/print|}"
-                               target="_blank"
-                               class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">
-                                🖨️ Print
-                            </a>
+                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-xs shadow transition duration-150">Apply Status</button>
+                            <a th:href="@{|/orders/${focusedWorkOrder.id}/print|}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">🖨️ Print</a>
                         </div>
                     </div>
                 </form>
-
-                <!-- Visit Odometer Snapshot Logs Form -->
                 <form th:action="@{/vehicles/update-odometer}" method="POST" class="space-y-4 border-t md:border-t-0 md:border-l border-slate-300/60 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between">
                     <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                    <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                     <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">⏱️ Visit Odometer Logging Snapshot</h3>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">In Mileage Odometer</label>
@@ -801,77 +741,80 @@
                             <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" placeholder="0" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-1.5 rounded text-xs shadow transition mt-4">
-                        Record Mileage Snapshots
-                    </button>
+                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-1.5 rounded text-xs shadow transition mt-4">Record Mileage Snapshots</button>
                 </form>
             </div>
-
-            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <!-- Left Column Form Panel: Dedicated Stacking Intake Core (Takes 1/3 Width) -->
+            <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-6">
+                <!-- Left Column Form Panel: Dedicated Stacking Intake Core -->
                 <div class="space-y-4 h-fit text-slate-800">
 
-                    <!-- 🔒 CONDITION A: WORK ORDER IS FINALIZED / CLOSED OUT SAFETY BADGE -->
-                    <div th:if="${focusedWorkOrder.status != T(com.autorepair.shop.WorkOrderStatus).OPENED}"
-                         class="bg-slate-900 border border-slate-950 p-6 rounded-lg text-center shadow-md space-y-3">
+                    <!-- Archived Status Warning Callout -->
+                    <div th:if="${#strings.toString(focusedWorkOrder.status) != 'OPENED'}" class="bg-slate-900 border border-slate-950 p-6 rounded-lg text-center shadow-md space-y-3">
                         <div class="text-3xl animate-pulse">🔒</div>
                         <h3 class="text-xs font-black text-amber-400 uppercase tracking-widest">Invoice Archive Locked</h3>
-                        <p class="text-[10px] text-slate-400 leading-normal">
-                            This document lifecycle status is currently marked as <span class="font-bold text-white font-mono" th:text="${focusedWorkOrder.status}"></span>.
-                            Ledger bookkeeping data rows are frozen for compliance safety [Shopmonkey auto repair app].
-                        </p>
-                        <div class="text-[9px] font-bold font-mono text-slate-500 bg-slate-950 p-2 rounded border border-slate-800 uppercase">
-                            Read-Only History View Active
-                        </div>
+                        <p class="text-[10px] text-slate-400 leading-normal">This document lifecycle status is currently marked as <span class="font-bold text-white font-mono" th:text="${focusedWorkOrder.status}"></span>. Ledger bookkeeping data rows are frozen for compliance safety.</p>
+                        <div class="text-[9px] font-bold font-mono text-slate-500 bg-slate-950 p-2 rounded border border-slate-800 uppercase">Read-Only History View Active</div>
                     </div>
 
-                    <!-- 🔓 CONDITION B: WORK ORDER IS ACTIVE / RENDERS ALL INTAKE FORMS -->
-                    <th:block th:if="${focusedWorkOrder.status == T(com.autorepair.shop.WorkOrderStatus).OPENED}">
+                    <!-- 🔒 MASTER INTAKE BLOCK WRAPPER: Form options only render if ticket state is active -->
+                    <th:block th:if="${#strings.toString(focusedWorkOrder.status) == 'OPENED'}">
 
-                        <!-- PANEL A: 🔧 DEDICATED FLAT-RATE LABOR ACTIONS CARD -->
+                        <!-- PANEL A: SERVICE LABOR INPUT ASSISTANT -->
                         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
                                 <span class="text-base">🔧</span>
                                 <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Service Labor</h3>
                             </div>
-                            <div class="mb-3 bg-slate-50 p-2 border rounded border-slate-200">
-                                <label class="block text-[10px] font-black text-indigo-600 uppercase mb-0.5">⏱️ Labor Guide Book Times</label>
-                                <select id="laborGuideSelector" onchange="applyLaborGuideSelection()" class="w-full px-2 py-1 border rounded text-xs bg-white text-slate-800 font-bold focus:outline-none">
-                                    <option value="" disabled selected>-- Lookup Menu Book Times --</option>
-                                    <option th:each="guide : ${laborCatalog}" th:value="${guide.standardHours}" th:text="${'[' + guide.category + '] ' + guide.jobAction + ' — ' + guide.standardHours + ' Hrs'}"></option>
-                                </select>
-                            </div>
+
                             <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                                 <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                                <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                                 <input type="hidden" name="itemType" value="LABOR">
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div class="col-span-2">
-                                        <label class="block text-[10px] font-black text-slate-500 mb-0.5">Labor Job Description</label>
-                                        <input type="text" name="description" id="formDescription" required placeholder="e.g. Perform Diagnostic Scan" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <label class="block text-[10px] font-black text-slate-500 mb-0.5">Book Hours</label>
-                                        <input type="number" step="0.1" name="quantity" id="formQuantity" value="1.0" required class="w-full px-2 py-1 border rounded text-xs font-mono font-bold text-center">
-                                    </div>
-                                </div>
+
                                 <div>
-                                    <label class="block text-[10px] font-black text-slate-500 mb-0.5">Labor Rate ($ / Hour)</label>
-                                    <input type="number" step="0.01" name="retailPrice" id="formRetailPrice" value="125.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold">
+                                    <label for="laborCardOperationsCatalogSelector" class="block text-[10px] font-black text-slate-600 mb-1">Labor Catalog Operations Guide:</label>
+                                    <select id="laborCardOperationsCatalogSelector" onchange="syncSelectedLaborCatalogGuideMetricsToFields()" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 bg-white focus:outline-none">
+                                        <option value="" disabled selected>-- Choose Task Operation --</option>
+                                        <!-- 🟢 REPLACE YOUR DRIVER DROPDOWN LOOP WITH THIS SAFE ARCHITECTURE LAYOUT -->
+                                        <option th:each="guide : ${laborCatalog}"
+                                                th:value="${guide != null ? guide.id : ''}"
+                                                th:data-desc="|Operation #${guide != null ? guide.id : '0'}|"
+                                                th:text="|Labor Operation - ID: ${guide != null ? guide.id : 'N/A'}|">
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 mb-0.5">Billed Operation Text</label>
+                                    <input type="text" name="description" id="laborCardDescriptionField" required placeholder="e.g. Mechanical Troubleshooting Diagnostic" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-500 mb-0.5">Book flat Hours</label>
+                                        <input type="number" step="0.01" name="quantity" id="laborCardHoursCountField" value="1.00" required class="w-full px-2 py-1 border rounded text-xs font-mono font-bold text-center">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-500 mb-0.5">Hourly Labor Rate ($)</label>
+                                        <input type="number" step="0.01" name="retailPrice" value="125.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white font-bold text-slate-800">
+                                    </div>
                                 </div>
                                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Labor Row</button>
                             </form>
                         </div>
 
-                        <!-- PANEL B: 📦 DEDICATED DIRECT-PROCUREMENT PARTS CARD -->
+                        <!-- PANEL B: REPLACEMENT PART COMPONENTS -->
                         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
                                 <span class="text-base">📦</span>
                                 <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Replacement Part</h3>
                             </div>
-
                             <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                                 <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                                <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                                 <input type="hidden" name="itemType" value="PART">
 
                                 <div class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded border border-slate-200">
@@ -886,13 +829,11 @@
                                     <div class="col-span-2">
                                         <div class="flex justify-between items-baseline mb-0.5">
                                             <label class="block text-[9px] font-black uppercase text-slate-500">Wholesale Cost (Shop Paid):</label>
-                                            <!-- ⚡ QUICK ENGINE EVENT TRIGGER LINK -->
                                             <button type="button" onclick="runInlineMatrixPartsPriceCalc()" class="text-[9px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-tighter">⚡ Run Matrix Matrix</button>
                                         </div>
                                         <input type="number" step="0.01" name="wholesaleCost" id="partsCardWholesaleCostField" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right bg-white font-bold text-slate-800">
                                     </div>
                                 </div>
-
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="col-span-2">
                                         <label class="block text-[10px] font-black text-slate-500 mb-0.5">Part Component Name</label>
@@ -911,7 +852,7 @@
                             </form>
                         </div>
 
-                        <!-- PANEL C: ✨ DEDICATED UNQUANTIFIED MISCELLANEOUS MATERIALS CARD -->
+                        <!-- PANEL C: SHOP SUPPLIES / MISC FEES (RE-ALIGNED STANDALONE) -->
                         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
                                 <span class="text-base">✨</span>
@@ -919,6 +860,7 @@
                             </div>
                             <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                                 <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
+                                <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                                 <input type="hidden" name="itemType" value="MISC">
                                 <input type="hidden" name="quantity" value="1.00">
                                 <div>
@@ -939,13 +881,12 @@
                                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Material Fee</button>
                             </form>
                         </div>
-
                     </th:block>
-                </div> <!-- Closes Left Column Form Panel wrapper container -->
+                </div> <!-- Closes Left Column Form Panel wrapper container box securely -->
 
-                <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout (Takes 2/3 Width) -->
+                <!-- Right Column Table View Panel: Live Worksheet Entries Matrix Layout -->
                 <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200 shadow-sm text-slate-800">
-                    <div class="flex flex-wrap items-baseline justify-between border-b border-gray-100 pb-3 mb-4 gap-2">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4 flex-wrap gap-2">
                         <h2 class="text-base font-black text-slate-900">
                             Live Line Items for <span class="text-indigo-600 font-mono" th:text="${focusedWorkOrder.invoiceNumber}">WO-1001</span>
                         </h2>
@@ -972,58 +913,54 @@
                             <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
                             <tr th:each="item : ${lineItems}" class="hover:bg-gray-50 align-middle">
                                 <td class="px-3 py-2">
-                                    <span th:text="${item.itemType}" th:class="${item.itemType == T(com.autorepair.shop.LineItemType).PART ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-black text-[9px]' : 'bg-purple-100 text-indigo-800 px-2 py-0.5 rounded font-black text-[9px]'}">PART</span>
+                                    <span th:text="${item.itemType}" th:class="${#strings.toString(item.itemType) == 'PART' ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-black text-[9px]' : 'bg-purple-100 text-indigo-800 px-2 py-0.5 rounded font-black text-[9px]'}">PART</span>
                                 </td>
                                 <td class="px-3 py-2 font-mono text-[10px] text-slate-500">
-                                    <!-- 📦 PHYSICAL COMPONENT SPECS INTERFACE -->
-                                    <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).PART}">
+                                    <div th:if="${#strings.toString(item.itemType) == 'PART'}">
                                         <div class="font-bold text-slate-800">
                                             Num: <span th:text="${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
                                         </div>
                                         <div>
-                                            Cost: <span class="text-slate-600" th:text="'$' + ${item.wholesaleCost}"></span>
+                                            Cost: <span class="text-slate-600" th:text="${'$' + #numbers.formatDecimal(item.wholesaleCost != null ? item.wholesaleCost : 0, 1, 'NONE', 2, 'POINT')}"></span>
                                             <span class="text-[9px] text-slate-400 font-sans" th:text="'(' + ${item.vendor} + ')'"></span>
                                         </div>
 
                                         <!-- 📊 LIVE GROSS PROFIT METRICS BADGE LAYERS -->
                                         <div class="mt-1 flex flex-wrap gap-1 font-sans text-[9px] font-black uppercase tracking-tight select-none">
-                                            <!-- Gross Dollar Spread Badge -->
-                                            <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
-                                                  th:text="'Net: +$' + ${item.getMarginProfitDollars()}">
+                                            <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" th:text="${'Net: +$' + #numbers.formatDecimal(item.marginProfitDollars != null ? item.marginProfitDollars : 0, 1, 'NONE', 2, 'POINT')}">
                                                 Net: +$0.00
                                             </span>
-                                            <!-- Margin % Badge: Turns Green if healthy (>= 40%), amber if slim (< 40%) -->
-                                            <span th:class="${item.getMarginPercentage() >= 40 ? 'bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200' : 'bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200'}"
-                                                  th:text="${item.getMarginPercentage()} + '% Margin'">
+                                            <span th:class="${item.marginPercentage >= 40 ? 'bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200' : 'bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200'}" th:text="${#numbers.formatDecimal(item.marginPercentage != null ? item.marginPercentage : 0, 1, 'NONE', 1, 'POINT') + '% Margin'}">
                                                 0% Margin
                                             </span>
                                         </div>
                                     </div>
-
-                                    <!-- 🔧 SERVICE LABOR SPEC PLACEHOLDER -->
-                                    <div th:if="${item.itemType == T(com.autorepair.shop.LineItemType).LABOR}" class="text-slate-400 italic font-sans">
+                                    <div th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="text-slate-400 italic font-sans">
                                         Pure Flat Labor Action
                                     </div>
                                 </td>
 
                                 <td class="px-3 py-2 font-bold text-slate-900" th:text="${item.description}">Premium Front Brake Pads</td>
-                                <td class="px-3 py-2 font-mono text-slate-500" th:text="${item.quantity + ' × $' + item.retailPrice}">1.0 × $120.00</td>
-                                <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="'$' + ${item.getLineTotal()}">$120.00</td>
+                                <td class="px-3 py-2 font-mono text-slate-500" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT') + ' × $' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">1.0 × $120.00</td>
+                                <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="${'$' + #numbers.formatDecimal((item.quantity != null ? item.quantity : 0) * (item.retailPrice != null ? item.retailPrice : 0), 1, 'NONE', 2, 'POINT')}">$120.00</td>
+
+                                <!-- ⚙️ FIXED ACTIONS CELL: Securely triggers line item edits/deletions -->
                                 <td class="px-3 py-2 text-right space-x-1.5 whitespace-nowrap">
+                                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, editItemId=${item.id})}"
+                                       class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase transition">
+                                        Edit
+                                    </a>
                                     <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, deleteItemId=${item.id})}"
-                                       class="text-rose-600 hover:text-rose-900 text-[10px] font-black uppercase tracking-wider transition"
+                                       class="text-rose-600 hover:text-rose-900 font-bold text-xs uppercase transition"
                                        onclick="return confirm('Erase this line row from worksheet ledger history?')">
                                         Delete
                                     </a>
-
                                 </td>
                             </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- FINANCIAL RECORD SUMS FOOTER PANEL -->
-                    <!-- FINANCIAL RECORD SUMS FOOTER PANEL -->
                     <div class="mt-6 border-t border-gray-100 pt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <div class="text-[11px] text-slate-400 leading-tight">
                             ℹ️ Review gross profit summaries inside the toggleable metrics analytics drawer. All values dynamically recalculate via strict backend BigDecimal type-safe matrices [Shopmonkey auto repair app].
@@ -1031,22 +968,21 @@
                         <div class="space-y-1.5 font-bold text-xs text-slate-700 max-w-xs ml-auto w-full font-mono">
                             <div class="flex justify-between">
                                 <span class="text-slate-400 uppercase font-sans font-black text-[10px]">Parts Subtotal:</span>
-                                <span th:text="${'$' + totalParts}">$0.00</span>
+                                <span th:text="${'$' + #numbers.formatDecimal(totalParts != null ? totalParts : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400 uppercase font-sans font-black text-[10px]">Labor Subtotal:</span>
-                                <span th:text="${'$' + totalLabor}">$0.00</span>
+                                <span th:text="${'$' + #numbers.formatDecimal(totalLabor != null ? totalLabor : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
                             </div>
 
-                            <!-- 👑 NEW REVENUE GROSS PROFIT ROW DISPLAY BADGE -->
                             <div class="flex justify-between border-t border-dashed border-slate-300 pt-1 text-emerald-600">
                                 <span class="uppercase font-sans font-black text-[10px]">Ticket Net Profit:</span>
-                                <span th:text="${'+$' + totalProfit}">+$0.00</span>
+                                <span th:text="${'+$' + #numbers.formatDecimal(totalProfit != null ? totalProfit : 0, 1, 'COMMA', 2, 'POINT')}">+$0.00</span>
                             </div>
 
                             <div class="flex justify-between border-t border-slate-300 pt-1.5 text-sm font-black text-slate-900">
                                 <span class="text-indigo-600 uppercase font-sans text-[11px]">Grand Balance Due:</span>
-                                <span th:text="${'$' + totalRevenue}">$0.00</span>
+                                <span th:text="${'$' + #numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
                             </div>
                         </div>
                     </div>
@@ -1054,9 +990,70 @@
 
             </div> <!-- Closes SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE Grid -->
         </div> <!-- Closes SUB-WORKSPACE Wrapper Div -->
-    </div> <!-- Closes TAB SECTION 3: WORK ORDERS CONSOLE Block -->
 
-</main> <!-- Closes MAIN Operational Workspace Block -->
+        <!-- 📝 LAYER OVERLAYS: LIVE SECURED INVOICE LINE ITEM EDIT TERMINAL -->
+        <div th:if="${editItemId != null}" id="lineItemEditModalPane" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
+            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-all text-slate-800">
+                <div class="bg-slate-950 p-4 text-white flex justify-between items-center flex-shrink-0">
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">📝 Modify Billable Row</h3>
+                        <p class="text-[10px] text-slate-400">Update billed rates, quantities, or tracking descriptions on this ticket.</p>
+                    </div>
+                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="text-slate-400 hover:text-white text-sm">✕</a>
+                </div>
+
+                <div class="p-4" th:each="li : ${lineItems}" th:if="${li.id == editItemId}">
+                    <form th:action="@{/work-orders/update-item/{id}(id=${li.id})}" method="POST" class="space-y-4 m-0">
+                        <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}" />
+                        <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
+                        <input type="hidden" name="itemType" th:value="${li.itemType}" />
+
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Billing Description Name:</label>
+                            <input type="text" name="description" th:value="${li.description}" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none">
+                        </div>
+
+                        <div th:if="${#strings.toString(li.itemType) == 'PART'}" class="grid grid-cols-2 gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
+                                <input type="text" name="partNumber" th:value="${li.partNumber}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Vendor:</label>
+                                <input type="text" name="vendor" th:value="${li.vendor}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-bold text-slate-800 focus:outline-none">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost ($):</label>
+                                <input type="number" step="0.01" name="wholesaleCost" th:value="${li.wholesaleCost}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-600 mb-1"
+                                       th:text="${#strings.toString(li.itemType) == 'LABOR' ? 'Labor Book Hours:' : 'Part Qty Count:'}">Qty:</label>
+                                <input type="number" step="0.01" name="quantity" th:value="${li.quantity}" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Retail Price (Billed Rate):</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-xs text-slate-400 font-bold">$</span>
+                                    <input type="number" step="0.01" name="retailPrice" th:value="${li.retailPrice}" required class="w-full pl-6 pr-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 -mx-4 -mb-4 p-3 border-t border-slate-200 flex justify-end space-x-2">
+                            <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</a>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-1.5 rounded text-xs shadow transition uppercase tracking-wider">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Closes #section-orders natively -->
+
+</main> <!-- Closes operational workspace main structural block -->
 
 <!-- 📦 CONSOLIDATED EXTERNAL MODULAR BUSINESS LOGIC LINK LAYERS -->
 <script th:src="@{/js/shop-ui.js}" type="text/javascript"></script>

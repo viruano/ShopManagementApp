@@ -163,3 +163,18 @@ function runInlineMatrixPartsPriceCalc() {
     const calculatedRetail = wholesaleCost * multiplier;
     retailField.value = calculatedRetail.toFixed(2);
 }
+
+// =========================================================
+// 👥 SaaS SECURED ACTIONS MODAL INTERFACES
+// =========================================================
+function openCustomerEditModal(customerId) {
+    console.log("⚡ [CRM ENGINE] Fetching client parameters for profile ID: " + customerId);
+    if (!customerId) return;
+    window.location.href = "/dashboard?tab=customers&editCustomerId=" + customerId;
+}
+
+function openVehicleEditModal(vehicleId) {
+    console.log("⚡ [FLEET ENGINE] Fetching fleet specs for profile ID: " + vehicleId);
+    if (!vehicleId) return;
+    window.location.href = "/dashboard?tab=vehicles&editVehicleId=" + vehicleId;
+}
