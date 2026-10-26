@@ -45,10 +45,6 @@
 
 <!-- MAIN OPERATIONAL WORKSPACE -->
 <main class="max-w-7xl mx-auto px-4 py-10">
-    <div class="mb-6">
-        <h1 class="text-3xl font-extrabold text-gray-900">Shop Management Console</h1>
-    </div>
-
     <!-- THREE-WAY NAVIGATION TAB MENU -->
     <div class="flex border-b border-gray-200 mb-8 space-x-4">
         <!-- 👤 CUSTOMERS TAB LINK -->
@@ -699,50 +695,76 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-100 p-6 rounded-lg border border-slate-200">
-                <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrder.id})}" method="POST" class="space-y-4">
+                <!-- 🟢 HIGH-DENSITY HORIZONTAL LIFECYCLE MANAGEMENT ACTION DECK -->
+                <form th:action="@{/orders/update-status/{id}(id=${focusedWorkOrder.id})}" method="POST" class="m-0 p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
                     <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
-                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">💼 Invoice Lifecycle Management</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Work Order Status</label>
-                            <select name="status" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+
+                        <!-- 1. Work Order Dropdown (Label Inlined inside Select Field) -->
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter select-none font-sans">WO:</span>
+                            <select name="status" class="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800 font-black focus:outline-none">
                                 <option th:each="st : ${T(com.autorepair.shop.WorkOrderStatus).values()}" th:value="${st}" th:text="${st}" th:selected="${st == focusedWorkOrder.status}"></option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Payment Status</label>
-                            <select name="paymentStatus" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white text-slate-800 font-bold focus:outline-none">
+
+                        <!-- 2. Payment Dropdown (Label Inlined inside Select Field) -->
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter select-none font-sans">PAY:</span>
+                            <select name="paymentStatus" class="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800 font-black focus:outline-none">
                                 <option th:each="pt : ${T(com.autorepair.shop.PaymentStatus).values()}" th:value="${pt}" th:text="${pt}" th:selected="${pt == focusedWorkOrder.paymentStatus}"></option>
                             </select>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 items-end">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Amount Paid ($)</label>
-                            <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+
+                        <!-- 3. Paid Numeric Input Element (Inlined label decoration block) -->
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter select-none font-sans">PAID:</span>
+                            <input type="number" step="0.01" name="amountPaid" th:value="${focusedWorkOrder.amountPaid}" class="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white font-mono font-black text-slate-800 text-right focus:outline-none">
                         </div>
-                        <div class="flex gap-2">
-                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1.5 rounded text-xs shadow transition duration-150">Apply Status</button>
-                            <a th:href="@{/orders/{id}/print(id=${focusedWorkOrder.id}, activeTenant=${activeTenant})}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1.5 px-3 rounded text-xs shadow transition text-center select-none">🖨️ Print</a>
+
+                        <!-- 4. Action Button Deck Group (Unified height row panel split) -->
+                        <div class="flex space-x-1.5 h-full items-center pl-1">
+                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-1 px-2 rounded text-[10px] uppercase tracking-wider shadow-sm transition duration-150 whitespace-nowrap">
+                                ⚡ Apply
+                            </button>
+                            <a th:href="@{/orders/{id}/print(id=${focusedWorkOrder.id}, activeTenant=${activeTenant})}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white font-black py-1 px-2.5 rounded text-[10px] uppercase tracking-wider shadow-sm transition text-center select-none whitespace-nowrap">
+                                🖨️ Print
+                            </a>
                         </div>
+
                     </div>
                 </form>
-                <form th:action="@{/vehicles/update-odometer}" method="POST" class="space-y-4 border-t md:border-t-0 md:border-l border-slate-300/60 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between">
+
+                <!-- 🟢 HIGH-DENSITY HORIZONTAL ODOMETER SNAPSHOT DECK -->
+                <form th:action="@{/vehicles/update-odometer}" method="POST" class="m-0 p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
                     <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
                     <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
-                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">⏱️ Visit Odometer Logging Snapshot</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">In Mileage Odometer</label>
-                            <input type="number" name="odometerIn" th:value="${focusedWorkOrder.odometerIn}" placeholder="0" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+
+                        <!-- 1. Odometer In (Label Inlined) -->
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter select-none font-sans whitespace-nowrap">MI IN:</span>
+                            <input type="number" name="odometerIn" th:value="${focusedWorkOrder.odometerIn}" placeholder="0" class="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white font-mono font-black text-slate-800 text-right focus:outline-none">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Out Mileage Odometer</label>
-                            <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" placeholder="0" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white font-mono font-bold text-slate-800 focus:outline-none">
+
+                        <!-- 2. Odometer Out (Label Inlined) -->
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter select-none font-sans whitespace-nowrap">MI OUT:</span>
+                            <input type="number" name="odometerOut" th:value="${focusedWorkOrder.odometerOut}" placeholder="0" class="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white font-mono font-black text-slate-800 text-right focus:outline-none">
                         </div>
+
+                        <!-- 3. Record Button (Matches row height) -->
+                        <div class="pl-1">
+                            <button type="submit" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-1 px-2 rounded text-[10px] uppercase tracking-wider shadow-sm transition duration-150 whitespace-nowrap">
+                                ⏱️ Record Miles
+                            </button>
+                        </div>
+
                     </div>
-                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-1.5 rounded text-xs shadow transition mt-4">Record Mileage Snapshots</button>
                 </form>
+
             </div>
             <!-- SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE GRID -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-6">
