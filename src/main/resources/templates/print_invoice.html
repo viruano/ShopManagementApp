@@ -39,11 +39,12 @@
     </div>
 </div>
 
-<!-- Itemized Ledger Entry Rows Table -->
+<!-- Itemized Ledger Entry Rows Table (STRICT SYSTEM SORTED) -->
 <table class="min-w-full divide-y divide-slate-200 text-xs text-left mb-6">
     <thead>
     <tr class="bg-slate-100 text-slate-600 font-black uppercase tracking-wider border-b border-slate-300">
         <th class="px-4 py-2.5">Type</th>
+        <th class="px-4 py-2.5">Procurement Specs</th>
         <th class="px-4 py-2.5">Description / Job Action</th>
         <th class="px-4 py-2.5 text-center">Qty / Hours</th>
         <th class="px-4 py-2.5 text-right">Billed Rate</th>
@@ -51,12 +52,22 @@
     </tr>
     </thead>
     <tbody class="divide-y divide-slate-200">
-    <tr th:each="item : ${lineItems}" class="align-middle">
-        <td class="px-4 py-3 font-black text-slate-500" th:text="${item.itemType}">LABOR</td>
-        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Premium Ceramic Brake Pad Placement</td>
-        <td class="px-4 py-3 text-center font-mono" th:text="${item.quantity}">1.0</td>
-        <td class="px-4 py-3 text-right font-mono" th:text="'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')">$125.00</td>
-        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')">$125.00</td>
+
+    <!-- 🟢 FORCE NATIVE SORT: Sorts list alphabetically by itemType (LABOR -> MISC -> PART) -->
+    <tr th:each="item : ${#lists.sort(lineItems, 'itemType')}" class="align-middle hover:bg-slate-50/50">
+        <td class="px-4 py-3 font-black text-slate-700" th:text="${item.itemType}">TYPE</td>
+        <td class="px-4 py-3 font-mono text-[10px] text-slate-500">
+            <div th:if="${#strings.toString(item.itemType) == 'PART'}">
+                <span class="font-bold text-slate-800" th:text="'SKU: ' + ${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
+                <span class="text-slate-400" th:text="' (' + ${item.vendor} + ')'"></span>
+            </div>
+            <div th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="text-slate-400 italic font-sans">Pure Flat Labor Action</div>
+            <div th:if="${#strings.toString(item.itemType) == 'MISC'}" class="text-slate-400 italic font-sans">Shop Materials &amp; Consumables</div>
+        </td>
+        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Description</td>
+        <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT')}">1.0</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')">$0.00</td>
+        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')">$0.00</td>
     </tr>
     </tbody>
 </table>

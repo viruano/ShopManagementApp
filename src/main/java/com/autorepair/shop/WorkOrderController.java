@@ -204,7 +204,20 @@ public class WorkOrderController {
         model.addAttribute("order", order);
         model.addAttribute("vehicle", order.getVehicle());
         model.addAttribute("customer", order.getVehicle().getCustomer());
-        model.addAttribute("lineItems", order.getLineItems());
+
+        // 🟢 THE FIX: Stream, sort by business hierarchy rules, and collect into a clean, un-wrapped List array
+        java.util.List<?> sortedLineItems = order.getLineItems().stream()
+                .sorted(java.util.Comparator.comparingInt(item -> {
+                    // Convert type to uppercase safely to match 'LABOR', 'PART', 'MISC' strings
+                    String type = String.valueOf(item.getItemType()).toUpperCase();
+                    if (type.contains("LABOR")) return 1; // 1st Priority
+                    if (type.contains("PART"))  return 2; // 2nd Priority
+                    return 3;                             // 3rd Priority (MISC and everything else)
+                }))
+                .collect(java.util.stream.Collectors.toList());
+
+        // Pass the guaranteed sorted list array context down to the template canvas engine
+        model.addAttribute("lineItems", sortedLineItems);
 
         model.addAttribute("partsSubtotal", order.getPartsSubtotal());
         model.addAttribute("laborSubtotal", order.getLaborSubtotal());
