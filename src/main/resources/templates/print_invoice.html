@@ -51,14 +51,15 @@
     </div>
 </div>
 
-<!-- Itemized Ledger Entry Rows Table (CATEGORIZED & BEAUTIFIED) -->
+<!-- Itemized Ledger Entry Rows Table (UPDATED HEADERS) -->
 <table class="min-w-full divide-y divide-slate-200 text-xs text-left mb-6">
     <thead>
     <tr class="bg-slate-100 text-slate-600 font-black uppercase tracking-wider border-b border-slate-300">
         <th class="px-4 py-2.5">Type</th>
         <th class="px-4 py-2.5">Procurement Specs</th>
         <th class="px-4 py-2.5">Description / Job Action</th>
-        <th class="px-4 py-2.5 text-center">Qty / Hours</th>
+        <!-- 🟢 UPDATED: Changed from QTY / HOURS to just QTY -->
+        <th class="px-4 py-2.5 text-center">Qty</th>
         <th class="px-4 py-2.5 text-right">Billed Rate</th>
         <th class="px-4 py-2.5 text-right">Total Amount</th>
     </tr>
@@ -70,8 +71,9 @@
         <td class="px-4 py-3 font-black text-indigo-600">LABOR</td>
         <td class="px-4 py-3 text-slate-400 italic font-sans">Pure Flat Labor Action</td>
         <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Brake Diagnostic</td>
-        <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT')}">1.0</td>
-        <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$125.00</td>
+        <!-- 🟢 UPDATED: Hardcoded to show 1 for labor lines -->
+        <td class="px-4 py-3 text-center font-mono">1</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice * item.quantity, 1, 'NONE', 2, 'POINT')}">$125.00</td>
         <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="${'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')}">$125.00</td>
     </tr>
     </tbody>
@@ -114,7 +116,6 @@
             and inspection purposes. All balances must be settled in full prior to vehicle procurement release.
         </div>
 
-        <!-- 📊 RESTORED ITEMIZIED BOOKKEEPING MATRIX BLOCK -->
         <div class="space-y-1.5 text-right font-mono text-xs max-w-xs ml-auto w-full text-slate-600">
             <div class="flex justify-between">
                 <span>Labor Subtotal:</span>
