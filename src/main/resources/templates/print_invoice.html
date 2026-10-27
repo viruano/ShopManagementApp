@@ -2,8 +2,8 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="|Invoice - ${order.invoiceNumber}|">Invoice Print</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title th:text="${'Invoice - ' + order.invoiceNumber}">Invoice Print</title>
+    <script th:inline="none" src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
             .no-print { display: none; }
@@ -16,8 +16,9 @@
 <!-- Header Invoice Metadata Brand Block -->
 <div class="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
     <div>
-        <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900">🖨️ WORK ORDER INVOICE</h1>
-        <p class="text-xs text-slate-500 font-mono mt-1" th:text="|Tenant ID Source: ${activeTenant}|">DEMO-SHOP</p>
+        <h1 class="text-xl font-black uppercase tracking-tight text-slate-900" th:text="${shopName}">XYZ Auto Services LLC</h1>
+        <p class="text-xs text-slate-600 mt-0.5" th:text="${shopAddress}">27 Hicks Av, Annapolis, MD 21401</p>
+        <p class="text-xs text-slate-500 font-mono mt-0.5" th:text="${shopPhone}">(443) 325-6663</p>
     </div>
     <div class="text-right font-mono text-xs space-y-1">
         <div><strong class="font-sans uppercase text-[10px] text-slate-400">Invoice Number:</strong> <span class="font-black text-slate-900" th:text="${order.invoiceNumber}">WO-1001</span></div>
@@ -25,21 +26,32 @@
     </div>
 </div>
 
-<!-- Vehicle & Owner Customer Information Deck -->
+<!-- Vehicle and Owner Customer Information Deck -->
 <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
     <div>
         <h3 class="text-xs font-black uppercase text-slate-400 mb-1">Customer / Account File:</h3>
-        <div class="font-bold text-slate-900" th:text="${order.vehicle.customer.firstName + ' ' + order.vehicle.customer.lastName}">John Doe</div>
-        <div class="text-xs text-slate-500 font-mono" th:text="${order.vehicle.customer.phone}">(555) 0199</div>
+
+        <!-- 🏢 SHOW COMPANY NAME FIRST IF IT EXISTS -->
+        <div th:if="${order.vehicle.customer.companyName != null and !#strings.isEmpty(order.vehicle.customer.companyName)}">
+            <div class="font-black text-slate-900 uppercase text-sm tracking-tight" th:text="${order.vehicle.customer.companyName}">APEX PLUMBING LLC</div>
+            <div class="text-xs text-slate-600 font-bold mt-0.5" th:text="${'Attn / Driver: ' + order.vehicle.customer.firstName + ' ' + order.vehicle.customer.lastName}">Attn: John Doe</div>
+        </div>
+
+        <!-- 👤 FALLBACK TO STANDARD PERSONAL NAME IF NO COMPANY -->
+        <div th:if="${order.vehicle.customer.companyName == null or #strings.isEmpty(order.vehicle.customer.companyName)}">
+            <div class="font-bold text-slate-900" th:text="${order.vehicle.customer.firstName + ' ' + order.vehicle.customer.lastName}">John Doe</div>
+        </div>
+
+        <div class="text-xs text-slate-500 font-mono mt-1" th:text="${order.vehicle.customer.phone}">(555) 0199</div>
     </div>
     <div>
         <h3 class="text-xs font-black uppercase text-slate-400 mb-1">Vehicle Asset Profile:</h3>
         <div class="font-bold text-slate-900" th:text="${order.vehicle.year + ' ' + order.vehicle.make + ' ' + order.vehicle.model}">2022 Ford F-150</div>
-        <div class="text-xs text-slate-500 font-mono" th:text="|VIN: ${order.vehicle.vin} | Plate: ${order.vehicle.licensePlate}|">VIN: 1FT...</div>
+        <div class="text-xs text-slate-500 font-mono" th:text="${'VIN: ' + order.vehicle.vin + ' • Plate: ' + order.vehicle.licensePlate}">VIN: 1FT...</div>
     </div>
 </div>
 
-<!-- Itemized Ledger Entry Rows Table (STRICT SYSTEM SORTED) -->
+<!-- Itemized Ledger Entry Rows Table (CATEGORIZED & BEAUTIFIED) -->
 <table class="min-w-full divide-y divide-slate-200 text-xs text-left mb-6">
     <thead>
     <tr class="bg-slate-100 text-slate-600 font-black uppercase tracking-wider border-b border-slate-300">
@@ -51,35 +63,94 @@
         <th class="px-4 py-2.5 text-right">Total Amount</th>
     </tr>
     </thead>
-    <tbody class="divide-y divide-slate-200">
 
-    <!-- 🟢 FORCE NATIVE SORT: Sorts list alphabetically by itemType (LABOR -> MISC -> PART) -->
-    <tr th:each="item : ${#lists.sort(lineItems, 'itemType')}" class="align-middle hover:bg-slate-50/50">
-        <td class="px-4 py-3 font-black text-slate-700" th:text="${item.itemType}">TYPE</td>
-        <td class="px-4 py-3 font-mono text-[10px] text-slate-500">
-            <div th:if="${#strings.toString(item.itemType) == 'PART'}">
-                <span class="font-bold text-slate-800" th:text="'SKU: ' + ${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
-                <span class="text-slate-400" th:text="' (' + ${item.vendor} + ')'"></span>
-            </div>
-            <div th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="text-slate-400 italic font-sans">Pure Flat Labor Action</div>
-            <div th:if="${#strings.toString(item.itemType) == 'MISC'}" class="text-slate-400 italic font-sans">Shop Materials &amp; Consumables</div>
-        </td>
-        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Description</td>
+    <!-- 1️⃣ LABOR ROWS -->
+    <tbody class="divide-y divide-slate-200 border-b border-slate-100">
+    <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="align-middle hover:bg-slate-50/50">
+        <td class="px-4 py-3 font-black text-indigo-600">LABOR</td>
+        <td class="px-4 py-3 text-slate-400 italic font-sans">Pure Flat Labor Action</td>
+        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Brake Diagnostic</td>
         <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT')}">1.0</td>
-        <td class="px-4 py-3 text-right font-mono" th:text="'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')">$0.00</td>
-        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')">$0.00</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$125.00</td>
+        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="${'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')}">$125.00</td>
+    </tr>
+    </tbody>
+
+    <!-- 2️⃣ PARTS ROWS -->
+    <tbody class="divide-y divide-slate-200 border-b border-slate-100">
+    <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'PART'}" class="align-middle hover:bg-slate-50/50">
+        <td class="px-4 py-3 font-black text-amber-600">PART</td>
+        <td class="px-4 py-3 font-mono text-[10px] text-slate-500">
+            <span class="font-bold text-slate-800" th:text="${'SKU: ' + (item.partNumber != null ? item.partNumber : 'N/A')}"></span>
+            <span class="text-slate-400" th:text="${' (' + item.vendor + ')'}"></span>
+        </td>
+        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Ceramic Brake Pads</td>
+        <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 0, 'POINT')}">1</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$85.00</td>
+        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="${'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')}">$85.00</td>
+    </tr>
+    </tbody>
+
+    <!-- 3️⃣ MISC ROWS -->
+    <tbody class="divide-y divide-slate-200">
+    <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'MISC'}" class="align-middle hover:bg-slate-50/50">
+        <td class="px-4 py-3 font-black text-emerald-600">MISC</td>
+        <td class="px-4 py-3 text-slate-400 italic font-sans">Fluids &amp; Shop Consumables</td>
+        <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Shop Supplies Fee</td>
+        <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT')}">1.0</td>
+        <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$15.00</td>
+        <td class="px-4 py-3 text-right font-mono font-black text-slate-900" th:text="${'$' + #numbers.formatDecimal(item.quantity * item.retailPrice, 1, 'NONE', 2, 'POINT')}">$15.00</td>
     </tr>
     </tbody>
 </table>
 
-<!-- Grand Balance Summary Block -->
-<div class="border-t border-slate-300 pt-4 flex justify-end text-right font-mono">
-    <div class="space-y-1.5 w-full max-w-xs">
-        <div class="flex justify-between text-base font-black text-slate-900">
-            <span class="font-sans uppercase font-black text-xs text-indigo-600">Grand Total Balance Due:</span>
-            <span th:text="'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')">$0.00</span>
+<!-- Financial Summary and Signature Deck -->
+<div class="mt-12 border-t border-slate-200 pt-6">
+    <div class="grid grid-cols-2 gap-12">
+        <div class="text-[10px] text-slate-400 text-justify leading-relaxed pr-6">
+            <p class="font-bold mb-1 uppercase tracking-tight text-slate-500">🔧 Repair Authorization &amp; Liability Waiver:</p>
+            I hereby authorize the repair work itemized above to be completed along with the procurement of necessary materials.
+            The shop employees are granted permission to operate the vehicle on public streets for diagnostic testing, verification,
+            and inspection purposes. All balances must be settled in full prior to vehicle procurement release.
+        </div>
+
+        <!-- 📊 RESTORED ITEMIZIED BOOKKEEPING MATRIX BLOCK -->
+        <div class="space-y-1.5 text-right font-mono text-xs max-w-xs ml-auto w-full text-slate-600">
+            <div class="flex justify-between">
+                <span>Labor Subtotal:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(laborSubtotal != null ? laborSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Parts Subtotal:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(partsSubtotal != null ? partsSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Shop Material Supplies:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(miscSubtotal != null ? miscSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-200 pb-1.5">
+                <span th:text="${'Sales Tax (' + #numbers.formatPercent(taxRate != null ? taxRate : 0.06, 1, 1) + '):'}">Sales Tax (6.0%):</span>
+                <span th:text="${'$' + #numbers.formatDecimal(taxTotal != null ? taxTotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
+            </div>
+            <div class="flex justify-between text-base font-black text-slate-900 pt-1">
+                <span class="font-sans uppercase font-black text-xs text-indigo-600">Grand Total Due:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0.00, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signing Authorization Row Panels -->
+    <div class="grid grid-cols-2 gap-12 mt-16 pt-4 text-slate-500 font-sans text-xs">
+        <div>
+            <div class="border-b border-slate-400 w-full h-6"></div>
+            <div class="mt-1.5 uppercase font-black text-[9px] tracking-wider text-slate-400">Customer Authorized Signature</div>
+        </div>
+        <div>
+            <div class="border-b border-slate-400 w-full h-6"></div>
+            <div class="mt-1.5 uppercase font-black text-[9px] tracking-wider text-slate-400">Service Advisor / Technician Date</div>
         </div>
     </div>
 </div>
+
 </body>
 </html>

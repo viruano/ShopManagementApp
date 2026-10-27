@@ -233,6 +233,6 @@ public class WorkOrderController {
         model.addAttribute("shopPhone", tenantProfile.getPhone());
         model.addAttribute("isDemoMode", tenantProfile.isDemoMode());
 
-        return "print-invoice";
+        return "print_invoice";
     }
 }

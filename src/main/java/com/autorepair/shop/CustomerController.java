@@ -25,14 +25,14 @@ public class CustomerController {
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.newCustomer", result);
             ra.addFlashAttribute("newCustomer", customer);
-            return "redirect:/dashboard?tab=customers&error=true";
+            return "redirect:/dashboard?tab=customers&activeTenant=" + activeTenant + "&error=true";
         }
 
         customer.setTenantId(activeTenant);
         customer.setCustomerNumber("CUST-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase());
 
         customerRepository.save(customer);
-        return "redirect:/dashboard?tab=customers";
+        return "redirect:/dashboard?tab=customers&activeTenant=" + activeTenant;
     }
 
     // =========================================================
@@ -41,6 +41,7 @@ public class CustomerController {
     @PostMapping("/update/{id}")
     public String updateCustomer(@PathVariable("id") Long id,
                                  @ModelAttribute("activeTenant") String activeTenant,
+                                 @RequestParam(value = "companyName", required = false) String companyName, // 🟢 ADDED: Captures your new corporate field string natively!
                                  @RequestParam("firstName") String firstName,
                                  @RequestParam("lastName") String lastName,
                                  @RequestParam("phone") String phone,
@@ -52,6 +53,9 @@ public class CustomerController {
                                  @RequestParam(value = "taxExempt", required = false, defaultValue = "false") boolean taxExempt) {
 
         customerRepository.findByIdAndTenantId(id, activeTenant).ifPresent(customer -> {
+            // 🟢 FORCE SAVE: Commits corporate field parameter back to your database row instance
+            customer.setCompanyName(companyName != null ? companyName.trim() : "");
+
             if (firstName != null && !firstName.trim().isEmpty()) customer.setFirstName(firstName.trim());
             customer.setLastName(lastName != null ? lastName.trim() : "");
             if (phone != null && !phone.trim().isEmpty()) customer.setPhone(phone.trim());
@@ -63,8 +67,10 @@ public class CustomerController {
             customer.setTaxExempt(taxExempt);
 
             customerRepository.save(customer);
+            System.out.println("💾 [CRM B2B ENGINE] Customer profile ID " + id + " updated successfully for tenant: " + activeTenant);
         });
 
-        return "redirect:/dashboard?tab=customers";
+        // 🟢 FIXED REDIRECT: Appends active tenant state context so the page reload maintains authorization scope
+        return "redirect:/dashboard?tab=customers&activeTenant=" + activeTenant;
     }
 }
