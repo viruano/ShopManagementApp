@@ -116,28 +116,36 @@
             and inspection purposes. All balances must be settled in full prior to vehicle procurement release.
         </div>
 
+        <!-- 📊 FULLY SYNCHRONIZED ITEMIZATION & BOOKKEEPING MATRIX BLOCK -->
         <div class="space-y-1.5 text-right font-mono text-xs max-w-xs ml-auto w-full text-slate-600">
             <div class="flex justify-between">
                 <span>Labor Subtotal:</span>
                 <span th:text="${'$' + #numbers.formatDecimal(laborSubtotal != null ? laborSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between border-b border-slate-200 pb-1.5">
                 <span>Parts Subtotal:</span>
                 <span th:text="${'$' + #numbers.formatDecimal(partsSubtotal != null ? partsSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
             </div>
-            <div class="flex justify-between">
-                <span>Shop Material Supplies:</span>
-                <span th:text="${'$' + #numbers.formatDecimal(miscSubtotal != null ? miscSubtotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                <span th:text="${'Sales Tax (' + #numbers.formatPercent(taxRate != null ? taxRate : 0.06, 1, 1) + '):'}">Sales Tax (6.0%):</span>
-                <span th:text="${'$' + #numbers.formatDecimal(taxTotal != null ? taxTotal : 0.00, 1, 'NONE', 2, 'POINT')}">$0.00</span>
-            </div>
+
+            <!-- 👑 GRAND TOTAL DUE -->
             <div class="flex justify-between text-base font-black text-slate-900 pt-1">
-                <span class="font-sans uppercase font-black text-xs text-indigo-600">Grand Total Due:</span>
-                <span th:text="${'$' + #numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0.00, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                <span class="font-sans uppercase font-black text-xs text-slate-700">Grand Total Due:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(grandTotal != null ? grandTotal : 0.00, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+            </div>
+
+            <!-- 💳 DEPOSIT / AMOUNT PAID TRACK -->
+            <div class="flex justify-between text-xs text-slate-500 pt-0.5">
+                <span>Amount Paid / Deposit:</span>
+                <span th:text="${'($' + #numbers.formatDecimal(amountPaid != null ? amountPaid : 0.00, 1, 'NONE', 2, 'POINT') + ')'}">($0.00)</span>
+            </div>
+
+            <!-- 🚨 OUTSTANDING REMAINING BALANCE DUE -->
+            <div class="flex justify-between text-sm font-black text-rose-600 border-t-2 border-dashed border-slate-200 pt-1 mt-1 bg-rose-50/50 px-2 py-1 rounded">
+                <span class="font-sans uppercase text-xs">Net Balance Due:</span>
+                <span th:text="${'$' + #numbers.formatDecimal(balanceDue != null ? balanceDue : 0.00, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
             </div>
         </div>
+
     </div>
 
     <!-- Signing Authorization Row Panels -->

@@ -18,7 +18,7 @@ public class VehicleController {
     private VinDecoderService vinDecoderService;
 
     // =========================================================
-    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + VIN DECODER)
+    // 🚗 VEHICLE ACTIONS SECTION (SaaS FIREWALL + AUTO-TRANSFER)
     // =========================================================
     @PostMapping("/register")
     public String registerVehicle(@ModelAttribute("newVehicle") @jakarta.validation.Valid Vehicle vehicle,
@@ -30,13 +30,49 @@ public class VehicleController {
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.newVehicle", result);
             ra.addFlashAttribute("newVehicle", vehicle);
-            return "redirect:/dashboard?tab=vehicles&error=true";
+            return "redirect:/dashboard?tab=vehicles&activeTenant=" + activeTenant + "&error=true";
         }
 
+        // 🟢 ADVANCED RE-ASSIGNMENT SAFETY ENGAGED
         if (vehicle.getVin() != null && !vehicle.getVin().trim().isEmpty()) {
+            String sanitizedVin = vehicle.getVin().trim().toUpperCase();
+            vehicle.setVin(sanitizedVin);
+
+            // Look up if this exact vehicle is already present under this specific tenant profile
+            java.util.Optional<Vehicle> existingVehicleOpt =
+                    vehicleRepository.findByVinAndTenantId(sanitizedVin, activeTenant);
+
+            if (existingVehicleOpt.isPresent()) {
+                Vehicle existingVehicle = existingVehicleOpt.get();
+
+                // If a customer mapping target id parameter is provided, re-assign the vehicle row owner pointer
+                if (customerId != null) {
+                    java.util.Optional<Customer> targetCustomerOpt = customerRepository.findByIdAndTenantId(customerId, activeTenant);
+
+                    if (targetCustomerOpt.isPresent()) {
+                        Customer newOwner = targetCustomerOpt.get();
+
+                        // 🔄 RE-ASSIGN ACTION: Move vehicle asset pointer safely to the new client account
+                        existingVehicle.setCustomer(newOwner);
+
+                        // Sync odometer inputs from the entry form lines
+                        if (vehicle.getOdometerIn() != null) existingVehicle.setOdometerIn(vehicle.getOdometerIn());
+                        if (vehicle.getLicensePlate() != null) existingVehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
+
+                        vehicleRepository.save(existingVehicle);
+
+                        ra.addFlashAttribute("successMessage", "Ownership Re-assigned: " + sanitizedVin + " has been successfully transferred to " + newOwner.getFirstName() + " " + newOwner.getLastName());
+                        System.out.println("🔄 [CRM LOG] Successfully transferred vehicle VIN " + sanitizedVin + " to Customer ID " + customerId);
+                        return "redirect:/dashboard?tab=vehicles&activeTenant=" + activeTenant + "&transferSuccess=true";
+                    }
+                }
+            }
+
+            // Decodes specification metrics natively if it's a completely new shop vehicle file
             vinDecoderService.hydrateVehicleSpecs(vehicle);
         }
 
+        // Fallback processing for standard new asset registrations
         if (customerId != null) {
             customerRepository.findByIdAndTenantId(customerId, activeTenant).ifPresent(vehicle::setCustomer);
         }
@@ -45,11 +81,11 @@ public class VehicleController {
 
         if (vehicle.getMake() != null) vehicle.setMake(vehicle.getMake().trim().toUpperCase());
         if (vehicle.getModel() != null) vehicle.setModel(vehicle.getModel().trim().toUpperCase());
-        if (vehicle.getVin() != null) vehicle.setVin(vehicle.getVin().trim().toUpperCase());
         if (vehicle.getLicensePlate() != null) vehicle.setLicensePlate(vehicle.getLicensePlate().trim().toUpperCase());
 
         vehicleRepository.save(vehicle);
-        return "redirect:/dashboard?tab=vehicles";
+        ra.addFlashAttribute("successMessage", "Vehicle registered successfully.");
+        return "redirect:/dashboard?tab=vehicles&activeTenant=" + activeTenant;
     }
 
     // =========================================================

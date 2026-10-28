@@ -15,6 +15,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     Optional<Vehicle> findByIdAndTenantId(Long id, String tenantId);
 
+    // 🟢 ADDED: Enforces explicit unique VIN constraints within the active tenant partition
+    Optional<Vehicle> findByVinAndTenantId(String vin, String tenantId);
+
     // 🔒 REVISED MULTI-TENANT TENANT-SAFE VEHICLE SEARCH ENGINE
     // Confines license plate and VIN scans strictly to the active shop floor instance
     @Query("SELECT v FROM Vehicle v WHERE v.tenantId = :tenantId AND (" +

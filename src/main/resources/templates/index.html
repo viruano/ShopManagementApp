@@ -909,20 +909,22 @@
                             </form>
                         </div>
 
-                        <!-- PANEL C: SHOP SUPPLIES / MISC FEES (RE-ALIGNED STANDALONE) -->
+                        <!-- PANEL C: SHOP SUPPLIES / SHOP COMMODITIES (RE-ALIGNED TO PARTS GENERATION) -->
                         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center space-x-2 border-b border-gray-100 pb-2 mb-3">
-                                <span class="text-base">✨</span>
-                                <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Shop Supplies / Misc</h3>
+                                <span class="text-base">📦</span>
+                                <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Bill Shop Supplies / Shop Commodities</h3>
                             </div>
                             <form th:action="@{/work-orders/add-item}" method="POST" class="space-y-3 m-0">
                                 <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}">
                                 <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
-                                <input type="hidden" name="itemType" value="MISC">
+                                <!-- 🟢 UPDATED: Automatically posts as a PART type to simplify your database ledger -->
+                                <input type="hidden" name="itemType" value="PART">
                                 <input type="hidden" name="quantity" value="1.00">
+
                                 <div>
-                                    <label class="block text-[10px] font-black text-slate-500 mb-0.5">Material / Fee Description</label>
-                                    <input type="text" name="description" required placeholder="e.g. Shop Supplies, Fluids & Consumables" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
+                                    <label class="block text-[10px] font-black text-slate-500 mb-0.5">Material / Commodity Description</label>
+                                    <input type="text" name="description" required placeholder="e.g. Shop Supplies, Fluids &amp; Consumables" class="w-full px-2 py-1 border rounded text-xs bg-white font-bold text-slate-800">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-2">
@@ -935,9 +937,10 @@
                                         <input type="number" step="0.01" name="retailPrice" value="0.00" required class="w-full px-2 py-1 border rounded text-xs font-mono text-right font-bold bg-white">
                                     </div>
                                 </div>
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Material Fee</button>
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-1.5 rounded text-[10px] shadow transition uppercase tracking-wider">⚡ Bill Material Commodity</button>
                             </form>
                         </div>
+
                     </th:block>
                 </div> <!-- Closes Left Column Form Panel wrapper container box securely -->
 
