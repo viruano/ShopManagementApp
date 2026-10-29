@@ -220,6 +220,57 @@
             </div>
 
         </div>
+        <!-- 🗄️ ENTERPRISE DATABASE OPTIMIZATION EXPERTISE SPLIT CASE STUDY -->
+        <div class="mt-6 bg-gradient-to-br from-slate-950 via-slate-950 to-indigo-950/20 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl">
+            <div class="grid lg:grid-cols-12 gap-8 items-center">
+
+                <!-- Left Column: Metrics & Case Narrative -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center space-x-2 text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded w-max uppercase">
+                        Case Study: Query Optimization &amp; Schema Refactoring
+                    </div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-tight">Smashing Legacy Database Latency</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Consulted on an enterprise multi-tenant relational system crippled by severe query performance degradation during peak shop operating intervals. Diagnosed the bottleneck down to nested implicit type conversions, unindexed foreign keys, and massive table scans locking up the connection pool.
+                    </p>
+
+                    <!-- KPI Metric Grid -->
+                    <div class="grid grid-cols-3 gap-2 pt-2 text-center">
+                        <div class="bg-slate-900/80 border border-slate-800/60 p-2.5 rounded-xl">
+                            <div class="text-xl font-mono font-black text-emerald-400">94%</div>
+                            <div class="text-[9px] font-mono uppercase tracking-wider text-slate-500">Latency Drop</div>
+                        </div>
+                        <div class="bg-slate-900/80 border border-slate-800/60 p-2.5 rounded-xl">
+                            <div class="text-xl font-mono font-black text-indigo-400">&lt; 12ms</div>
+                            <div class="text-[9px] font-mono uppercase tracking-wider text-slate-500">Execution Floor</div>
+                        </div>
+                        <div class="bg-slate-900/80 border border-slate-800/60 p-2.5 rounded-xl">
+                            <div class="text-xl font-mono font-black text-amber-400">0</div>
+                            <div class="text-[9px] font-mono uppercase tracking-wider text-slate-500">Deadlocks</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Optimized SQL Engine Script Showcase -->
+                <div class="lg:col-span-5 border border-slate-800 bg-slate-950/90 p-5 rounded-xl font-mono text-[10.5px] text-slate-400 space-y-2 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-slate-800/40 text-[9px] font-bold text-slate-500 px-2 py-0.5 rounded-bl uppercase tracking-wider">PostgreSQL</div>
+                    <p class="text-emerald-400 font-bold">// Strategic Multi-Tenant Composite Indexes</p>
+                    <p><span class="text-indigo-400 font-bold">CREATE UNIQUE INDEX</span> CONCURRENTLY idx_vehicles_vin_tenant</p>
+                    <p class="pl-4"><span class="text-indigo-400 font-bold">ON</span> vehicles (vin, tenant_id);</p>
+                    <p class="text-emerald-400 font-bold pt-1">// Optimized Analytical Ledger Mutation View</p>
+                    <p><span class="text-indigo-400 font-bold">CREATE OR REPLACE VIEW</span> tenant_revenue_ledger <span class="text-indigo-400 font-bold">AS</span></p>
+                    <p><span class="text-indigo-400 font-bold">SELECT</span></p>
+                    <p class="pl-4">v.tenant_id,</p>
+                    <p class="pl-4"><span class="text-amber-400">COALESCE</span>(<span class="text-amber-400">SUM</span>(li.retail_price * li.quantity), <span class="text-rose-400">0.00</span>) <span class="text-indigo-400 font-bold">AS</span> gross_revenue</p>
+                    <p><span class="text-indigo-400 font-bold">FROM</span> vehicles v</p>
+                    <p><span class="text-indigo-400 font-bold">LEFT JOIN</span> work_orders wo <span class="text-indigo-400 font-bold">ON</span> wo.vehicle_id = v.id</p>
+                    <p><span class="text-indigo-400 font-bold">INNER JOIN</span> line_items li <span class="text-indigo-400 font-bold">ON</span> li.work_order_id = wo.id</p>
+                    <p><span class="text-indigo-400 font-bold">GROUP BY</span> v.tenant_id;</p>
+                </div>
+
+            </div>
+        </div>
+
 
     </div>
 </section>
