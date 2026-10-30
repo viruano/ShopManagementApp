@@ -51,14 +51,13 @@
     </div>
 </div>
 
-<!-- Itemized Ledger Entry Rows Table (UPDATED HEADERS) -->
+<!-- Itemized Ledger Entry Rows Table (CUSTOMER-SAFE: HIDDEN SKU & VENDOR) -->
 <table class="min-w-full divide-y divide-slate-200 text-xs text-left mb-6">
     <thead>
     <tr class="bg-slate-100 text-slate-600 font-black uppercase tracking-wider border-b border-slate-300">
         <th class="px-4 py-2.5">Type</th>
-        <th class="px-4 py-2.5">Procurement Specs</th>
         <th class="px-4 py-2.5">Description / Job Action</th>
-        <!-- 🟢 UPDATED: Changed from QTY / HOURS to just QTY -->
+        <!-- 🟢 UPDATED: Removed Procurement Specs header, left QTY -->
         <th class="px-4 py-2.5 text-center">Qty</th>
         <th class="px-4 py-2.5 text-right">Billed Rate</th>
         <th class="px-4 py-2.5 text-right">Total Amount</th>
@@ -69,7 +68,6 @@
     <tbody class="divide-y divide-slate-200 border-b border-slate-100">
     <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="align-middle hover:bg-slate-50/50">
         <td class="px-4 py-3 font-black text-indigo-600">LABOR</td>
-        <td class="px-4 py-3 text-slate-400 italic font-sans">Pure Flat Labor Action</td>
         <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Brake Diagnostic</td>
         <!-- 🟢 UPDATED: Hardcoded to show 1 for labor lines -->
         <td class="px-4 py-3 text-center font-mono">1</td>
@@ -78,14 +76,11 @@
     </tr>
     </tbody>
 
-    <!-- 2️⃣ PARTS ROWS -->
+    <!-- 2️⃣ PARTS ROWS (CLEANED) -->
     <tbody class="divide-y divide-slate-200 border-b border-slate-100">
     <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'PART'}" class="align-middle hover:bg-slate-50/50">
         <td class="px-4 py-3 font-black text-amber-600">PART</td>
-        <td class="px-4 py-3 font-mono text-[10px] text-slate-500">
-            <span class="font-bold text-slate-800" th:text="${'SKU: ' + (item.partNumber != null ? item.partNumber : 'N/A')}"></span>
-            <span class="text-slate-400" th:text="${' (' + item.vendor + ')'}"></span>
-        </td>
+        <!-- 🟢 SAFE CHANNELS: Removed the absolute internal SKU and Vendor cell block completely -->
         <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Ceramic Brake Pads</td>
         <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 0, 'POINT')}">1</td>
         <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$85.00</td>
@@ -97,7 +92,6 @@
     <tbody class="divide-y divide-slate-200">
     <tr th:each="item : ${lineItems}" th:if="${#strings.toString(item.itemType) == 'MISC'}" class="align-middle hover:bg-slate-50/50">
         <td class="px-4 py-3 font-black text-emerald-600">MISC</td>
-        <td class="px-4 py-3 text-slate-400 italic font-sans">Fluids &amp; Shop Consumables</td>
         <td class="px-4 py-3 font-bold text-slate-900" th:text="${item.description}">Shop Supplies Fee</td>
         <td class="px-4 py-3 text-center font-mono" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT')}">1.0</td>
         <td class="px-4 py-3 text-right font-mono" th:text="${'$' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">$15.00</td>
