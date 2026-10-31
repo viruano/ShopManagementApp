@@ -972,50 +972,47 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 font-medium text-slate-700">
                             <tr th:each="item : ${lineItems}" class="hover:bg-gray-50 align-middle">
-                                <td class="px-3 py-2">
-                                    <span th:text="${item.itemType}" th:class="${#strings.toString(item.itemType) == 'PART' ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-black text-[9px]' : 'bg-purple-100 text-indigo-800 px-2 py-0.5 rounded font-black text-[9px]'}">PART</span>
-                                </td>
-                                <td class="px-3 py-2 font-mono text-[10px] text-slate-500">
-                                    <div th:if="${#strings.toString(item.itemType) == 'PART'}">
-                                        <div class="font-bold text-slate-800">
-                                            Num: <span th:text="${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
-                                        </div>
-                                        <div>
-                                            Cost: <span class="text-slate-600" th:text="${'$' + #numbers.formatDecimal(item.wholesaleCost != null ? item.wholesaleCost : 0, 1, 'NONE', 2, 'POINT')}"></span>
-                                            <span class="text-[9px] text-slate-400 font-sans" th:text="'(' + ${item.vendor} + ')'"></span>
-                                        </div>
 
-                                        <!-- 📊 LIVE GROSS PROFIT METRICS BADGE LAYERS -->
-                                        <div class="mt-1 flex flex-wrap gap-1 font-sans text-[9px] font-black uppercase tracking-tight select-none">
-                                            <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" th:text="${'Net: +$' + #numbers.formatDecimal(item.marginProfitDollars != null ? item.marginProfitDollars : 0, 1, 'NONE', 2, 'POINT')}">
-                                                Net: +$0.00
-                                            </span>
-                                            <span th:class="${item.marginPercentage >= 40 ? 'bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200' : 'bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200'}" th:text="${#numbers.formatDecimal(item.marginPercentage != null ? item.marginPercentage : 0, 1, 'NONE', 1, 'POINT') + '% Margin'}">
-                                                0% Margin
-                                            </span>
+                                <!-- 🟢 KEEP STATE A: STATIC READ VIEW -->
+                                <th:block th:unless="${editItemId != null && editItemId == item.id}">
+                                    <td class="px-3 py-2">
+                                        <span th:text="${item.itemType}" th:class="${#strings.toString(item.itemType) == 'PART' ? 'bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-black text-[9px]' : 'bg-purple-100 text-indigo-800 px-2 py-0.5 rounded font-black text-[9px]'}">PART</span>
+                                    </td>
+                                    <td class="px-3 py-2 font-mono text-[10px] text-slate-500">
+                                        <div th:if="${#strings.toString(item.itemType) == 'PART'}">
+                                            <div class="font-bold text-slate-800">
+                                                Num: <span th:text="${item.partNumber != null ? item.partNumber : 'N/A'}"></span>
+                                            </div>
+                                            <div>
+                                                Cost: <span class="text-slate-600" th:text="${'$' + #numbers.formatDecimal(item.wholesaleCost != null ? item.wholesaleCost : 0, 1, 'NONE', 2, 'POINT')}"></span>
+                                                <span class="text-[9px] text-slate-400 font-sans" th:text="'(' + ${item.vendor} + ')'"></span>
+                                            </div>
+                                            <div class="mt-1 flex flex-wrap gap-1 font-sans text-[9px] font-black uppercase tracking-tight select-none">
+                                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" th:text="${'Net: +$' + #numbers.formatDecimal(item.marginProfitDollars != null ? item.marginProfitDollars : 0, 1, 'NONE', 2, 'POINT')}">Net: +$0.00</span>
+                                                <span th:class="${item.marginPercentage >= 40 ? 'bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200' : 'bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200'}" th:text="${#numbers.formatDecimal(item.marginPercentage != null ? item.marginPercentage : 0, 1, 'NONE', 1, 'POINT') + '% Margin'}">0% Margin</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="text-slate-400 italic font-sans">
-                                        Pure Flat Labor Action
-                                    </div>
-                                </td>
+                                        <div th:if="${#strings.toString(item.itemType) == 'LABOR'}" class="text-slate-400 italic font-sans">Pure Flat Labor Action</div>
+                                    </td>
 
-                                <td class="px-3 py-2 font-bold text-slate-900" th:text="${item.description}">Premium Front Brake Pads</td>
-                                <td class="px-3 py-2 font-mono text-slate-500" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT') + ' × $' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">1.0 × $120.00</td>
-                                <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="${'$' + #numbers.formatDecimal((item.quantity != null ? item.quantity : 0) * (item.retailPrice != null ? item.retailPrice : 0), 1, 'NONE', 2, 'POINT')}">$120.00</td>
+                                    <td class="px-3 py-2 font-bold text-slate-900" th:text="${item.description}">Premium Front Brake Pads</td>
+                                    <td class="px-3 py-2 font-mono text-slate-500" th:text="${#numbers.formatDecimal(item.quantity, 1, 'NONE', 1, 'POINT') + ' × $' + #numbers.formatDecimal(item.retailPrice, 1, 'NONE', 2, 'POINT')}">1.0 × $120.00</td>
+                                    <td class="px-3 py-2 font-mono font-black text-slate-900 text-right" th:text="${'$' + #numbers.formatDecimal((item.quantity != null ? item.quantity : 0) * (item.retailPrice != null ? item.retailPrice : 0), 1, 'NONE', 2, 'POINT')}">$120.00</td>
 
-                                <!-- ⚙️ FIXED ACTIONS CELL: Securely triggers line item edits/deletions -->
-                                <td class="px-3 py-2 text-right space-x-1.5 whitespace-nowrap">
-                                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, editItemId=${item.id})}"
-                                       class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase transition">
-                                        Edit
-                                    </a>
-                                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, deleteItemId=${item.id})}"
-                                       class="text-rose-600 hover:text-rose-900 font-bold text-xs uppercase transition"
-                                       onclick="return confirm('Erase this line row from worksheet ledger history?')">
-                                        Delete
-                                    </a>
-                                </td>
+                                    <!-- FIXED ACTIONS CELL: Passes tracking tags cleanly to fire your modal overlay -->
+                                    <td class="px-3 py-2 text-right space-x-1.5 whitespace-nowrap">
+                                        <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id}, editItemId=${item.id})}"
+                                           class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase transition">
+                                            Edit
+                                        </a>
+                                        <a th:href="@{/work-orders/delete-item(focusedWorkOrderId=${focusedWorkOrder.id}, deleteItemId=${item.id})}"
+                                           class="text-rose-600 hover:text-rose-900 font-bold text-xs uppercase transition"
+                                           onclick="openDeleteModal(event, this)">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </th:block>
+
                             </tr>
                             </tbody>
                         </table>
@@ -1051,61 +1048,90 @@
             </div> <!-- Closes SIDE-BY-SIDE LEDGER ENTRY WORKSPACE SPLIT ENGINE Grid -->
         </div> <!-- Closes SUB-WORKSPACE Wrapper Div -->
 
-        <!-- 📝 LAYER OVERLAYS: LIVE SECURED INVOICE LINE ITEM EDIT TERMINAL -->
-        <div th:if="${editItemId != null}" id="lineItemEditModalPane" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
-            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col transform scale-95 transition-all text-slate-800">
-                <div class="bg-slate-950 p-4 text-white flex justify-between items-center flex-shrink-0">
+        <!-- 📝 LAYER OVERLAYS: LIVE SECURED INVOICE LINE ITEM EDIT TERMINAL (PREMIUM ALIGNED DESIGN) -->
+        <div th:if="${editItemId != null}" id="lineItemEditModalPane" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
+            <div class="bg-slate-950 rounded-2xl shadow-2xl border border-slate-800 max-w-lg w-full overflow-hidden flex flex-col transform scale-100 transition-all text-slate-100 relative">
+                <!-- Subtle Top Colored Track Accent Line -->
+                <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+
+                <!-- Header Block -->
+                <div class="p-5 border-b border-slate-900 bg-slate-950 flex justify-between items-center flex-shrink-0">
                     <div>
-                        <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400">📝 Modify Billable Row</h3>
-                        <p class="text-[10px] text-slate-400">Update billed rates, quantities, or tracking descriptions on this ticket.</p>
+                        <h3 class="text-sm font-black uppercase tracking-wider text-indigo-400 font-mono">📝 Modify Worksheet Line Row</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Adjust structural prices, quantites, and procurement logs on this active ledger item.</p>
                     </div>
-                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="text-slate-400 hover:text-white text-sm">✕</a>
+                    <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="text-slate-500 hover:text-white font-bold transition text-sm">✕</a>
                 </div>
 
-                <div class="p-4" th:each="li : ${lineItems}" th:if="${li.id == editItemId}">
-                    <form th:action="@{/work-orders/update-item/{id}(id=${li.id})}" method="POST" class="space-y-4 m-0">
+                <!-- Dynamic Content Controller Context Wrapper Loop -->
+                <div class="p-6 overflow-y-auto" th:each="li : ${lineItems}" th:if="${li.id == editItemId}">
+                    <!-- Form links natively to your restful route variable -->
+                    <form th:action="@{/work-orders/update-item/{id}(id=${li.id})}" method="POST" class="space-y-4 m-0 font-sans">
+                        <!-- Secured Transaction Form Fields -->
                         <input type="hidden" name="workOrderId" th:value="${focusedWorkOrder.id}" />
-                        <input type="hidden" name="activeTenant" th:value="${activeTenant}" />
                         <input type="hidden" name="itemType" th:value="${li.itemType}" />
 
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Billing Description Name:</label>
-                            <input type="text" name="description" th:value="${li.description}" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-slate-800 focus:outline-none">
-                        </div>
-
-                        <div th:if="${#strings.toString(li.itemType) == 'PART'}" class="grid grid-cols-2 gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                            <div>
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Part / SKU #:</label>
-                                <input type="text" name="partNumber" th:value="${li.partNumber}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none">
+                        <!-- row 1: Category Status Flag (Read-Only) & Core Description Name -->
+                        <div class="grid grid-cols-12 gap-4">
+                            <div class="col-span-3 flex flex-col">
+                                <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Row Type:</span>
+                                <span th:text="${li.itemType}" class="w-full text-center bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-black font-mono text-xs py-2 rounded-lg select-none">PART</span>
                             </div>
-                            <div>
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Vendor:</label>
-                                <input type="text" name="vendor" th:value="${li.vendor}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-bold text-slate-800 focus:outline-none">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-0.5">Wholesale Cost ($):</label>
-                                <input type="number" step="0.01" name="wholesaleCost" th:value="${li.wholesaleCost}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                            <div class="col-span-9 flex flex-col">
+                                <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Description Name / Job Action Description:</label>
+                                <input type="text" name="description" th:value="${li.description}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-indigo-500 transition placeholder-slate-500">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-black uppercase text-slate-600 mb-1"
-                                       th:text="${#strings.toString(li.itemType) == 'LABOR' ? 'Labor Book Hours:' : 'Part Qty Count:'}">Qty:</label>
-                                <input type="number" step="0.01" name="quantity" th:value="${li.quantity}" required class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                        <!-- row 2: Procurement Supply Chain Matrix Logic Block (Shows ONLY if row type is PART) -->
+                        <div th:if="${#strings.toString(li.itemType) == 'PART'}" class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl space-y-3">
+                            <div class="flex items-center space-x-2 pb-1 border-b border-slate-900">
+                                <span class="text-xs">📦</span>
+                                <h4 class="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">Inventory &amp; Supply Cost Spec Records</h4>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1">Part / SKU Reference #:</label>
+                                    <input type="text" name="partNumber" th:value="${li.partNumber}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-indigo-500 transition">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1">Wholesale Distributor:</label>
+                                    <input type="text" name="vendor" th:value="${li.vendor}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-indigo-500 transition">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black uppercase text-slate-600 mb-1">Retail Price (Billed Rate):</label>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1">Wholesale Unit Buy Cost ($):</label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-2 text-xs text-slate-400 font-bold">$</span>
-                                    <input type="number" step="0.01" name="retailPrice" th:value="${li.retailPrice}" required class="w-full pl-6 pr-3 py-2 border border-slate-300 rounded-md text-xs font-mono font-bold text-slate-800 focus:outline-none">
+                                    <span class="absolute left-3 top-1.5 text-xs text-slate-500 font-bold font-mono">$</span>
+                                    <input type="number" step="0.01" name="wholesaleCost" th:value="${li.wholesaleCost}" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-3 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-indigo-500 transition">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 -mx-4 -mb-4 p-3 border-t border-slate-200 flex justify-end space-x-2">
-                            <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded text-xs transition uppercase">Cancel</a>
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-1.5 rounded text-xs shadow transition uppercase tracking-wider">Save Changes</button>
+                        <!-- row 3: Quantities, Hrs, & Billed Retail Matrices -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5 block"
+                                       th:text="${#strings.toString(li.itemType) == 'LABOR' ? 'Labor Book Hours:' : 'Part Qty Count:'}">Qty:</label>
+                                <input type="number" step="0.01" name="quantity" th:value="${li.quantity}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono font-bold text-white text-center focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5 block">Billed Customer Rate (Retail Price):</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-xs text-slate-500 font-bold font-mono">$</span>
+                                    <input type="number" step="0.01" name="retailPrice" th:value="${li.retailPrice}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-indigo-500 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Control Button Drawer Footer Row -->
+                        <div class="pt-4 border-t border-slate-900 flex justify-end space-x-3">
+                            <a th:href="@{/dashboard(tab='orders', focusedWorkOrderId=${focusedWorkOrder.id})}" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white font-bold px-4 py-2.5 rounded-lg text-xs transition uppercase tracking-wider">
+                                Cancel
+                            </a>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-5 py-2.5 rounded-lg text-xs shadow-lg shadow-indigo-600/20 transition uppercase tracking-wider">
+                                💾 Save Changes
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1119,6 +1145,65 @@
 <script th:src="@{/js/shop-ui.js}" type="text/javascript"></script>
 <script th:src="@{/js/work-orders.js}" type="text/javascript"></script>
 <script th:src="@{/js/vin-scanner.js}" type="text/javascript"></script>
+
+<!-- 🚨 CUSTOM LEDGER PURGE CONFIRMATION MODAL CANVAS -->
+<div id="delete-confirmation-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop Blur Overlay -->
+    <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Modal Positioning Frame -->
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 relative z-50">
+        <div class="relative transform overflow-hidden rounded-2xl bg-slate-950 border border-slate-800 p-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+
+            <!-- Graphic Warning Indicator Tag -->
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xl mb-4">
+                ⚠️
+            </div>
+
+            <!-- Context Narrative Copy -->
+            <div class="text-center space-y-2">
+                <h3 class="text-base font-black uppercase text-white tracking-tight font-mono" id="modal-title">
+                    Purge Ledger Entry
+                </h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    CRITICAL: Are you sure you want to permanently purge this line item entry from the active work order ledger history? This mutation cannot be undone.
+                </p>
+            </div>
+
+            <!-- Action Button Drawer Frame -->
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <button type="button" onclick="closeDeleteModal()" class="w-full sm:w-1/2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-black uppercase tracking-wider py-3 rounded-lg transition duration-150">
+                    Cancel
+                </button>
+                <a id="modal-confirm-delete-btn" href="#" class="w-full sm:w-1/2 text-center bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-rose-600/20 transition duration-150">
+                    ⚡ Confirm Purge
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal(event, element) {
+        // Stop the native browser from executing the anchor redirect instantly
+        event.preventDefault();
+
+        // Grab the explicit Thymeleaf route URL from the clicked element
+        const deleteUrl = element.getAttribute('href');
+
+        // Inject that secure route target straight into our custom red action button
+        document.getElementById('modal-confirm-delete-btn').setAttribute('href', deleteUrl);
+
+        // Remove the hidden class to slide open our custom modal canvas
+        document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        // Add back the hidden layout parameter to lock down the drawer view state
+        document.getElementById('delete-confirmation-modal').classList.add('hidden');
+    }
+</script>
+
 
 </body>
 </html>
